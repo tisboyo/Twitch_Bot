@@ -29,7 +29,7 @@ class Bot(commands.Bot):
 
         self.active_users = dict()
         self.max_users = 0
-        self.topic = ""
+        self.topic = None
         self.start_time = None
 
     # Events don't need decorators when subclassed
@@ -85,11 +85,20 @@ class Bot(commands.Bot):
         )
 
     @commands.command(name="end")
-    async def end_of_stream_announce(self, ctx):
+    async def end_of_stream(self, ctx):
         await ctx.send(
             f"Thank you to the {len(self.active_users)} user{'s' if len(self.active_users) > 1 else ''} "
             f"that participated in our stream today. We had a total of {self.max_users} chatters with us."
         )
+        await ctx.send(
+            "To keep the conversation going, please join us on Discord at http://addohms.com/discord"
+        )
+
+        # Clean up our variables after a stream is over.
+        self.start_time = None
+        self.active_users = dict()
+        self.max_users = 0
+        self.topic = None
 
     @commands.command(name="uptime")
     async def uptime(self, ctx):
