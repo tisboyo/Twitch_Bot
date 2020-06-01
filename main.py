@@ -23,7 +23,7 @@ class Bot(commands.Bot):
             irc_token=irc_token,
             api_token="test",
             nick=nick,
-            prefix="!",
+            prefix=prefix,
             initial_channels=[channel],
         )
 
