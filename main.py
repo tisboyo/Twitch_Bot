@@ -116,6 +116,15 @@ class Bot(commands.Bot):
         else:
             await ctx.send(f"Sorry, a stream hasn't been started yet.")
 
+    @commands.command(name="topic")
+    async def send_topic(self, ctx):
+
+        # Check to make sure a topic is set
+        if self.topic:
+            ctx.send(f"Today's topic: {self.topic}")
+        else:
+            ctx.send("A topic is currently not defined.")
+
 
 bot = Bot()
 bot.run()
