@@ -37,22 +37,22 @@ class Bot(commands.Bot):
     async def event_ready(self):
         logger.warning(f"Ready | {self.nick}")
 
-    async def event_message(self, message):
-        logger.debug(f"{message.author.display_name}: {message.content}")
+    async def event_message(self, ctx):
+        logger.debug(f"{ctx.author.display_name}: {ctx.content}")
 
         try:  # Count how many messages a user has sent.
-            self.active_users[message.author.display_name] += 1
+            self.active_users[ctx.author.display_name] += 1
         except KeyError:
-            self.active_users[message.author.display_name] = 1
+            self.active_users[ctx.author.display_name] = 1
         except Exception as e:
             logger.warning(e)
 
         # Check if more members are in the channel, and keep track of maximum
-        if len(message.channel.chatters) > self.max_users:
-            self.max_users = len(message.channel.chatters)
+        if len(ctx.channel.chatters) > self.max_users:
+            self.max_users = len(ctx.channel.chatters)
 
         # Handle any commands issued
-        await self.handle_commands(message)
+        await self.handle_commands(ctx)
 
     @commands.command(name="active")
     async def active_users(self, ctx):
