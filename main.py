@@ -86,6 +86,10 @@ class Bot(commands.Bot):
 
     @commands.command(name="end")
     async def end_of_stream(self, ctx):
+        # Check to make sure only authorized user can use this command
+        if not ctx.author.is_mod:
+            return
+
         await ctx.send(
             f"Thank you to the {len(self.active_users)} user{'s' if len(self.active_users) > 1 else ''} "
             f"that participated in our stream today. We had a total of {self.max_users} chatters with us."
