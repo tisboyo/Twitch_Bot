@@ -30,6 +30,7 @@ class Bot(commands.Bot):
         self.active_users = dict()
         self.max_users = 0
         self.topic = ""
+        self.start_time = None
 
     # Events don't need decorators when subclassed
     async def event_ready(self):
@@ -89,6 +90,18 @@ class Bot(commands.Bot):
             f"Thank you to the {len(self.active_users)} user{'s' if len(self.active_users) > 1 else ''} "
             f"that participated in our stream today. We had a total of {self.max_users} chatters with us."
         )
+
+    @commands.command(name="uptime")
+    async def uptime(self, ctx):
+        # self.start_time is None when a stream is not running.
+        if self.start_time:
+            uptime_delta = datetime.datetime.now() - self.start_time
+            # Format uptime to HH:MM format. Change split to 3 to include seconds.
+            uptime = ":".join(str(uptime_delta).split(":")[:2])
+
+            await ctx.send(f"Stream uptime {uptime}")
+        else:
+            await ctx.send(f"Sorry, a stream hasn't been started yet.")
 
 
 bot = Bot()
