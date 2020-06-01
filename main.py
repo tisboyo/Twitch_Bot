@@ -83,6 +83,13 @@ class Bot(commands.Bot):
             f"Starting stream{':' if len(self.topic) > 0 else ''} {self.topic}"
         )
 
+    @commands.command(name="end")
+    async def end_of_stream_announce(self, ctx):
+        await ctx.send(
+            f"Thank you to the {len(self.active_users)} user{'s' if len(self.active_users) > 1 else ''} "
+            f"that participated in our stream today. We had a total of {self.max_users} chatters with us."
+        )
+
 
 bot = Bot()
 bot.run()
