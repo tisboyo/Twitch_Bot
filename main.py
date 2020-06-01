@@ -31,6 +31,7 @@ class Bot(commands.Bot):
         self.max_users = 0
         self.topic = None
         self.start_time = None
+        self.cooldown = dict()
 
     # Events don't need decorators when subclassed
     async def event_ready(self):
@@ -55,19 +56,27 @@ class Bot(commands.Bot):
 
     @commands.command(name="active")
     async def active_users(self, ctx):
+        # Guard Clause
+        if not ctx.author.is_mod:
+            return
+
         await ctx.send(
             f"I have seen {len(self.active_users)} user{'s' if len(self.active_users) > 1 else ''} since starting."
         )
 
     @commands.command(name="max")
     async def send_max_users(self, ctx):
+        # Guard Clause
+        if not ctx.author.is_mod:
+            return
+
         await ctx.send(
             f"There have been a maximum of {self.max_users} users with us today."
         )
 
     @commands.command(name="start")
     async def start_stream(self, ctx):
-        # Check to make sure only authorized user can use this command
+        # Guard Clause
         if not ctx.author.is_mod:
             return
 
@@ -86,7 +95,7 @@ class Bot(commands.Bot):
 
     @commands.command(name="end")
     async def end_of_stream(self, ctx):
-        # Check to make sure only authorized user can use this command
+        # Guard Clause
         if not ctx.author.is_mod:
             return
 
@@ -106,6 +115,10 @@ class Bot(commands.Bot):
 
     @commands.command(name="uptime")
     async def uptime(self, ctx):
+        # Guard Clause
+        if not self.on_cooldown_check(ctx.author):
+            return
+
         # self.start_time is None when a stream is not running.
         if self.start_time:
             uptime_delta = datetime.datetime.now() - self.start_time
@@ -118,12 +131,43 @@ class Bot(commands.Bot):
 
     @commands.command(name="topic")
     async def send_topic(self, ctx):
+        # Guard Clause
+        if not self.on_cooldown_check(ctx.author):
+            return
 
         # Check to make sure a topic is set
         if self.topic:
             ctx.send(f"Today's topic: {self.topic}")
         else:
             ctx.send("A topic is currently not defined.")
+
+    def on_cooldown_check(self, author):
+        """
+        Cooldown check to keep users from spamming commands
+        """
+
+        # Overrides
+        if author.is_mod:
+            return True
+
+        # Get the users last cooldown check, or return unix epoch if none
+        try:
+            last_cooldown = self.cooldown[author.display_name]
+        except:
+            last_cooldown = datetime.fromtimestamp(0)
+
+        # Grab the current time for math
+        now = datetime.datetime.now()
+
+        # Update the users cooldown
+        self.cooldown[author.display_name] = now
+
+        # Check if the last cooldown was >= 180 seconds ago
+        # and return whether command can run
+        if (now - last_cooldown) >= datetime.timedelta(seconds=180):
+            return True
+        else:
+            return False
 
 
 bot = Bot()
