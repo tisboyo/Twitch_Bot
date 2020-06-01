@@ -1,6 +1,7 @@
 # Twitch bot written for the BaldEngineer channel
 import os
 import logging
+import datetime
 
 from twitchio.ext import commands
 
@@ -28,6 +29,7 @@ class Bot(commands.Bot):
 
         self.active_users = dict()
         self.max_users = 0
+        self.topic = ""
 
     # Events don't need decorators when subclassed
     async def event_ready(self):
@@ -60,6 +62,25 @@ class Bot(commands.Bot):
     async def send_max_users(self, ctx):
         await ctx.send(
             f"There have been a maximum of {self.max_users} users with us today."
+        )
+
+    @commands.command(name="start")
+    async def start_stream(self, ctx):
+        # Check to make sure only authorized user can use this command
+        if not ctx.author.is_mod:
+            return
+
+        self.max_users = 0
+        self.active_users = dict()
+        self.start_time = datetime.datetime.now()
+
+        # Set the topic while stripping out the command
+        self.topic = " ".join(
+            [s for s in ctx.content.split() if not s.startswith(ctx.prefix)]
+        )
+
+        await ctx.send(
+            f"Starting stream{':' if len(self.topic) > 0 else ''} {self.topic}"
         )
 
 
