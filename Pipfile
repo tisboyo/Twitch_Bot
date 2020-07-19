@@ -4,10 +4,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+black = "*"
+pylint = "*"
 
 [packages]
-twitchio = "*"
-black = "*"
+pythontwitchbotframework = "*"
 
 [requires]
 python_version = "3.8"
