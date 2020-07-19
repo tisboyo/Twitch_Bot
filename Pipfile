@@ -9,6 +9,7 @@ pylint = "*"
 
 [packages]
 pythontwitchbotframework = "*"
+aiofile = "*"
 
 [requires]
 python_version = "3.8"
