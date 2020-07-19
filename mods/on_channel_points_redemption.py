@@ -1,6 +1,6 @@
 from twitchbot import event_handler, Event, Message
 
-print("on-channel-points-redemption.py loaded")
+print("on_channel_points_redemption.py loaded")
 
 
 @event_handler(Event.on_channel_points_redemption)
