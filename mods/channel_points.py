@@ -21,7 +21,13 @@ class ChannelPoints(Mod):
         for channel in cfg.channels:
             await get_pubsub().listen_to_channel(
                 channel,
-                [PubSubTopics.channel_points, PubSubTopics.moderation_actions],
+                [
+                    PubSubTopics.channel_points,
+                    PubSubTopics.moderation_actions,
+                    PubSubTopics.bits_v1,
+                    PubSubTopics.channel_subscriptions,
+                    PubSubTopics.bits_badge_notification,
+                ],
                 access_token=cfg.pubsub_oauth,
             )
 
