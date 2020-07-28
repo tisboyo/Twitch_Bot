@@ -145,3 +145,9 @@ configs/
 keys.py
 
 *.7z
+
+#sound file
+error.wav
+
+#adafruit IO stuff
+aio_secrets.py
