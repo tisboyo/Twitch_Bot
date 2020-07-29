@@ -14,6 +14,8 @@ ADAFRUIT_IO_USERNAME = secrets["ADAFRUIT_IO_USERNAME"]
 AIO_CONNECTION_STATE = False
 aio =""
 
+ATTN_ENABLE = True
+
 def connect_to_aio():
 	global AIO_CONNECTION_STATE
 	global aio
