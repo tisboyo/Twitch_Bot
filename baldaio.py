@@ -27,6 +27,16 @@ def connect_to_aio():
 		print("Failed to connect to AIO, disabling it")
 		AIO_CONNECTION_STATE = False
 
+def push_attn(feed='twitch-attn-indi'):
+	global AIO_CONNECTION_STATE
+	global aio
+	if (AIO_CONNECTION_STATE == False):
+		print("Not even trying, we aren't connected")
+		return
+	aio.send_data(feed, 1)
+	return
+
+
 
 def increment_feed(feed='treat-counter-text'):
 	global AIO_CONNECTION_STATE
@@ -45,4 +55,4 @@ def increment_feed(feed='treat-counter-text'):
 
 
 connect_to_aio()
-increment_feed()
+#increment_feed()

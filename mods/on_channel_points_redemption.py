@@ -1,6 +1,8 @@
 from twitchbot import event_handler, Event, Message
 from playsound import playsound
 
+import baldaio
+
 print("on_channel_points_redemption.py loaded")
 
 
@@ -24,13 +26,11 @@ async def on_channel_points_redemption(msg: Message, reward: str):
         print("Unhandled reward.")
         pass
 
-def prepare_dispense_treat():
-    task = loop.create_task(dispense_treat())
-    loop.run_until_complete(task)
-
 def dispense_treat():
+    baldaio.increment_feed(feed='treat-counter-text')
     print("Dispensing a treat!")
 
 def attention_attention():
     print("Hey!!!")
-    playsound('error.wav')
+    baldaio.push_attn(feed='twitch-attn-indi')
+#   playsound('error.wav')
