@@ -3,6 +3,9 @@ import asyncio
 import pprint
 from aiofile import AIOFile
 
+import baldaio
+from main import ATTN_ENABLE
+
 # from os import getenv
 
 
@@ -15,6 +18,7 @@ class ChannelPoints(Mod):
         self.redemptions = {
             "highlighted-message": self.highlighted_message,
             "Give BaldEngineer a treat.": self.dispense_treat,
+            "Get His Attention!": self.attention_attention,
         }
 
     async def loaded(self):
@@ -24,7 +28,7 @@ class ChannelPoints(Mod):
                 [
                     PubSubTopics.channel_points,
                     PubSubTopics.moderation_actions,
-                    PubSubTopics.bits_v1,
+                    PubSubTopics.bits,
                     PubSubTopics.channel_subscriptions,
                     PubSubTopics.bits_badge_notification,
                 ],
@@ -65,7 +69,16 @@ class ChannelPoints(Mod):
             print(f"Unknown reward redeemed - '{reward}'")
 
     async def dispense_treat(self):
+        baldaio.increment_feed(feed="treat-counter-text")
         print("Dispensing a treat!")
+
+    async def attention_attention(self):
+        print("Hey!!!")
+        print(ATTN_ENABLE)
+        if ATTN_ENABLE == True:
+            baldaio.push_attn(feed="twitch-attn-indi")
+        else:
+            print("Shhhhh....")
 
     async def highlighted_message(self):
         print("Highlighted message.")
