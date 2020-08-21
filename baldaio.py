@@ -29,6 +29,15 @@ def connect_to_aio():
 		print("Failed to connect to AIO, disabling it")
 		AIO_CONNECTION_STATE = False
 
+def push_treat(feed='dispense-treat-toggle'):
+	global AIO_CONNECTION_STATE
+	global aio
+	if (AIO_CONNECTION_STATE == False):
+		print("Not even trying, we aren't connected")
+		return("Failed")
+	aio.send_data(feed, 1)
+	return("Succeed")
+
 def push_attn(feed='twitch-attn-indi'):
 	global AIO_CONNECTION_STATE
 	global aio

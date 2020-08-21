@@ -28,7 +28,7 @@ class ChannelPoints(Mod):
                 [
                     PubSubTopics.channel_points,
                     PubSubTopics.moderation_actions,
-                    PubSubTopics.bits_v1,
+                    PubSubTopics.bits,
                     PubSubTopics.channel_subscriptions,
                     PubSubTopics.bits_badge_notification,
                 ],
