@@ -11,6 +11,7 @@ pylint = "*"
 pythontwitchbotframework = "*"
 aiofile = "*"
 aiohttp = "==3.6.2"
+adafruit-io = "*"
 
 [requires]
 python_version = "3.8"
