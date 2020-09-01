@@ -59,11 +59,11 @@ class AutoMessageStarterMod(Mod):
             sorted_data = sorted(data.items(), key=lambda x: x[1])
 
             # Grab the message text
-            message = "🤖" + sorted_data[0][0]
+            message = sorted_data[0][0]
 
             # Send the message
             chan = cfg.channels[0]
-            await channels[chan].send_message(message)
+            await channels[chan].send_message("🤖" + message)
 
             # Update the last time sent of the message
             data[message] = str(datetime.now())
