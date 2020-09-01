@@ -13,6 +13,8 @@ from aiofile import AIOFile
 import json
 from datetime import datetime
 
+json_file = "messages.json"
+
 
 class AutoMessageStarterMod(Mod):
     name = "automsg"
@@ -22,13 +24,13 @@ class AutoMessageStarterMod(Mod):
     async def load_json_file(self) -> dict:
         # Load the data file
         try:
-            async with AIOFile("messages.json", "r") as afp:
+            async with AIOFile(json_file, "r") as afp:
                 data = json.loads(await afp.read())
                 return data
 
         except FileNotFoundError:
             # Create the file because it didn't exist and return an empty dictionary
-            async with AIOFile("messages.json", "w+") as afp:
+            async with AIOFile(json_file, "w+") as afp:
                 await afp.write(json.dumps({}))
 
             return dict()
@@ -36,7 +38,7 @@ class AutoMessageStarterMod(Mod):
     async def save_json_file(self, data) -> None:
         # Write the messages back to the file
         try:
-            async with AIOFile("messages.json", "w+") as afp:
+            async with AIOFile(json_file, "w+") as afp:
                 await afp.write(json.dumps(data))
 
         except FileNotFoundError as e:
