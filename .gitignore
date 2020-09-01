@@ -151,3 +151,6 @@ error.wav
 
 #adafruit IO stuff
 aio_secrets.py
+
+#data files
+messages.json
