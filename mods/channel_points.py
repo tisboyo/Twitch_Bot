@@ -1,10 +1,10 @@
 from twitchbot import cfg, Mod, Message, Event, PubSubData, get_pubsub, PubSubTopics
 import asyncio
-import pprint
+
 from aiofile import AIOFile
 
 import baldaio
-from main import ATTN_ENABLE
+from main import AddOhmsBot
 
 # from os import getenv
 
@@ -74,8 +74,8 @@ class ChannelPoints(Mod):
 
     async def attention_attention(self):
         print("Hey!!!")
-        print(ATTN_ENABLE)
-        if ATTN_ENABLE == True:
+        print(AddOhmsBot.ATTN_ENABLE)
+        if AddOhmsBot.ATTN_ENABLE == True:
             baldaio.push_attn(feed="twitch-attn-indi")
         else:
             print("Shhhhh....")
