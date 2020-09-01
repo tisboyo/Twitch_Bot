@@ -11,6 +11,9 @@
             "program": "main.py",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            }
         },
         {
             "name": "Python: Current File",
@@ -19,6 +22,9 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            }
         }
     ]
 }
