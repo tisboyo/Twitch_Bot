@@ -1,4 +1,13 @@
-from twitchbot import cfg, Mod, Message, Event, PubSubData, get_pubsub, PubSubTopics
+from twitchbot import (
+    cfg,
+    Mod,
+    Message,
+    Event,
+    PubSubData,
+    get_pubsub,
+    PubSubTopics,
+    channels,
+)
 import asyncio
 
 from aiofile import AIOFile
@@ -69,14 +78,24 @@ class ChannelPoints(Mod):
             print(f"Unknown reward redeemed - '{reward}'")
 
     async def dispense_treat(self):
-        baldaio.increment_feed(feed="treat-counter-text")
+        if not baldaio.increment_feed(feed="treat-counter-text"):
+            chan = cfg.channels[0]
+            await channels[chan].send_message(
+                "🤖Something went wrong dispensing a treat. ☹️"
+            )
+
         print("Dispensing a treat!")
 
     async def attention_attention(self):
         print("Hey!!!")
         print(AddOhmsBot.ATTN_ENABLE)
         if AddOhmsBot.ATTN_ENABLE == True:
-            baldaio.push_attn(feed="twitch-attn-indi")
+            if not baldaio.push_attn(feed="twitch-attn-indi"):
+                chan = cfg.channels[0]
+                await channels[chan].send_message(
+                    "🤖Something went wrong getting my attention. ☹️"
+                )
+
         else:
             print("Shhhhh....")
 

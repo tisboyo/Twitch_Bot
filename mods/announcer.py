@@ -57,7 +57,7 @@ class AutoMessageStarterMod(Mod):
             sorted_data = sorted(data.items(), key=lambda x: x[1])
 
             # Grab the message text
-            message = sorted_data[0][0]
+            message = "🤖" + sorted_data[0][0]
 
             # Send the message
             chan = cfg.channels[0]
