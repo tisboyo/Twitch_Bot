@@ -57,5 +57,5 @@ class TwitchLog(Mod):
     async def on_channel_points_redemption(self, msg: Message, reward: str):
         """Log channel points redemptions"""
         channel_point_data = await load_data("channel_points")
-        channel_point_data[datetime.now.isoformat()] = (msg.author, msg.msg_id, msg.raw_msg, msg.normalized_content)
+        channel_point_data[datetime.now().isoformat()] = (msg.author, msg.msg_id, msg.raw_msg, msg.normalized_content)
         await save_data("channel_points", channel_point_data)
