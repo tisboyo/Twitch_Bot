@@ -12,6 +12,7 @@ class TwitchLog(Mod):
     def __init__(self):
         super().__init__()
         print("TwitchLog loaded")
+        self.user_data = dict()
 
     async def on_raw_message(self, msg: Message):
 
