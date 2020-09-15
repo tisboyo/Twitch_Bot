@@ -153,5 +153,4 @@ error.wav
 aio_secrets.py
 
 #data files
-messages.json
-topic.json
+*.json
