@@ -2,13 +2,14 @@ import asyncio
 from aiofile import AIOFile
 import json
 import datetime
+from twitchbot import cfg
 
 
-async def load_data(json_file: str) -> dict:
+async def load_data(json_file: str, channel: str = cfg.channels[0]) -> dict:
     """Load the data file"""
 
     # Add the file extension
-    json_file = f"jsons/{json_file}.json"
+    json_file = f"jsons/{channel}-{json_file}.json"
 
     try:
         async with AIOFile(json_file, "r") as afp:
@@ -23,14 +24,14 @@ async def load_data(json_file: str) -> dict:
         return dict()
 
 
-async def save_data(json_file: str, data: dict) -> None:
+async def save_data(json_file: str, data: dict, channel: str = cfg.channels[0]) -> None:
     """Write the messages back to the file"""
     # Add the file extension
     if json_file[-5:] != ".json":
         json_file = f"{json_file}.json"
 
     # Prepend the folder name
-    json_file = f"jsons/{json_file}"
+    json_file = f"jsons/{channel}-{json_file}"
 
     try:
         dump = json.dumps(data, indent=4, default=json_object_helper)
