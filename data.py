@@ -26,7 +26,11 @@ async def load_data(json_file: str) -> dict:
 async def save_data(json_file: str, data: dict) -> None:
     """Write the messages back to the file"""
     # Add the file extension
-    json_file = f"jsons/{json_file}.json"
+    if json_file[-5:] != ".json":
+        json_file = f"{json_file}.json"
+
+    # Prepend the folder name
+    json_file = f"jsons/{json_file}"
 
     try:
         dump = json.dumps(data, indent=4, default=json_object_helper)
