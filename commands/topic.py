@@ -2,38 +2,14 @@ from twitchbot import Command
 import asyncio
 from aiofile import AIOFile
 import json
+from data import save_data, load_data
 
-json_file = "topic.json"
-
-
-async def load_json_file() -> dict:
-    # Load the data file
-    try:
-        async with AIOFile(json_file, "r") as afp:
-            data = json.loads(await afp.read())
-            return data
-
-    except FileNotFoundError:
-        # Create the file because it didn't exist and return an empty dictionary
-        async with AIOFile(json_file, "w+") as afp:
-            await afp.write(json.dumps({}))
-
-        return dict()
-
-
-async def save_json_file(data) -> None:
-    # Write the messages back to the file
-    try:
-        async with AIOFile(json_file, "w+") as afp:
-            await afp.write(json.dumps(data))
-
-    except FileNotFoundError as e:
-        print(e)
+save_file = "topic"
 
 
 @Command("topic")
 async def topic(msg, *args):
-    topic = await load_json_file()
+    topic = await load_data(save_file)
     try:
         await msg.reply(topic["topic"])
     except KeyError:
@@ -50,5 +26,5 @@ async def set_topic(msg, *args):
 
     topic_d = {"topic": topic}
 
-    await save_json_file(topic_d)
+    await save_data(save_file, topic_d)
     await msg.reply("🤖Topic set.")
