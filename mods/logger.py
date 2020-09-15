@@ -17,7 +17,7 @@ class TwitchLog(Mod):
     async def on_raw_message(self, msg: Message):
 
         if True:
-            async with AIOFile(f"irc_logs/{date.today().isoformat()}-irc.log", "a") as afp:
+            async with AIOFile(f"irc_logs/{date.today().isoformat()}-{msg.channel_name}.log", "a") as afp:
                 await afp.write(f"{datetime.now().isoformat()}:{msg} \n")
                 await afp.fsync()
 
