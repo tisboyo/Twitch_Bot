@@ -12,6 +12,7 @@ from asyncio import sleep
 from aiofile import AIOFile
 import json
 from datetime import datetime
+from data import load_data, save_data
 
 json_file = "messages.json"
 
@@ -19,6 +20,7 @@ json_file = "messages.json"
 class AutoMessageStarterMod(Mod):
     name = "automsg"
     task_name = "automessage"
+    __savefile = "announcements"
 
     def __init__(self):
         self.enable = True
@@ -34,29 +36,6 @@ class AutoMessageStarterMod(Mod):
         self.__delay = int(time)
         print(f"Announcement message delay is {self.delay} seconds")
 
-    async def load_json_file(self) -> dict:
-        # Load the data file
-        try:
-            async with AIOFile(json_file, "r") as afp:
-                data = json.loads(await afp.read())
-                return data
-
-        except FileNotFoundError:
-            # Create the file because it didn't exist and return an empty dictionary
-            async with AIOFile(json_file, "w+") as afp:
-                await afp.write(json.dumps({}))
-
-            return dict()
-
-    async def save_json_file(self, data) -> None:
-        # Write the messages back to the file
-        try:
-            async with AIOFile(json_file, "w+") as afp:
-                await afp.write(json.dumps(data))
-
-        except FileNotFoundError as e:
-            print(e)
-
     async def timer_loop(self):
         while True:
             await sleep(self.delay)
@@ -64,7 +43,7 @@ class AutoMessageStarterMod(Mod):
             # if done as a while enabled
             if self.enable:
 
-                data = await self.load_json_file()
+                data = await load_data(self.__savefile)
 
                 # Make sure there are entries in the dictioary
                 if len(data) == 0:
@@ -83,7 +62,7 @@ class AutoMessageStarterMod(Mod):
                 # Update the last time sent of the message
                 data[message] = str(datetime.now())
 
-                await self.save_json_file(data)
+                await save_data(self.__savefile, data)
 
     @ModCommand(name, "announce_enable", permission="admin")
     async def announce_enable(self, msg, *args):
@@ -119,9 +98,9 @@ class AutoMessageStarterMod(Mod):
 
         print(f"Adding to announce: {message}", end="")
 
-        data = await self.load_json_file()
+        data = await load_data(self.__savefile)
         data[message] = str(0)
-        await self.save_json_file(data)
+        await save_data(self.__savefile, data)
         print("...done")
 
     def restart_task(self):
