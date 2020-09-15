@@ -1,4 +1,4 @@
-from twitchbot import cfg, Mod, Message, Event, PubSubData, get_pubsub, PubSubTopics, channels, Channel
+from twitchbot import cfg, Mod, Message, Event, get_pubsub, PubSubData, PubSubBits, PubSubTopics, channels, Channel
 import asyncio
 
 from aiofile import AIOFile
@@ -28,7 +28,6 @@ class MqttNotifications(Mod):
         """Send MQTT push when a new follower subscribes"""
         pass
 
-    async def on_pubsub_bits(self, raw: "PubSubData", data: "PubSubBits") -> None:
+    async def on_pubsub_bits(self, raw: PubSubData, data: PubSubBits) -> None:
         """Send MQTT push when a user redeems bits"""
         pass
-
