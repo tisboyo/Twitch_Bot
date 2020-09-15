@@ -68,9 +68,7 @@ class AutoMessageStarterMod(Mod):
     async def announce_enable(self, msg, *args):
         self.enable = True
         print("Enabling announcements.")
-        await channels[self.chan].send_message(
-            "🤖Announcements, announcements, ANNOUNCEMENTS!"
-        )
+        await channels[self.chan].send_message("🤖Announcements, announcements, ANNOUNCEMENTS!")
 
     @ModCommand(name, "announce_disable", permission="admin")
     async def announce_disable(self, msg, *args):

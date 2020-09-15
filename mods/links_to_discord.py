@@ -41,9 +41,7 @@ class LinksToDiscord(Mod):
         if len(urls):
             for each in urls:
                 async with aiohttp.ClientSession() as session:
-                    response = await session.post(
-                        webhook, json={"content": each, "username": "TwitchBot"}
-                    )
+                    response = await session.post(webhook, json={"content": each, "username": "TwitchBot"})
                     if response.status == 204:
                         message = "Thanks for the link, I posted it to discord."
                         await channels[cfg.channels[0]].send_message("🤖" + message)

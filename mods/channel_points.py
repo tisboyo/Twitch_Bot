@@ -80,9 +80,7 @@ class ChannelPoints(Mod):
     async def dispense_treat(self):
         if not baldaio.increment_feed(feed="treat-counter-text"):
             chan = cfg.channels[0]
-            await channels[chan].send_message(
-                "🤖Something went wrong dispensing a treat. ☹️"
-            )
+            await channels[chan].send_message("🤖Something went wrong dispensing a treat. ☹️")
 
         print("Dispensing a treat!")
 
@@ -92,13 +90,10 @@ class ChannelPoints(Mod):
         if AddOhmsBot.ATTN_ENABLE == True:
             if not baldaio.push_attn(feed="twitch-attn-indi"):
                 chan = cfg.channels[0]
-                await channels[chan].send_message(
-                    "🤖Something went wrong getting my attention. ☹️"
-                )
+                await channels[chan].send_message("🤖Something went wrong getting my attention. ☹️")
 
         else:
             print("Shhhhh....")
 
     async def highlighted_message(self):
         print("Highlighted message.")
-
