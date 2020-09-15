@@ -5,7 +5,7 @@ from datetime import datetime, date
 
 from data import load_data, save_data
 
-from twitchbot import Event, Message, Mod, cfg
+from twitchbot import Event, Message, Mod, cfg, Channel
 
 
 class TwitchLog(Mod):
@@ -17,9 +17,7 @@ class TwitchLog(Mod):
     async def on_raw_message(self, msg: Message):
 
         if True:
-            async with AIOFile(
-                f"irc_logs/{date.today().isoformat()}-irc.log", "a"
-            ) as afp:
+            async with AIOFile(f"irc_logs/{date.today().isoformat()}-irc.log", "a") as afp:
                 await afp.write(f"{datetime.now().isoformat()}:{msg} \n")
                 await afp.fsync()
 
@@ -46,4 +44,13 @@ class TwitchLog(Mod):
         print("Loading user data from json file...", end="")
         self.user_data = await load_data("user")
         print("done")
+
+    async def on_channel_raided(self, channel: Channel, raider: str, viewer_count: int) -> None:
+        """Log channel raid"""
+
+        raid_data = await load_data("raided")
+
+        raid_data[datetime.now().isoformat()] = (raider, viewer_count)
+
+        await save_data("raided", raid_data)
 
