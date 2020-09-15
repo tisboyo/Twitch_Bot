@@ -1,13 +1,5 @@
-from twitchbot import (
-    cfg,
-    Mod,
-    Message,
-    Event,
-    PubSubData,
-    get_pubsub,
-    PubSubTopics,
-    channels,
-)
+from twitchbot import cfg, Mod, Message, Event, PubSubData, channels
+
 import asyncio
 
 from aiofile import AIOFile
@@ -29,20 +21,6 @@ class ChannelPoints(Mod):
             "Give BaldEngineer a treat.": self.dispense_treat,
             "Get His Attention!": self.attention_attention,
         }
-
-    async def loaded(self):
-        for channel in cfg.channels:
-            await get_pubsub().listen_to_channel(
-                channel,
-                [
-                    PubSubTopics.channel_points,
-                    PubSubTopics.moderation_actions,
-                    PubSubTopics.bits,
-                    PubSubTopics.channel_subscriptions,
-                    PubSubTopics.bits_badge_notification,
-                ],
-                access_token=cfg.pubsub_oauth,
-            )
 
     async def on_channel_points_redemption(self, msg: Message, reward: str):
         await self.points_redeemed(reward)
