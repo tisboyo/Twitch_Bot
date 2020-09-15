@@ -7,8 +7,6 @@ from aiofile import AIOFile
 import baldaio
 from main import AddOhmsBot
 
-# from os import getenv
-
 
 class ChannelPoints(Mod):
     def __init__(self):
@@ -27,13 +25,6 @@ class ChannelPoints(Mod):
 
     async def on_pubsub_received(self, raw: PubSubData):
 
-        # Dump to a log file
-        if True:
-            async with AIOFile("pubsub.log", "a") as afp:
-                data = str(raw.raw_data)
-                await afp.write(data + "\n")
-                await afp.fsync()
-
         if len(raw.message_data) == 0:
             # Happens at startup, and possibly other times.
             return
@@ -46,6 +37,7 @@ class ChannelPoints(Mod):
             print(raw.message_data)
 
     async def points_redeemed(self, reward: str):
+
         print("Redemption".center(80, "*"))
         try:
             # Call the function for the reward that was redeemed.

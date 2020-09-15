@@ -5,7 +5,7 @@ from datetime import datetime, date
 
 from data import load_data, save_data
 
-from twitchbot import Event, Message, Mod, cfg, Channel
+from twitchbot import Event, Message, Mod, cfg, Channel, PubSubData
 
 
 class TwitchLog(Mod):
@@ -59,3 +59,11 @@ class TwitchLog(Mod):
         channel_point_data = await load_data("channel_points")
         channel_point_data[datetime.now().isoformat()] = (msg.author, msg.msg_id, msg.raw_msg, msg.normalized_content)
         await save_data("channel_points", channel_point_data)
+
+    async def on_pubsub_received(self, raw: PubSubData):
+        # Dump to a log file
+        async with AIOFile("pubsub.log", "a") as afp:
+            data = f"{datetime.now().isoformat()}:{raw.raw_data}"
+            await afp.write(data + "\n")
+            await afp.fsync()
+
