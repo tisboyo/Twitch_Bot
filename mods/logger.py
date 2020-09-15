@@ -67,3 +67,8 @@ class TwitchLog(Mod):
             await afp.write(data + "\n")
             await afp.fsync()
 
+    async def on_pubsub_bits(self, raw: PubSubData, data: "PubSubBits") -> None:
+        """Send MQTT push when a user redeems bits"""
+        bits = await load_data("bits")
+        bits[datetime.now().isoformat()] = (raw, data)
+        await save_data("bits", bits)
