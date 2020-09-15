@@ -1,6 +1,7 @@
 import asyncio
 from aiofile import AIOFile
 import json
+import datetime
 
 
 async def load_data(json_file: str) -> dict:
@@ -28,8 +29,14 @@ async def save_data(json_file: str, data: dict) -> None:
     json_file = f"jsons/{json_file}.json"
 
     try:
+        dump = json.dumps(data, indent=4, default=json_object_helper)
         async with AIOFile(json_file, "w+") as afp:
-            await afp.write(json.dumps(data))
+            await afp.write(dump)
 
     except FileNotFoundError as e:
         print(e)
+
+
+def json_object_helper(object):
+    if isinstance(object, (datetime.date, datetime.datetime)):
+        return object.isoformat()
