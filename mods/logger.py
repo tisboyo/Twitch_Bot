@@ -1,11 +1,9 @@
-import asyncio
 from aiofile import AIOFile
-import json
 from datetime import datetime, date
 
 from data import load_data, save_data
 
-from twitchbot import Event, Message, Mod, cfg, Channel, PubSubData
+from twitchbot import Message, Mod, Channel, PubSubData
 
 
 class TwitchLog(Mod):
@@ -26,7 +24,7 @@ class TwitchLog(Mod):
             return
 
         # Create an empty object if the user is new
-        if not msg.author in self.user_data:
+        if msg.author not in self.user_data:
             self.user_data[msg.author] = {"last_message": None, "message_count": 0}
 
         author = self.user_data[msg.author]
@@ -67,7 +65,7 @@ class TwitchLog(Mod):
             await afp.write(data + "\n")
             await afp.fsync()
 
-    async def on_pubsub_bits(self, raw: PubSubData, data: "PubSubBits") -> None:
+    async def on_pubsub_bits(self, raw: PubSubData, data) -> None:
         """Send MQTT push when a user redeems bits"""
         bits = await load_data("bits")
         bits[datetime.now().isoformat()] = (raw, data)
