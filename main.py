@@ -1,16 +1,17 @@
 from twitchbot.bots import BaseBot
-from twitchbot import Command
 
-import baldaio
+from baldaio import AIO
 
 
 class AddOhmsBot(BaseBot):
 
-    AIO_CONNECTION_STATE = False
-    ATTN_ENABLE = True
+    # Establish the Adafruit.IO handle to use by plugins
+    aio = AIO()
 
     def __init__(self):
         super().__init__()
+        # Connect to Adafruit.IO
+        self.aio.connect_to_aio()
 
 
 if __name__ == "__main__":

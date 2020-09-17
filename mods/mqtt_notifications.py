@@ -1,8 +1,8 @@
 from twitchbot import Mod, Message, PubSubData, Channel
 
-import baldaio
 
-# from main import AddOhmsBot
+from main import AddOhmsBot
+
 # from data import save_data, load_data
 
 
