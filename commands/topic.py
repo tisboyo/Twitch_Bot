@@ -1,4 +1,4 @@
-from twitchbot import Command
+from twitchbot import Command, CommandContext
 
 from data import save_data, load_data
 
@@ -15,7 +15,7 @@ async def topic(msg, *args):
         await msg.reply("No current topic.")
 
 
-@Command("set_topic", permission="admin")
+@Command("set_topic", permission="admin", context=CommandContext.BOTH)
 async def set_topic(msg, *args):
 
     topic = ""
