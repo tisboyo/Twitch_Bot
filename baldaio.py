@@ -20,31 +20,39 @@ class AIO:
         self.ADAFRUIT_IO_KEY = secrets.get("ADAFRUIT_IO_KEY", False) or cfg.adafruit_io_key
 
         # The connection handle for making calls
-        self.__adafruit_io = None
+        self.__client = None
 
         # Default to not connected
         self.AIO_CONNECTION_STATE = False
         self.ATTN_ENABLE = True
+        print("init " + str(id(self)))
 
     def connect_to_aio(self):
         """Connect to Adafruit.IO"""
         # Create an instance of the REST client.
+        print("connect " + str(id(self)))
         try:
             print("Atempting to connect to AIO as " + self.ADAFRUIT_IO_USERNAME)
-            self.__adafruit_io = Client(self.ADAFRUIT_IO_USERNAME, self.ADAFRUIT_IO_KEY)
+            self.__client = Client(self.ADAFRUIT_IO_USERNAME, self.ADAFRUIT_IO_KEY)
             print("Connected to Adafruit.IO")
             self.AIO_CONNECTION_STATE = True
         except Exception:
             print("Failed to connect to AIO, disabling it")
             self.AIO_CONNECTION_STATE = False
 
-    def send(self, feed):
+    def send(self, feed, value=1):
         """Send to an AdafruitIO topic"""
+        print(id(self))
         if self.AIO_CONNECTION_STATE is False:
-            print("Not even trying, we aren't connected")
             return False
+            try:
+                self.connect_to_aio()
+            except Exception as e:
+                print(e)
+                print("Not even trying, we aren't connected")
+                return False
         try:
-            self.__adafruit_io.send_data(feed, 1)
+            self.__client.send_data(feed, value)
             return True
         except RequestError as e:
             print(e)
