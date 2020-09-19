@@ -42,14 +42,11 @@ class AIO:
 
     def send(self, feed, value=1):
         """Send to an AdafruitIO topic"""
-        print(id(self))
         if self.AIO_CONNECTION_STATE is False:
-            return False
             try:
                 self.connect_to_aio()
             except Exception as e:
                 print(e)
-                print("Not even trying, we aren't connected")
                 return False
         try:
             self.__client.send_data(feed, value)
