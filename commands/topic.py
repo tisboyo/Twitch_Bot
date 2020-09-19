@@ -1,7 +1,5 @@
 from twitchbot import Command
-import asyncio
-from aiofile import AIOFile
-import json
+
 from data import save_data, load_data
 
 save_file = "topic"
