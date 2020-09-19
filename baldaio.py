@@ -1,4 +1,5 @@
 # Import standard python modules
+from typing import Union
 
 # from main import AddOhmsBot
 from twitchbot import cfg
@@ -39,7 +40,7 @@ class AIO:
             print("Failed to connect to AIO, disabling it")
             self.AIO_CONNECTION_STATE = False
 
-    def send(self, feed, value=1):
+    def send(self, feed, value: Union[str, int] = 1):
         """Send to an AdafruitIO topic"""
         if self.AIO_CONNECTION_STATE is False:
             try:
