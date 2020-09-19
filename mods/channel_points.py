@@ -1,10 +1,5 @@
-from twitchbot import cfg, Mod, Message, Event, PubSubData, channels
+from twitchbot import cfg, Mod, Message, PubSubData, channels
 
-import asyncio
-
-from aiofile import AIOFile
-
-import baldaio
 from main import AddOhmsBot
 
 
@@ -47,20 +42,21 @@ class ChannelPoints(Mod):
             # Don't have a function for the reward that was redeemed.
             print(f"Unknown reward redeemed - '{reward}'")
 
-    async def dispense_treat(self):
-        if not baldaio.increment_feed(feed="treat-counter-text"):
-            chan = cfg.channels[0]
-            await channels[chan].send_message("🤖Something went wrong dispensing a treat. ☹️")
+    async def dispense_treat(self, channel=cfg.channels[0]):
+        if AddOhmsBot.AIO.send("dispense-treat-toggle"):
+            await channels[channel].send_message("🤖Teleporting a treat")
+        else:
+            # chan = cfg.channels[0]
+            await channels[channel].send_message("🤖I couldn't do that at the moment. Sorry ☹️")
 
         print("Dispensing a treat!")
 
-    async def attention_attention(self):
+    async def attention_attention(self, channel=cfg.channels[0]):
         print("Hey!!!")
-        print(AddOhmsBot.ATTN_ENABLE)
-        if AddOhmsBot.ATTN_ENABLE == True:
-            if not baldaio.push_attn(feed="twitch-attn-indi"):
-                chan = cfg.channels[0]
-                await channels[chan].send_message("🤖Something went wrong getting my attention. ☹️")
+        if AddOhmsBot.ATTN_ENABLE:
+            if not AddOhmsBot.AIO.send("twitch-attn-indi"):
+                # chan = cfg.channels[0]
+                await channels[channel].send_message("🤖Something went wrong getting my attention. ☹️")
 
         else:
             print("Shhhhh....")
