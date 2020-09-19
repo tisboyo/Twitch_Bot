@@ -25,7 +25,6 @@ class AIO:
         # Default to not connected
         self.AIO_CONNECTION_STATE = False
         self.ATTN_ENABLE = True
-        print("init " + str(id(self)))
 
     def connect_to_aio(self):
         """Connect to Adafruit.IO"""
