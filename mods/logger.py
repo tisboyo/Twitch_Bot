@@ -69,13 +69,13 @@ class TwitchLog(Mod):
         """Send MQTT push when a us4er redeems bits"""
         """
         print(raw.message_dict)
-        {'data': 
-            {'user_name': 'tisboyo', 'channel_name': 'baldengineer', 
-            'user_id': '461713054', 'channel_id': '125957551', 'time': '2020-09-20T02:48:34.819702158Z', 
-            'chat_message': 'cheer1', 'bits_used': 1, 'total_bits_used': 2, 
-            'is_anonymous': False, 'context': 'cheer', 'badge_entitlement': None}, 
-        'version': '1.0', 
-        'message_type': 'bits_event', 
+        {'data':
+            {'user_name': 'tisboyo', 'channel_name': 'baldengineer',
+            'user_id': '461713054', 'channel_id': '125957551', 'time': '2020-09-20T02:48:34.819702158Z',
+            'chat_message': 'cheer1', 'bits_used': 1, 'total_bits_used': 2,
+            'is_anonymous': False, 'context': 'cheer', 'badge_entitlement': None},
+        'version': '1.0',
+        'message_type': 'bits_event',
         'message_id': '5a2da2f4-a6b5-5d23-b7cc-839a3ea5140c'
         }
         """
