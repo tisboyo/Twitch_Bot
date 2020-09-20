@@ -1,5 +1,5 @@
 from twitchbot import Mod, Message, PubSubData, Channel
-
+from json import dumps
 
 from main import AddOhmsBot
 
@@ -34,7 +34,9 @@ class MqttNotifications(Mod):
     async def on_pubsub_bits(self, raw: PubSubData, data) -> None:
         """Send MQTT push when a user redeems bits"""
         # No usable data provided in raw or data :(
-        if AddOhmsBot.AIO.send("channel-cheer"):
+        send_data = dumps({"username": data.username, "bits": data.bits_used, "total_bits": data.total_bits_used})
+
+        if AddOhmsBot.AIO.send("channel-cheer", send_data):
             print("Cheer announced to AIO")
         else:
             print("Unable to announce Cheer to AIO")
