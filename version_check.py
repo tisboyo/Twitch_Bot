@@ -10,6 +10,6 @@ if NEEDED_VERSION > BOT_VERSION:
     print("PythonTwitchBotFramework needs to be updated ")
     print(f"Current version: {BOT_VERSION}")
     print(f"Needed version: {NEEDED_VERSION}")
-    print("Run pipenv update.")
+    print("Run pipenv install")
     print("".center(80, "*"))
     _exit(0)
