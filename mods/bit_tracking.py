@@ -21,4 +21,3 @@ class BitTracking(Mod):
         self.user_data[data.username] = user
 
         await save_data(self.file_name, self.user_data)
-        print(self.user_data)
