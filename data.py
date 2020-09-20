@@ -1,4 +1,3 @@
-import asyncio
 from aiofile import AIOFile
 import json
 import datetime
