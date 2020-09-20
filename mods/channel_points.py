@@ -27,9 +27,12 @@ class ChannelPoints(Mod):
         elif raw.is_channel_points_redeemed:
             r = raw.message_data["redemption"]["reward"]["title"]
             await self.points_redeemed(r)
+        elif raw.is_bits:
+            # Bits received, nothing to do here
+            pass
         else:
             # Unknown pubsub received, print out the data
-            print(raw.message_data)
+            print(f"Unknown pubsub received: {raw.message_data}")
 
     async def points_redeemed(self, reward: str):
 
