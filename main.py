@@ -1,3 +1,5 @@
+import version_check  # noqa: F401
+
 from twitchbot.bots import BaseBot
 
 from baldaio import AIO as Adafruit_IO
