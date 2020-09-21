@@ -65,8 +65,12 @@ class AutoMessageStarterMod(Mod):
         await channels[self.chan].send_message("🤖Disabling announcements")
 
     @ModCommand(name, "announce_time", permission="admin")
-    async def announce_time(self, msg, time: int):
+    async def announce_time(self, msg, time: int = 0):
         try:
+            # Make sure we receive a positive number
+            if int(time) < 1:
+                raise ValueError
+
             self.delay = int(time)
             self.restart_task()
             await msg.reply(f"🤖New announce time is {time} seconds")
