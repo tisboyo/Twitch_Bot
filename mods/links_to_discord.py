@@ -1,6 +1,10 @@
-from twitchbot import cfg, Mod, channels, Message
 import re
+
 import aiohttp
+from twitchbot import cfg
+from twitchbot import channels
+from twitchbot import Message
+from twitchbot import Mod
 
 
 class LinksToDiscord(Mod):

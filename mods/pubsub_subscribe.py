@@ -1,4 +1,7 @@
-from twitchbot import cfg, Mod, get_pubsub, PubSubTopics
+from twitchbot import cfg
+from twitchbot import get_pubsub
+from twitchbot import Mod
+from twitchbot import PubSubTopics
 
 
 class PubSub(Mod):

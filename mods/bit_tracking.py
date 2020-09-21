@@ -1,6 +1,8 @@
-from data import load_data, save_data
+from twitchbot import Mod
+from twitchbot import PubSubData
 
-from twitchbot import Mod, PubSubData
+from data import load_data
+from data import save_data
 
 
 class BitTracking(Mod):

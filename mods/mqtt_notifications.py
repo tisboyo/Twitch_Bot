@@ -1,5 +1,9 @@
-from twitchbot import Mod, Message, PubSubData, Channel
 from json import dumps
+
+from twitchbot import Channel
+from twitchbot import Message
+from twitchbot import Mod
+from twitchbot import PubSubData
 
 from main import AddOhmsBot
 

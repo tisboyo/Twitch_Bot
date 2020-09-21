@@ -1,4 +1,8 @@
-from twitchbot import cfg, Mod, Message, PubSubData, channels
+from twitchbot import cfg
+from twitchbot import channels
+from twitchbot import Message
+from twitchbot import Mod
+from twitchbot import PubSubData
 
 from main import AddOhmsBot
 

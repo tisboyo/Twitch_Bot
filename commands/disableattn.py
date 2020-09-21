@@ -1,4 +1,6 @@
-from twitchbot import Command, CommandContext
+from twitchbot import Command
+from twitchbot import CommandContext
+
 from main import AddOhmsBot
 
 

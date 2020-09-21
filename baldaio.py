@@ -1,15 +1,13 @@
 # Import standard python modules
+from os import environ as secrets
 from typing import Union
 
-# from main import AddOhmsBot
-from twitchbot import cfg
-
-# Import Adafruit IO REST client.
 from Adafruit_IO import Client
 from Adafruit_IO.errors import RequestError as RequestError
-
+from twitchbot import cfg
+# from main import AddOhmsBot
+# Import Adafruit IO REST client.
 # to get stored credientials
-from os import environ as secrets
 
 
 class AIO:

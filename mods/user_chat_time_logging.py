@@ -1,10 +1,15 @@
-from datetime import datetime, timedelta
-
-from data import load_data, save_data
-
-from twitchbot import Mod, Channel, cfg, channels
 import re
+from datetime import datetime
+from datetime import timedelta
 from typing import Union
+
+from twitchbot import cfg
+from twitchbot import Channel
+from twitchbot import channels
+from twitchbot import Mod
+
+from data import load_data
+from data import save_data
 
 
 class UserChatTimeLogging(Mod):

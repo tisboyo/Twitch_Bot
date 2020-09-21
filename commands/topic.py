@@ -1,6 +1,10 @@
-from twitchbot import Command, CommandContext, channels, cfg
+from twitchbot import cfg
+from twitchbot import channels
+from twitchbot import Command
+from twitchbot import CommandContext
 
-from data import save_data, load_data
+from data import load_data
+from data import save_data
 
 save_file = "topic"
 
