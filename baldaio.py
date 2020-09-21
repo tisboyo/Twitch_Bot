@@ -5,6 +5,7 @@ from typing import Union
 from Adafruit_IO import Client
 from Adafruit_IO.errors import RequestError as RequestError
 from twitchbot import cfg
+
 # from main import AddOhmsBot
 # Import Adafruit IO REST client.
 # to get stored credientials

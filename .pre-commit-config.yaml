@@ -1,5 +1,11 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+
+default_language_version:
+    python: python3.8
+
+minimum_pre_commit_version: "2.7.1"
+
 repos:
     -   repo: https://github.com/pre-commit/pre-commit-hooks
         rev: v2.4.0
@@ -14,3 +20,8 @@ repos:
         rev: v2.3.5
         hooks:
         -   id: reorder-python-imports
+
+    -   repo: https://github.com/psf/black
+        rev: 20.8b1
+        hooks:
+        -   id: black
