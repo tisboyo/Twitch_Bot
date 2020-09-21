@@ -1,5 +1,4 @@
-from twitchbot import cfg, Mod, PubSubData, get_pubsub, PubSubTopics, channels
-import asyncio
+from twitchbot import cfg, Mod, get_pubsub, PubSubTopics
 
 
 class PubSub(Mod):

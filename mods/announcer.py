@@ -1,20 +1,8 @@
-from twitchbot import (
-    cfg,
-    Mod,
-    task_exist,
-    stop_task,
-    add_task,
-    channels,
-    ModCommand,
-    Message,
-)
+from twitchbot import cfg, Mod, task_exist, stop_task, add_task, channels, ModCommand
+
 from asyncio import sleep
-from aiofile import AIOFile
-import json
 from datetime import datetime
 from data import load_data, save_data
-
-json_file = "messages.json"
 
 
 class AutoMessageStarterMod(Mod):
