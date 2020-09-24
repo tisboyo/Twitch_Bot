@@ -6,6 +6,8 @@ from twitchbot import channels
 from twitchbot import Message
 from twitchbot import Mod
 
+from main import AddOhmsBot
+
 
 class LinksToDiscord(Mod):
     name = "linkstodiscord"
@@ -37,4 +39,4 @@ class LinksToDiscord(Mod):
                     )
                     if response.status == 204:
                         message = "Thanks for the link, I posted it to discord."
-                        await channels[cfg.channels[0]].send_message("🤖" + message)
+                        await channels[cfg.channels[0]].send_message(AddOhmsBot.msg_prefix + message)

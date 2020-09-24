@@ -5,6 +5,7 @@ from twitchbot import CommandContext
 
 from data import load_data
 from data import save_data
+from main import AddOhmsBot
 
 save_file = "topic"
 
@@ -37,4 +38,4 @@ async def set_topic(msg, *args):
     topic_d = {"topic": topic}
 
     await save_data(save_file, topic_d)
-    await msg.reply("🤖Topic set.")
+    await msg.reply(f"{AddOhmsBot.msg_prefix}Topic set.")

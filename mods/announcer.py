@@ -11,6 +11,7 @@ from twitchbot import task_exist
 
 from data import load_data
 from data import save_data
+from main import AddOhmsBot
 
 
 class AutoMessageStarterMod(Mod):
@@ -53,7 +54,7 @@ class AutoMessageStarterMod(Mod):
                 message = sorted_data[0][0]
 
                 # Send the message
-                await channels[self.chan].send_message("🤖" + message)
+                await channels[self.chan].send_message(AddOhmsBot.msg_prefix + message)
 
                 # Update the last time sent of the message
                 data[message] = str(datetime.now())
@@ -64,13 +65,13 @@ class AutoMessageStarterMod(Mod):
     async def announce_enable(self, msg, *args):
         self.enable = True
         print("Enabling announcements.")
-        await channels[self.chan].send_message("🤖Announcements, announcements, ANNOUNCEMENTS!")
+        await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Announcements, announcements, ANNOUNCEMENTS!")
 
     @ModCommand(name, "announce_disable", permission="admin")
     async def announce_disable(self, msg, *args):
         self.enable = False
         print("Disabling announcements.")
-        await channels[self.chan].send_message("🤖Disabling announcements")
+        await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Disabling announcements")
 
     @ModCommand(name, "announce_time", permission="admin")
     async def announce_time(self, msg, time: int = 0):
@@ -81,9 +82,9 @@ class AutoMessageStarterMod(Mod):
 
             self.delay = int(time)
             self.restart_task()
-            await msg.reply(f"🤖New announce time is {time} seconds")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}New announce time is {time} seconds")
         except ValueError:
-            await msg.reply("🤖Invalid time, please use an integer in seconds")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid time, please use an integer in seconds")
 
     @ModCommand(name, "announce", permission="admin")
     async def announce(self, msg, *args):
