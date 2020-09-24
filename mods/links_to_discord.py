@@ -32,11 +32,11 @@ class LinksToDiscord(Mod):
         urls = self.find_url(msg.content)
 
         if len(urls):
-            for each in urls:
-                async with aiohttp.ClientSession() as session:
-                    response = await session.post(
-                        self.webhook, json={"content": each, "username": f"TwitchBot for {msg.author}"}
-                    )
-                    if response.status == 204:
-                        message = "Thanks for the link, I posted it to discord."
-                        await channels[cfg.channels[0]].send_message(AddOhmsBot.msg_prefix + message)
+            # for each in urls: # Trying out posting the entire message
+            async with aiohttp.ClientSession() as session:
+                response = await session.post(
+                    self.webhook, json={"content": msg.content, "username": f"TwitchBot: Link by {msg.author}"}
+                )
+                if response.status == 204:
+                    message = "Thanks for the link, I posted it to discord."
+                    await channels[cfg.channels[0]].send_message(AddOhmsBot.msg_prefix + message)
