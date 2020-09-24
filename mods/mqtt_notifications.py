@@ -20,6 +20,11 @@ class MqttNotifications(Mod):
         else:
             print(f"Unable to announce raid by {raider} to AIO")
 
+        if AddOhmsBot.AIO.send("twitch-attn-indi"):
+            print("Notification sent for raid to noise maker")
+        else:
+            print("Unable to send raid to noise maker")
+
     async def on_channel_host_success(self, channel: Channel, hoster: str, viewer_count: int) -> None:
         """
         This function doesn't actually exist in the library, and is being researched being added.
