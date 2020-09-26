@@ -23,7 +23,6 @@ class UserChatTimeLogging(Mod):
     async def on_connected(self) -> None:
         # Load the data once connected
         self.user_data = await load_data(self.file_name)
-        pass
 
     async def on_channel_joined(self, channel: Channel) -> None:
         # Bot joined a channel
