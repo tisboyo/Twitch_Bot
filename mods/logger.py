@@ -14,6 +14,8 @@ from mods.database_models import Users
 
 
 class TwitchLog(Mod):
+    name = "twitchlog"
+
     def __init__(self):
         super().__init__()
         print("TwitchLog loaded")

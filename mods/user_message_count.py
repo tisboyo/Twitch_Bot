@@ -8,6 +8,8 @@ from mods.database_models import Users
 
 
 class UserMessageCount(Mod):
+    name = "usermessagecount"
+
     def __init__(self) -> None:
         super().__init__()
         print("UserMessageCount loaded")

@@ -10,7 +10,9 @@ from twitchbot.database.session import Base
 from twitchbot.database.session import engine
 
 
-class UserChatTimeLogging(Mod):
+class DatabaseModel(Mod):
+    name = "databasemodel"
+
     def __init__(self) -> None:
         super().__init__()
         print("Users Database loaded")

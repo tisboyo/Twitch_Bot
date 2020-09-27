@@ -6,6 +6,8 @@ from data import save_data
 
 
 class BitTracking(Mod):
+    name = "bittracking"
+
     def __init__(self) -> None:
         super().__init__()
         print("BitTracking loaded")

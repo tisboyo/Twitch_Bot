@@ -10,6 +10,8 @@ class PubSub(Mod):
     Handling of the responses should be handled in other Mods
     """
 
+    name = "pubsub_subscribe"
+
     def __init__(self):
         super().__init__()
 

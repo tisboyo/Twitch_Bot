@@ -9,6 +9,8 @@ from main import AddOhmsBot
 
 
 class MqttNotifications(Mod):
+    name = "mqttnotifications"
+
     def __init__(self):
         super().__init__()
         print("MQTT Notifications loaded")

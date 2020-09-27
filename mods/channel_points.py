@@ -8,6 +8,8 @@ from main import AddOhmsBot
 
 
 class ChannelPoints(Mod):
+    name = "channelpoints"
+
     def __init__(self):
         super().__init__()
         print("ChannelPoints loaded")
