@@ -28,9 +28,10 @@ class Users(Base):
     channel = Column(String(64), primary_key=True, nullable=False)
     user = Column(String(64))
     time_in_channel = Column(Interval(second_precision=True, day_precision=True))
-    messages = Column(Integer(), default=0)
+    message_count = Column(Integer(), default=0)
     cheers = Column(Integer(), default=0)
     last_update = Column(DateTime(), onupdate=datetime.now)
+    last_message = Column(DateTime())
 
 
 class Announcements(Base):

@@ -22,12 +22,12 @@ class UserMessageCount(Mod):
         rows_affected = (
             session.query(Users)
             .filter(Users.user_id == user_id, Users.channel == server_id)
-            .update({"messages": Users.messages + 1})
+            .update({"message_count": Users.message_count + 1})
         )
 
         # If the user doesn't exist, insert them
         if not rows_affected:
-            user_object = Users(user_id=user_id, channel=server_id, user=msg.author, messages=1)
+            user_object = Users(user_id=user_id, channel=server_id, user=msg.author, message_count=1)
             session.add(user_object)
 
         session.commit()
