@@ -2,6 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import Column
 from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import Interval
 from sqlalchemy import String
@@ -27,13 +28,25 @@ class Users(Base):
     __tablename__ = "users"
     __table_args__ = {"extend_existing": True}
     user_id = Column(Integer(), primary_key=True, nullable=False)
-    channel = Column(String(64), primary_key=True, nullable=False)
+    channel = Column(Integer(), primary_key=True, nullable=False)
     user = Column(String(64))
     time_in_channel = Column(Interval(second_precision=True, day_precision=True))
     message_count = Column(Integer(), default=0)
     cheers = Column(Integer(), default=0)
     last_update = Column(DateTime(), onupdate=datetime.now)
     last_message = Column(DateTime())
+
+
+class Subscriptions(Base):
+    """Store subscription info"""
+
+    __tablename__ = "subscriptions"
+    __table_args__ = {"extend_existing": True}
+    user_id = Column(Integer(), ForeignKey("users.user_id"), primary_key=True, nullable=False)
+    channel = Column(Integer(), ForeignKey("users.channel"), primary_key=True, nullable=False)
+    subscription_level = Column(String(64))
+    cumulative_months = Column(Integer(), default=0)
+    streak_months = Column(Integer(), default=0)
 
 
 class Announcements(Base):

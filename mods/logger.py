@@ -10,6 +10,7 @@ from twitchbot.database.session import session
 
 from data import load_data
 from data import save_data
+from mods.database_models import Subscriptions
 from mods.database_models import Users
 
 
@@ -96,6 +97,51 @@ class TwitchLog(Mod):
                 user=raw.message_dict["data"]["user_name"],
                 message_count=1,
                 cheers=bits_used,
+            )
+            session.add(user_object)
+
+        session.commit()
+
+    async def on_pubsub_subscription(self, raw: "PubSubData", data):
+        """Twitch subscription event"""
+
+        """
+        print(raw.message_dict)
+        {'benefit_end_month': 0, 'user_name': 'tisboyo', 'display_name': 'tisboyo', 'channel_name': 'baldengineer',
+        'user_id': '461713054', 'channel_id': '125957551', 'time': '2020-09-27T20:01:35.385520498Z',
+        'sub_message': {'message': '', 'emotes': None}, 'sub_plan': 'Prime', 'sub_plan_name': '104 Capacitor Level Sub',
+        'months': 0, 'cumulative_months': 4, 'streak_months': 4, 'context': 'resub', 'is_gift': False,
+        'multi_month_duration': 0}
+
+        print(raw.raw_data)
+        {'type': 'MESSAGE', 'data': {'topic': 'channel-subscribe-events-v1.125957551',
+        'message': '{"benefit_end_month":0,"user_name":"tisboyo","display_name":"tisboyo","channel_name":"baldengineer",
+        "user_id":"461713054","channel_id":"125957551","time":"2020-09-27T20:01:35.385520498Z",
+        "sub_message":{"message":"","emotes":null},"sub_plan":"Prime","sub_plan_name":"104 Capacitor Level Sub",
+        "months":0,"cumulative_months":4,"streak_months":4,"context":"resub","is_gift":false,"multi_month_duration":0}'}}
+        """
+
+        user_id = raw.message_dict["user_id"]
+        server_id = raw.message_dict["channel_id"]
+        sub_level = raw.message_dict["sub_plan"]
+        cumulative_months = raw.message_dict["cumulative_months"]
+        streak_months = raw.message_dict["streak_months"]
+
+        rows_affected = (
+            session.query(Subscriptions)
+            .filter(Subscriptions.user_id == user_id, Subscriptions.channel == server_id)
+            .update(
+                {"subscription_level": sub_level, "cumulative_months": cumulative_months, "streak_months": streak_months}
+            )
+        )
+
+        if not rows_affected:
+            user_object = Subscriptions(
+                user_id=user_id,
+                channel=server_id,
+                subscription_level=sub_level,
+                cumulative_months=cumulative_months,
+                streak_months=streak_months,
             )
             session.add(user_object)
 
