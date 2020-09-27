@@ -7,47 +7,50 @@ from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import channels
 from twitchbot import Mod
+from twitchbot.database.session import session
 
-from data import load_data
-from data import save_data
+from mods.database_models import Users
 
 
 class UserChatTimeLogging(Mod):
+    name = "userchattimelogging"
+
     def __init__(self) -> None:
         super().__init__()
         print("UserChatTimeLogging loaded")
         self.user_data = dict()
         self.user_joined = dict()
-        self.file_name = "user_chat_time"
+        # TODO add user to joined if they send a message and aren't in the dict yet
 
-    async def on_connected(self) -> None:
-        # Load the data once connected
-        self.user_data = await load_data(self.file_name)
+    # async def on_connected(self) -> None:
+    #     # Load the data once connected
+    #     self.user_data = await load_data(self.file_name)
 
     async def on_channel_joined(self, channel: Channel) -> None:
-        # Bot joined a channel
+        """Bot joined a channel"""
         # Set the current date and time for the user as a join time
         now = datetime.now()
         for viewer in channel.chatters.all_viewers:
             self.user_joined[viewer] = now
 
     async def on_user_join(self, user: str, channel: Channel) -> None:
-        # User has joined the channel
+        """User has joined the channel"""
         # Don't overwrite if the user is already here, happens if they join twice
         if user not in self.user_joined.keys():
             self.user_joined[user] = datetime.now()
             print(f"{user} has joined #{channel.name}")
 
     async def on_user_part(self, user: str, channel: Channel) -> None:
-        # User has left the channel
+        """User has left the channel"""
         print(f"{user} left #{channel.name}")
         # Don't run if it's just the bot leaving
         if user != cfg.nick:
+            # Make sure they are actually gone, and not a second instance
             if user not in channel.chatters.all_viewers:
                 await self.user_exit(user)
 
     async def on_bot_shutdown(self):
-        # Bot shutting down, save all of the data
+        """Bot shutting down, save all of the data"""
         print("Syncing UserChatTimeLogging")
 
         viewers = channels[cfg.channels[0]].chatters.all_viewers
@@ -66,22 +69,26 @@ class UserChatTimeLogging(Mod):
             # Check to make sure the user is still in the user_joined to prevent errors
             if user in self.user_joined.keys():
                 # Calculate the time in the channel for this session
-                joined = self.user_joined[user]
+                joined: datetime = self.user_joined[user]
                 parted = now
                 time_this_session = parted - joined
 
+                # Update the database
+                # TODO Research if adding time is possible with sqlite on update
+
                 # Read the saved value, or just use 0 seconds timedelta because the user is new
-                total = self.user_data.get(user, None)
-                total_time = self.datetime_parse(total) or timedelta(seconds=0)
+                # total = self.user_data.get(user, None)
+                # total_time = self.datetime_parse(total) or timedelta(seconds=0)
 
                 # Save the new data back to memory
-                self.user_data[user] = str(total_time + time_this_session)
+                # self.user_data[user] = str(total_time + time_this_session)
+                # Save the new data to the database
 
                 # Remove the user from the user_joined key, since they have exited the channel
                 del self.user_joined[user]
 
         # Save the file
-        await save_data(self.file_name, self.user_data)
+        # await save_data(self.file_name, self.user_data)
 
     def datetime_parse(self, timestr: str) -> timedelta:
         """Function to convert a string from a timedelta back into a timedelta object"""
