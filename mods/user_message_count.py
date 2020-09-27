@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot.database.session import session
@@ -22,7 +24,7 @@ class UserMessageCount(Mod):
         rows_affected = (
             session.query(Users)
             .filter(Users.user_id == user_id, Users.channel == server_id)
-            .update({"message_count": Users.message_count + 1})
+            .update({"message_count": Users.message_count + 1, "last_message": datetime.now()})
         )
 
         # If the user doesn't exist, insert them
