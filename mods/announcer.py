@@ -53,7 +53,9 @@ class AutoMessageStarterMod(Mod):
                     await channels[self.chan].send_message(AddOhmsBot.msg_prefix + result.text)
 
                     # Update the last time sent of the message
-                    session.query(Announcements).filter(Announcements.id == result.id).update({"last_sent": datetime.now()})
+                    session.query(Announcements).filter(Announcements.id == result.id).update(
+                        {"last_sent": datetime.now(), "times_sent": result.times_sent + 1}
+                    )
                     session.commit()
 
             except Exception as e:
@@ -83,6 +85,39 @@ class AutoMessageStarterMod(Mod):
             await msg.reply(f"{AddOhmsBot.msg_prefix}New announce time is {time} seconds")
         except ValueError:
             await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid time, please use an integer in seconds")
+
+    @ModCommand(name, "announce_list", permission="admin")
+    async def announce_list(self, *args):
+        result = session.query(Announcements).order_by(Announcements.id).all()
+
+        print("Announcements".center(80, "*"))
+        print("     Times")
+        print(" ID : Sent : Text")
+        for each in result:
+            print(f"{each.id:3} : {each.times_sent:4} : {each.text}")
+        print("".center(80, "*"))
+
+    @ModCommand(name, "announce_del", permission="admin")
+    async def announce_del(self, msg, *args):
+
+        try:
+            id = args[0]
+            id = int(id)
+        except IndexError:
+            print("Invalid Announcement delete value not provided")
+            return
+        except ValueError:
+            print("Invalid Announcement delete ID passed, must be an integer")
+            return
+        except Exception as e:
+            print(e)
+            return
+
+        result = session.query(Announcements).filter(Announcements.id == id).delete()
+        if not result:
+            print("Invalid Announcement delete ID, 0 rows deleted.")
+        else:
+            print(f"{result} Announcement deleted.")
 
     @ModCommand(name, "announce", permission="admin")
     async def announce(self, msg, *args):

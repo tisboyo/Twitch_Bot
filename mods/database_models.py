@@ -57,6 +57,7 @@ class Announcements(Base):
     text = Column(String(1024), nullable=False)
     created_date = Column(DateTime(), default=datetime.now)
     last_sent = Column(DateTime(), default=datetime.now)
+    times_sent = Column(Integer(), default=0)
 
 
 class Settings(Base):
