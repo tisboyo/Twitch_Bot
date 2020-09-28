@@ -4,7 +4,6 @@ from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
-from sqlalchemy import Interval
 from sqlalchemy import String
 from twitchbot import Mod
 from twitchbot.database.session import Base
@@ -29,8 +28,8 @@ class Users(Base):
     __table_args__ = {"extend_existing": True}
     user_id = Column(Integer(), primary_key=True, nullable=False)
     channel = Column(Integer(), primary_key=True, nullable=False)
-    user = Column(String(64))
-    time_in_channel = Column(Interval(second_precision=True, day_precision=True))
+    user = Column(String(64), unique=True)
+    time_in_channel = Column(Integer(), default=0)
     message_count = Column(Integer(), default=0)
     cheers = Column(Integer(), default=0)
     last_update = Column(DateTime(), onupdate=datetime.now)
