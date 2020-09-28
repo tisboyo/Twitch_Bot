@@ -56,7 +56,7 @@ class Announcements(Base):
     id = Column(Integer(), primary_key=True, nullable=False)
     text = Column(String(1024), nullable=False)
     created_date = Column(DateTime(), default=datetime.now)
-    last_sent = Column(DateTime())
+    last_sent = Column(DateTime(), default=datetime.now)
 
 
 class Settings(Base):

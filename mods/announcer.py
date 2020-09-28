@@ -8,16 +8,15 @@ from twitchbot import Mod
 from twitchbot import ModCommand
 from twitchbot import stop_task
 from twitchbot import task_exist
+from twitchbot.database.session import session
 
-from data import load_data
-from data import save_data
 from main import AddOhmsBot
+from mods.database_models import Announcements
 
 
 class AutoMessageStarterMod(Mod):
     name = "automsg"
     task_name = "automessage"
-    __savefile = "announcements"
 
     def __init__(self):
         self.enable = True
@@ -35,31 +34,30 @@ class AutoMessageStarterMod(Mod):
 
     async def timer_loop(self):
         while True:
-            await sleep(self.delay)
-            # This is done so the loop will continue to run and not exit out because the loop has ended
-            # if done as a while enabled
-            if self.enable:
+            # Try except to prevent loop from accidentally crashing, no known reasons to crash.
+            try:
+                await sleep(self.delay)
+                # This is done so the loop will continue to run and not exit out because the loop has ended
+                # if done as a while enabled
+                if self.enable:
 
-                data = await load_data(self.__savefile)
+                    # data = await load_data(self.__savefile)
+                    result = session.query(Announcements).order_by(Announcements.last_sent).first()
 
-                # Make sure there are entries in the dictioary
-                if len(data) == 0:
-                    # Use continue instead of return so more can be added once the bot is run
-                    continue
+                    # Make sure there are entries in the dictioary
+                    if result is None:
+                        # Use continue instead of return so more can be added once the bot is run
+                        continue
 
-                # Returns a list of tuples of the dictionary
-                sorted_data = sorted(data.items(), key=lambda x: x[1])
+                    # Send the message
+                    await channels[self.chan].send_message(AddOhmsBot.msg_prefix + result.text)
 
-                # Grab the message text
-                message = sorted_data[0][0]
+                    # Update the last time sent of the message
+                    session.query(Announcements).filter(Announcements.id == result.id).update({"last_sent": datetime.now()})
+                    session.commit()
 
-                # Send the message
-                await channels[self.chan].send_message(AddOhmsBot.msg_prefix + message)
-
-                # Update the last time sent of the message
-                data[message] = str(datetime.now())
-
-                await save_data(self.__savefile, data)
+            except Exception as e:
+                print(e)
 
     @ModCommand(name, "announce_enable", permission="admin")
     async def announce_enable(self, msg, *args):
@@ -97,9 +95,10 @@ class AutoMessageStarterMod(Mod):
 
         print(f"Adding to announce: {message}", end="")
 
-        data = await load_data(self.__savefile)
-        data[message] = str(0)
-        await save_data(self.__savefile, data)
+        announcement_object = Announcements(text=message)
+        session.add(announcement_object)
+        session.commit()
+
         print("...done")
 
     def restart_task(self):
