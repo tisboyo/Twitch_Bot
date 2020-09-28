@@ -1,21 +1,32 @@
+from datetime import date
+from datetime import datetime
+
 from aiofile import AIOFile
-from datetime import datetime, date
+from twitchbot import cfg
+from twitchbot import Channel
+from twitchbot import Message
+from twitchbot import Mod
+from twitchbot import PubSubData
+from twitchbot.database.session import session
 
-from data import load_data, save_data
-
-from twitchbot import Message, Mod, Channel, PubSubData
+from data import load_data
+from data import save_data
+from mods.database_models import Subscriptions
+from mods.database_models import Users
 
 
 class TwitchLog(Mod):
+    name = "twitchlog"
+
     def __init__(self):
         super().__init__()
         print("TwitchLog loaded")
         self.user_data = dict()
 
     async def on_raw_message(self, msg: Message):
-
+        """Log raw the actual chat to {date}-{channel_name}.log"""
         if True:
-            async with AIOFile(f"irc_logs/{date.today().isoformat()}-{msg.channel_name}.log", "a") as afp:
+            async with AIOFile(f"irc_logs/{date.today().isoformat()}-{cfg.channels[0]}.log", "a") as afp:
                 await afp.write(f"{datetime.now().isoformat()}:{msg} \n")
                 await afp.fsync()
 
@@ -23,25 +34,11 @@ class TwitchLog(Mod):
         if not msg.author:
             return
 
-        # Create an empty object if the user is new
-        if msg.author not in self.user_data:
-            self.user_data[msg.author] = {"last_message": None, "message_count": 0}
-
-        author = self.user_data[msg.author]
-
-        # Track users last message time
-        author["last_message"] = datetime.now()
-
-        # Track the number of messages total from the user
-        author["message_count"] += 1
-
-        await save_data("user", self.user_data)
-
-    async def on_connected(self):
-        """Load user data from file when connected"""
-        print("Loading user data from json file...", end="")
-        self.user_data = await load_data("user")
-        print("done")
+    # async def on_connected(self):
+    #     """Load user data from file when connected"""
+    #     print("Loading user data from json file...", end="")
+    #     self.user_data = await load_data("user")
+    #     print("done")
 
     async def on_channel_raided(self, channel: Channel, raider: str, viewer_count: int) -> None:
         """Log channel raid"""
@@ -79,6 +76,74 @@ class TwitchLog(Mod):
         'message_id': '5a2da2f4-a6b5-5d23-b7cc-839a3ea5140c'
         }
         """
-        bits = await load_data("bits")
-        bits[datetime.now().isoformat()] = raw.message_dict
-        await save_data("bits", bits)
+        # bits = await load_data("bits")
+        # bits[datetime.now().isoformat()] = raw.message_dict
+        # await save_data("bits", bits)
+
+        user_id = raw.message_dict["data"]["user_id"]
+        server_id = raw.message_dict["data"]["channel_id"]
+        bits_used = raw.message_dict["data"]["bits_used"]
+
+        rows_affected = (
+            session.query(Users)
+            .filter(Users.user_id == user_id, Users.channel == server_id)
+            .update({"cheers": Users.cheers + bits_used, "last_message": datetime.now()})
+        )
+
+        # If the user doesn't exist, insert them
+        if not rows_affected:
+            user_object = Users(
+                user_id=user_id,
+                channel=server_id,
+                user=raw.message_dict["data"]["user_name"],
+                message_count=1,
+                cheers=bits_used,
+            )
+            session.add(user_object)
+
+        session.commit()
+
+    async def on_pubsub_subscription(self, raw: "PubSubData", data):
+        """Twitch subscription event"""
+
+        """
+        print(raw.message_dict)
+        {'benefit_end_month': 0, 'user_name': 'tisboyo', 'display_name': 'tisboyo', 'channel_name': 'baldengineer',
+        'user_id': '461713054', 'channel_id': '125957551', 'time': '2020-09-27T20:01:35.385520498Z',
+        'sub_message': {'message': '', 'emotes': None}, 'sub_plan': 'Prime', 'sub_plan_name': '104 Capacitor Level Sub',
+        'months': 0, 'cumulative_months': 4, 'streak_months': 4, 'context': 'resub', 'is_gift': False,
+        'multi_month_duration': 0}
+
+        print(raw.raw_data)
+        {'type': 'MESSAGE', 'data': {'topic': 'channel-subscribe-events-v1.125957551',
+        'message': '{"benefit_end_month":0,"user_name":"tisboyo","display_name":"tisboyo","channel_name":"baldengineer",
+        "user_id":"461713054","channel_id":"125957551","time":"2020-09-27T20:01:35.385520498Z",
+        "sub_message":{"message":"","emotes":null},"sub_plan":"Prime","sub_plan_name":"104 Capacitor Level Sub",
+        "months":0,"cumulative_months":4,"streak_months":4,"context":"resub","is_gift":false,"multi_month_duration":0}'}}
+        """
+
+        user_id = raw.message_dict["user_id"]
+        server_id = raw.message_dict["channel_id"]
+        sub_level = raw.message_dict["sub_plan"]
+        cumulative_months = raw.message_dict["cumulative_months"]
+        streak_months = raw.message_dict["streak_months"]
+
+        rows_affected = (
+            session.query(Subscriptions)
+            .filter(Subscriptions.user_id == user_id, Subscriptions.channel == server_id)
+            .update(
+                {"subscription_level": sub_level, "cumulative_months": cumulative_months, "streak_months": streak_months}
+            )
+        )
+
+        if not rows_affected:
+            user_object = Subscriptions(
+                user_id=user_id,
+                channel=server_id,
+                subscription_level=sub_level,
+                cumulative_months=cumulative_months,
+                streak_months=streak_months,
+            )
+            session.add(user_object)
+
+        session.commit()

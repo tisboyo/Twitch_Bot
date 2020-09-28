@@ -5,8 +5,8 @@ with open("configs/config.json") as f:
 
 client_id = data["client_id"]
 
-irc = f"https://id.twitch.tv/oauth2/authorize?response_type=token&client_id={client_id}&redirect_uri=https://twitchapps.com/tokengen/&scope=chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor"
-pubsub = f"https://id.twitch.tv/oauth2/authorize?response_type=token&client_id={client_id}&redirect_uri=https://twitchapps.com/tokengen/&scope=channel:read:redemptions+channel:moderate+bits:read+channel_subscriptions"
+irc = f"https://id.twitch.tv/oauth2/authorize?response_type=token&client_id={client_id}&redirect_uri=https://twitchapps.com/tokengen/&scope=chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor"  # noqa:E501
+pubsub = f"https://id.twitch.tv/oauth2/authorize?response_type=token&client_id={client_id}&redirect_uri=https://twitchapps.com/tokengen/&scope=channel:read:redemptions+channel:moderate+bits:read+channel_subscriptions"  # noqa:E501
 
 print("Use this link for IRC OAuth - Use the BOT Account")
 print(irc)

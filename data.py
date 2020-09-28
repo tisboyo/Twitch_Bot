@@ -1,6 +1,7 @@
-from aiofile import AIOFile
-import json
 import datetime
+import json
+
+from aiofile import AIOFile
 from twitchbot import cfg
 
 

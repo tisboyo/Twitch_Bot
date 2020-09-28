@@ -1,14 +1,22 @@
-from twitchbot import cfg, Mod, task_exist, stop_task, add_task, channels, ModCommand
-
 from asyncio import sleep
 from datetime import datetime
-from data import load_data, save_data
+
+from twitchbot import add_task
+from twitchbot import cfg
+from twitchbot import channels
+from twitchbot import Mod
+from twitchbot import ModCommand
+from twitchbot import stop_task
+from twitchbot import task_exist
+from twitchbot.database.session import session
+
+from main import AddOhmsBot
+from mods.database_models import Announcements
 
 
 class AutoMessageStarterMod(Mod):
     name = "automsg"
     task_name = "automessage"
-    __savefile = "announcements"
 
     def __init__(self):
         self.enable = True
@@ -26,43 +34,44 @@ class AutoMessageStarterMod(Mod):
 
     async def timer_loop(self):
         while True:
-            await sleep(self.delay)
-            # This is done so the loop will continue to run and not exit out because the loop has ended
-            # if done as a while enabled
-            if self.enable:
+            # Try except to prevent loop from accidentally crashing, no known reasons to crash.
+            try:
+                await sleep(self.delay)
+                # This is done so the loop will continue to run and not exit out because the loop has ended
+                # if done as a while enabled
+                if self.enable:
 
-                data = await load_data(self.__savefile)
+                    # data = await load_data(self.__savefile)
+                    result = session.query(Announcements).order_by(Announcements.last_sent).first()
 
-                # Make sure there are entries in the dictioary
-                if len(data) == 0:
-                    # Use continue instead of return so more can be added once the bot is run
-                    continue
+                    # Make sure there are entries in the dictioary
+                    if result is None:
+                        # Use continue instead of return so more can be added once the bot is run
+                        continue
 
-                # Returns a list of tuples of the dictionary
-                sorted_data = sorted(data.items(), key=lambda x: x[1])
+                    # Send the message
+                    await channels[self.chan].send_message(AddOhmsBot.msg_prefix + result.text)
 
-                # Grab the message text
-                message = sorted_data[0][0]
+                    # Update the last time sent of the message
+                    session.query(Announcements).filter(Announcements.id == result.id).update(
+                        {"last_sent": datetime.now(), "times_sent": result.times_sent + 1}
+                    )
+                    session.commit()
 
-                # Send the message
-                await channels[self.chan].send_message("🤖" + message)
-
-                # Update the last time sent of the message
-                data[message] = str(datetime.now())
-
-                await save_data(self.__savefile, data)
+            except Exception as e:
+                print(e)
 
     @ModCommand(name, "announce_enable", permission="admin")
     async def announce_enable(self, msg, *args):
         self.enable = True
         print("Enabling announcements.")
-        await channels[self.chan].send_message("🤖Announcements, announcements, ANNOUNCEMENTS!")
+        await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Announcements, announcements, ANNOUNCEMENTS!")
 
     @ModCommand(name, "announce_disable", permission="admin")
     async def announce_disable(self, msg, *args):
         self.enable = False
         print("Disabling announcements.")
-        await channels[self.chan].send_message("🤖Disabling announcements")
+        await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Disabling announcements")
 
     @ModCommand(name, "announce_time", permission="admin")
     async def announce_time(self, msg, time: int = 0):
@@ -73,9 +82,42 @@ class AutoMessageStarterMod(Mod):
 
             self.delay = int(time)
             self.restart_task()
-            await msg.reply(f"🤖New announce time is {time} seconds")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}New announce time is {time} seconds")
         except ValueError:
-            await msg.reply("🤖Invalid time, please use an integer in seconds")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid time, please use an integer in seconds")
+
+    @ModCommand(name, "announce_list", permission="admin")
+    async def announce_list(self, *args):
+        result = session.query(Announcements).order_by(Announcements.id).all()
+
+        print("Announcements".center(80, "*"))
+        print("     Times")
+        print(" ID : Sent : Text")
+        for each in result:
+            print(f"{each.id:3} : {each.times_sent:4} : {each.text}")
+        print("".center(80, "*"))
+
+    @ModCommand(name, "announce_del", permission="admin")
+    async def announce_del(self, msg, *args):
+
+        try:
+            id = args[0]
+            id = int(id)
+        except IndexError:
+            print("Invalid Announcement delete value not provided")
+            return
+        except ValueError:
+            print("Invalid Announcement delete ID passed, must be an integer")
+            return
+        except Exception as e:
+            print(e)
+            return
+
+        result = session.query(Announcements).filter(Announcements.id == id).delete()
+        if not result:
+            print("Invalid Announcement delete ID, 0 rows deleted.")
+        else:
+            print(f"{result} Announcement deleted.")
 
     @ModCommand(name, "announce", permission="admin")
     async def announce(self, msg, *args):
@@ -88,9 +130,10 @@ class AutoMessageStarterMod(Mod):
 
         print(f"Adding to announce: {message}", end="")
 
-        data = await load_data(self.__savefile)
-        data[message] = str(0)
-        await save_data(self.__savefile, data)
+        announcement_object = Announcements(text=message)
+        session.add(announcement_object)
+        session.commit()
+
         print("...done")
 
     def restart_task(self):

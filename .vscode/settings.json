@@ -1,6 +1,25 @@
 {
-    "python.pythonPath": ".venv\\Scripts\\python.exe",
-    "python.linting.pylintEnabled": false,
-    "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true
+    "platformSettings.autoLoad": true,
+    "platformSettings.platforms": {
+        "win32": {
+            "nodes": {
+                "python.pythonPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+                "python.linting.pylintEnabled": false,
+                "python.linting.flake8Enabled": true,
+                "python.linting.enabled": true,
+                "python.formatting.blackPath": "${env:USERPROFILE}\\.local\\bin\\black.exe",
+                "editor.formatOnPaste": false
+            }
+        },
+        "linux": {
+            "nodes": {
+                "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
+                "python.linting.pylintEnabled": false,
+                "python.linting.flake8Enabled": true,
+                "python.linting.enabled": true,
+                "python.formatting.blackPath": "${env:HOME}/.local/bin/black",
+                "editor.formatOnPaste": false
+            }
+        },
+    },
 }

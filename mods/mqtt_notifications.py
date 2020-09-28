@@ -1,10 +1,16 @@
-from twitchbot import Mod, Message, PubSubData, Channel
 from json import dumps
+
+from twitchbot import Channel
+from twitchbot import Message
+from twitchbot import Mod
+from twitchbot import PubSubData
 
 from main import AddOhmsBot
 
 
 class MqttNotifications(Mod):
+    name = "mqttnotifications"
+
     def __init__(self):
         super().__init__()
         print("MQTT Notifications loaded")
@@ -15,6 +21,11 @@ class MqttNotifications(Mod):
             print(f"Raid by {raider} announced to AIO")
         else:
             print(f"Unable to announce raid by {raider} to AIO")
+
+        if AddOhmsBot.AIO.send("twitch-attn-indi"):
+            print("Notification sent for raid to noise maker")
+        else:
+            print("Unable to send raid to noise maker")
 
     async def on_channel_host_success(self, channel: Channel, hoster: str, viewer_count: int) -> None:
         """

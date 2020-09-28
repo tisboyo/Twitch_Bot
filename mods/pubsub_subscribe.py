@@ -1,4 +1,7 @@
-from twitchbot import cfg, Mod, get_pubsub, PubSubTopics
+from twitchbot import cfg
+from twitchbot import get_pubsub
+from twitchbot import Mod
+from twitchbot import PubSubTopics
 
 
 class PubSub(Mod):
@@ -6,6 +9,8 @@ class PubSub(Mod):
     This class is used only to subscribe to pubsub topics.
     Handling of the responses should be handled in other Mods
     """
+
+    name = "pubsub_subscribe"
 
     def __init__(self):
         super().__init__()

@@ -13,6 +13,7 @@ pythontwitchbotframework = "*"
 aiofile = "*"
 aiohttp = "==3.6.2"
 adafruit-io = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3.8"
