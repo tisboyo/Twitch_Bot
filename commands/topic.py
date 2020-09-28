@@ -11,7 +11,7 @@ from mods.database_models import Settings
 @Command("topic", context=CommandContext.BOTH)
 async def topic(msg, *args):
     result = session.query(Settings).filter(Settings.key == "topic").one_or_none()
-    topic = result.value
+    topic = result.value if result is not None else None
 
     if not msg.is_whisper:
         if topic:
