@@ -2,6 +2,7 @@ from datetime import date
 from datetime import datetime
 
 from aiofile import AIOFile
+from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import Message
 from twitchbot import Mod
@@ -25,7 +26,7 @@ class TwitchLog(Mod):
     async def on_raw_message(self, msg: Message):
         """Log raw the actual chat to {date}-{channel_name}.log"""
         if True:
-            async with AIOFile(f"irc_logs/{date.today().isoformat()}-{msg.channel_name}.log", "a") as afp:
+            async with AIOFile(f"irc_logs/{date.today().isoformat()}-{cfg.channels[0]}.log", "a") as afp:
                 await afp.write(f"{datetime.now().isoformat()}:{msg} \n")
                 await afp.fsync()
 
