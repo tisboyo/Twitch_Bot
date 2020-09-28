@@ -25,6 +25,10 @@ class UserChatTimeLogging(Mod):
 
     async def on_raw_message(self, msg: Message):
         """Add the user to the dictionary if they send a message before the join event"""
+        # Not counting whispers as being active
+        if msg.is_whisper:
+            return
+
         # If it is a system message from the user,
         # the tags aren't there so we have to query the user_id
         if not msg.is_user_message:

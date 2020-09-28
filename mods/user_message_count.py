@@ -17,7 +17,8 @@ class UserMessageCount(Mod):
     async def on_raw_message(self, msg: Message) -> None:
         """Increment the user message counter"""
 
-        if not msg.is_user_message:
+        # Make sure the user actually sent a message,and it's not a whisper.
+        if not msg.is_user_message or msg.is_whisper:
             return
 
         user_id = msg.tags.user_id
