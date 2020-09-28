@@ -65,5 +65,5 @@ class Settings(Base):
     __tablename__ = "settings"
     __table_args__ = {"extend_existing": True}
     id = Column(Integer(), primary_key=True)
-    key = Column(String(24), nullable=False)
+    key = Column(String(24), nullable=False, unique=True)
     value = Column(String(256), nullable=False)
