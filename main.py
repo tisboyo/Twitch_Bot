@@ -9,6 +9,7 @@ from baldaio import AIO as Adafruit_IO
 class AddOhmsBot(BaseBot):
     AIO = Adafruit_IO()
     msg_prefix = "🤖 "
+    ATTN_ENABLE = True
 
     def __init__(self):
         super().__init__()
