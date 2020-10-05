@@ -1,6 +1,8 @@
 from asyncio import sleep
 from datetime import datetime
 
+from main import AddOhmsBot
+from mods.database_models import Announcements
 from twitchbot import add_task
 from twitchbot import cfg
 from twitchbot import channels
@@ -9,9 +11,6 @@ from twitchbot import ModCommand
 from twitchbot import stop_task
 from twitchbot import task_exist
 from twitchbot.database.session import session
-
-from main import AddOhmsBot
-from mods.database_models import Announcements
 
 
 class AutoMessageStarterMod(Mod):

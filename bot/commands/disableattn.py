@@ -1,7 +1,6 @@
+from main import AddOhmsBot
 from twitchbot import Command
 from twitchbot import CommandContext
-
-from main import AddOhmsBot
 
 
 @Command("disable_attn", permission="admin", context=CommandContext.BOTH)

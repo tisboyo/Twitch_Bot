@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Union
 
+from mods.database_models import Users
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import channels
@@ -8,8 +9,6 @@ from twitchbot import get_user_id
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot.database.session import session
-
-from mods.database_models import Users
 
 
 class UserChatTimeLogging(Mod):

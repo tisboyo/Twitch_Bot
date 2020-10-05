@@ -1,10 +1,9 @@
+from main import AddOhmsBot
 from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import PubSubData
-
-from main import AddOhmsBot
 
 
 class ChannelPoints(Mod):

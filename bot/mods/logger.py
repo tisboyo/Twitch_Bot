@@ -2,17 +2,16 @@ from datetime import date
 from datetime import datetime
 
 from aiofile import AIOFile
+from data import load_data
+from data import save_data
+from mods.database_models import Subscriptions
+from mods.database_models import Users
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import PubSubData
 from twitchbot.database.session import session
-
-from data import load_data
-from data import save_data
-from mods.database_models import Subscriptions
-from mods.database_models import Users
 
 
 class TwitchLog(Mod):
