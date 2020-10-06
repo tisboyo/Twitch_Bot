@@ -8,11 +8,12 @@
             "name": "TwitchBot",
             "type": "python",
             "request": "launch",
-            "program": "bot/main.py",
+            "program": "main.py",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}/bot",
             "env": {
-                "PYTHONPATH": "${workspaceRoot}/bot/"
+                "PYTHONPATH": "${workspaceRoot}"
             },
             "justMyCode": false
         },
@@ -20,11 +21,12 @@
             "name": "Web",
             "type": "python",
             "request": "launch",
-            "program": "web/main.py",
+            "program": "main.py",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}/web",
             "env": {
-                "PYTHONPATH": "${workspaceRoot}/web/"
+                "PYTHONPATH": "${workspaceRoot}"
             },
         },
         {
