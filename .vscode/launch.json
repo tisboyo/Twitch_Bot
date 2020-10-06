@@ -5,16 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Main.py",
+            "name": "TwitchBot",
             "type": "python",
             "request": "launch",
-            "program": "main.py",
+            "program": "bot/main.py",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
             "env": {
-                "PYTHONPATH": "${workspaceRoot}"
+                "PYTHONPATH": "${workspaceRoot}/bot/"
             },
             "justMyCode": false
+        },
+        {
+            "name": "Web",
+            "type": "python",
+            "request": "launch",
+            "program": "web/main.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}/web/"
+            },
         },
         {
             "name": "Python: Current File",

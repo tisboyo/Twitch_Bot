@@ -9,10 +9,10 @@ ENV PIP_NO_CACHE_DIR=false \
 
 
 # Create the working directory
-WORKDIR /workspace/web
+WORKDIR /workspace/bot/
 
-# Install files
-COPY ./ /workspace/web
+#Copy the bot to a working directory
+COPY ./ /workspace/bot/
 
 # Install needed libraries
 RUN apt-get update && apt-get install -y \

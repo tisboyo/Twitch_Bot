@@ -5,8 +5,8 @@ verify_ssl = true
 
 [dev-packages]
 black = "*"
-pylint = "*"
 flake8 = "*"
+pre-commit = "*"
 
 [packages]
 pythontwitchbotframework = "*"
