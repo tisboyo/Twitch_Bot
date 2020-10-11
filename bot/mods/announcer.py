@@ -1,6 +1,8 @@
 from asyncio import sleep
 from datetime import datetime
+from datetime import timedelta
 
+import pytz
 from main import AddOhmsBot
 from twitchbot import add_task
 from twitchbot import cfg
@@ -23,6 +25,8 @@ class AutoMessageStarterMod(Mod):
         self.enable = True
         self.delay = 900  # seconds
         self.chan = cfg.channels[0]
+        self.next_run = datetime.min
+        self.timezone = pytz.timezone("America/Chicago")
 
     @property
     def delay(self):
@@ -37,6 +41,8 @@ class AutoMessageStarterMod(Mod):
         while True:
             # Try except to prevent loop from accidentally crashing, no known reasons to crash.
             try:
+                now = datetime.now(tz=self.timezone)
+                self.next_run = now + timedelta(seconds=self.delay)
                 await sleep(self.delay)
                 # This is done so the loop will continue to run and not exit out because the loop has ended
                 # if done as a while enabled
@@ -141,6 +147,23 @@ class AutoMessageStarterMod(Mod):
         session.commit()
 
         print("...done")
+
+    @SubCommand(announce, "status", permission="admin")
+    async def announce_status(self, msg, *args):
+        """Sends the current status of the announcements"""
+
+        status = "Enabled" if self.enable else "Disabled"
+        next_run_seconds = self.next_run - datetime.now(self.timezone)
+        # num_of_announcements = "1/1" # TODO #18
+        replies = [
+            f"Current status is {status}",
+            f"Current delay is {self.delay} seconds. ",
+            f"Next send time will be {self.next_run.strftime('%H:%M:%S')} which is in {str(next_run_seconds)[:-7]}.",
+            # f"{num_of_announcements} of announcements enabled.", # TODO #18
+        ]
+
+        for reply in replies:
+            await msg.reply(reply)
 
     def restart_task(self):
         if task_exist(self.task_name):
