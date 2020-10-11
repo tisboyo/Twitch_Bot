@@ -20,7 +20,8 @@
 					"python.linting.flake8Enabled": true,
 					"python.linting.enabled": true,
 					"python.formatting.blackPath": "${env:USERPROFILE}\\.local\\bin\\black.exe",
-					"editor.formatOnPaste": false
+					"editor.formatOnPaste": false,
+					"files.eol": "\n",
 				}
 			},
 			"linux": {
@@ -30,9 +31,10 @@
 					"python.linting.flake8Enabled": true,
 					"python.linting.enabled": true,
 					"python.formatting.blackPath": "/usr/local/bin/black",
-					"editor.formatOnPaste": false
+					"editor.formatOnPaste": false,
+					"files.eol": "\n",
 				}
 			}
-		}
+		},
 	}
 }
