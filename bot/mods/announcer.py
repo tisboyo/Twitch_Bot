@@ -2,15 +2,17 @@ from asyncio import sleep
 from datetime import datetime
 
 from main import AddOhmsBot
-from mods.database_models import Announcements
 from twitchbot import add_task
 from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import Mod
 from twitchbot import ModCommand
 from twitchbot import stop_task
+from twitchbot import SubCommand
 from twitchbot import task_exist
 from twitchbot.database.session import session
+
+from mods.database_models import Announcements
 
 
 class AutoMessageStarterMod(Mod):
@@ -60,19 +62,24 @@ class AutoMessageStarterMod(Mod):
             except Exception as e:
                 print(e)
 
-    @ModCommand(name, "announce_enable", permission="admin")
+    @ModCommand(name, "announce", permission="admin")
+    async def announce(self, msg, *args):
+        # Announce parent command
+        pass
+
+    @SubCommand(announce, "enable", permission="admin")
     async def announce_enable(self, msg, *args):
         self.enable = True
         print("Enabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Announcements, announcements, ANNOUNCEMENTS!")
 
-    @ModCommand(name, "announce_disable", permission="admin")
+    @SubCommand(announce, "disable", permission="admin")
     async def announce_disable(self, msg, *args):
         self.enable = False
         print("Disabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Disabling announcements")
 
-    @ModCommand(name, "announce_time", permission="admin")
+    @SubCommand(announce, "time", permission="admin")
     async def announce_time(self, msg, time: int = 0):
         try:
             # Make sure we receive a positive number
@@ -85,7 +92,7 @@ class AutoMessageStarterMod(Mod):
         except ValueError:
             await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid time, please use an integer in seconds")
 
-    @ModCommand(name, "announce_list", permission="admin")
+    @SubCommand(announce, "list", permission="admin")
     async def announce_list(self, *args):
         result = session.query(Announcements).order_by(Announcements.id).all()
 
@@ -96,7 +103,7 @@ class AutoMessageStarterMod(Mod):
             print(f"{each.id:3} : {each.times_sent:4} : {each.text}")
         print("".center(80, "*"))
 
-    @ModCommand(name, "announce_del", permission="admin")
+    @SubCommand(announce, "del", permission="admin")
     async def announce_del(self, msg, *args):
 
         try:
@@ -118,8 +125,8 @@ class AutoMessageStarterMod(Mod):
         else:
             print(f"{result} Announcement deleted.")
 
-    @ModCommand(name, "announce", permission="admin")
-    async def announce(self, msg, *args):
+    @SubCommand(announce, "add", permission="admin")
+    async def announce_add(self, msg, *args):
 
         message = ""
 
