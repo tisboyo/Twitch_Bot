@@ -1,14 +1,12 @@
 # Import standard python modules
+from datetime import datetime
+from datetime import timedelta
 from os import environ as secrets
 from typing import Union
 
 from Adafruit_IO import Client
 from Adafruit_IO.errors import RequestError as RequestError
 from twitchbot import cfg
-
-# from main import AddOhmsBot
-# Import Adafruit IO REST client.
-# to get stored credientials
 
 
 class AIO:
@@ -21,6 +19,8 @@ class AIO:
 
         # The connection handle for making calls
         self.__client = None
+        self.last_sent_time = dict()
+        self.mqtt_cooldown = dict()
 
         # Default to not connected
         self.AIO_CONNECTION_STATE = False
@@ -48,6 +48,14 @@ class AIO:
 
     def send(self, feed, value: Union[str, int] = 1):
         """Send to an AdafruitIO topic"""
+        last_sent = self.last_sent_time.get(feed, datetime.min)
+        cooldown = self.mqtt_cooldown.get(feed, 300)  # Default to a 5 minute cooldown
+        now = datetime.now()
+
+        if (last_sent + timedelta(seconds=cooldown)) > now:
+            print(f"MQTT {feed} on cooldown for {(last_sent + timedelta(seconds=cooldown)) - now}.")
+            return False
+
         if self.AIO_CONNECTION_STATE is False:
             try:
                 if not self.connect_to_aio():
@@ -58,6 +66,7 @@ class AIO:
 
         try:
             self.__client.send_data(feed, value)
+            self.last_sent_time[feed] = now
             return True
         except RequestError as e:
             print(e)
