@@ -7,6 +7,9 @@ from typing import Union
 from Adafruit_IO import Client
 from Adafruit_IO.errors import RequestError as RequestError
 from twitchbot import cfg
+from twitchbot.database.session import session
+
+from mods.database_models import Settings
 
 
 class AIO:
@@ -46,10 +49,46 @@ class AIO:
             self.AIO_CONNECTION_STATE = False
             return False
 
+    def get_cooldown(self, feed: str):
+        """
+        Returns the cooldown
+        Loads it from the database,
+        or returns 0 if one is not set.
+        """
+        if feed not in self.mqtt_cooldown:
+            q = session.query(Settings.value).filter(Settings.key == f"mqtt_cooldown_{feed}").one_or_none()
+            if q is None:
+                # Value wasn't in the database, lets insert it.
+                insert = Settings(key=f"mqtt_cooldown_{feed}", value=0)
+                session.add(insert)
+                self.mqtt_cooldown[feed] = 0
+            else:
+                self.mqtt_cooldown[feed] = int(q[0])
+
+        return self.mqtt_cooldown[feed]
+
+    def set_cooldown(self, feed: str, cooldown: int) -> None:
+        """
+        Sets the MQTT cooldown
+        Updates or inserts the value into the database
+        Exception handling should be done in the calling function
+        """
+        q = session.query(Settings.id).filter(Settings.key == f"mqtt_cooldown_{feed}").one_or_none()
+        if q is None:
+            # Value wasn't in the database, lets insert it.
+            insert = Settings(key=f"mqtt_cooldown_{feed}", value=cooldown)
+            session.add(insert)
+            self.mqtt_cooldown[feed] = cooldown
+        else:
+            session.query(Settings).filter(Settings.key == f"mqtt_cooldown_{feed}").update({"value": cooldown})
+            self.mqtt_cooldown[feed] = cooldown
+
+        session.commit()
+
     def send(self, feed, value: Union[str, int] = 1):
         """Send to an AdafruitIO topic"""
         last_sent = self.last_sent_time.get(feed, datetime.min)
-        cooldown = self.mqtt_cooldown.get(feed, 300)  # Default to a 5 minute cooldown
+        cooldown = self.get_cooldown(feed)
         now = datetime.now()
 
         if (last_sent + timedelta(seconds=cooldown)) > now:
