@@ -62,34 +62,3 @@ class AIO:
         except RequestError as e:
             print(e)
             return False
-
-
-# def push_attn(feed="twitch-attn-indi"):
-#     if AddOhmsBot.AIO_CONNECTION_STATE is False:
-#         print("Not even trying, we aren't connected")
-#         return False
-#     try:
-#         AddOhmsBot.Adafruit_IO.send_data(feed, 1)
-#         return True
-#     except RequestError as e:
-#         print(e)
-#         return False
-
-
-# def increment_feed(feed="treat-counter-text"):
-#     if AddOhmsBot.AIO_CONNECTION_STATE is False:
-#         print("Not publishing, we aren't connected")
-#         return False
-
-#     feed_data = AddOhmsBot.Adafruit_IO.data(feed)  # returns an array of values
-#     feed_value = int(feed_data[0].value)  # this feed only has 1
-
-#     feed_value += 1
-
-#     print("sending count: ", feed_value)
-#     try:
-#         AddOhmsBot.Adafruit_IO.send_data("treat-counter-text", feed_value)
-#         return True
-#     except RequestError as e:
-#         print(e)
-#         return False
