@@ -1,14 +1,15 @@
 # Import standard python modules
+from datetime import datetime
+from datetime import timedelta
 from os import environ as secrets
 from typing import Union
 
 from Adafruit_IO import Client
 from Adafruit_IO.errors import RequestError as RequestError
 from twitchbot import cfg
+from twitchbot.database.session import session
 
-# from main import AddOhmsBot
-# Import Adafruit IO REST client.
-# to get stored credientials
+from mods.database_models import Settings
 
 
 class AIO:
@@ -21,6 +22,8 @@ class AIO:
 
         # The connection handle for making calls
         self.__client = None
+        self.last_sent_time = dict()
+        self.mqtt_cooldown = dict()
 
         # Default to not connected
         self.AIO_CONNECTION_STATE = False
@@ -46,8 +49,52 @@ class AIO:
             self.AIO_CONNECTION_STATE = False
             return False
 
+    def get_cooldown(self, feed: str):
+        """
+        Returns the cooldown
+        Loads it from the database,
+        or returns 0 if one is not set.
+        """
+        if feed not in self.mqtt_cooldown:
+            q = session.query(Settings.value).filter(Settings.key == f"mqtt_cooldown_{feed}").one_or_none()
+            if q is None:
+                # Value wasn't in the database, lets insert it.
+                insert = Settings(key=f"mqtt_cooldown_{feed}", value=0)
+                session.add(insert)
+                self.mqtt_cooldown[feed] = 0
+            else:
+                self.mqtt_cooldown[feed] = int(q[0])
+
+        return self.mqtt_cooldown[feed]
+
+    def set_cooldown(self, feed: str, cooldown: int) -> None:
+        """
+        Sets the MQTT cooldown
+        Updates or inserts the value into the database
+        Exception handling should be done in the calling function
+        """
+        q = session.query(Settings.id).filter(Settings.key == f"mqtt_cooldown_{feed}").one_or_none()
+        if q is None:
+            # Value wasn't in the database, lets insert it.
+            insert = Settings(key=f"mqtt_cooldown_{feed}", value=cooldown)
+            session.add(insert)
+            self.mqtt_cooldown[feed] = cooldown
+        else:
+            session.query(Settings).filter(Settings.key == f"mqtt_cooldown_{feed}").update({"value": cooldown})
+            self.mqtt_cooldown[feed] = cooldown
+
+        session.commit()
+
     def send(self, feed, value: Union[str, int] = 1):
         """Send to an AdafruitIO topic"""
+        last_sent = self.last_sent_time.get(feed, datetime.min)
+        cooldown = self.get_cooldown(feed)
+        now = datetime.now()
+
+        if (last_sent + timedelta(seconds=cooldown)) > now:
+            print(f"MQTT {feed} on cooldown for {(last_sent + timedelta(seconds=cooldown)) - now}.")
+            return False
+
         if self.AIO_CONNECTION_STATE is False:
             try:
                 if not self.connect_to_aio():
@@ -58,38 +105,8 @@ class AIO:
 
         try:
             self.__client.send_data(feed, value)
+            self.last_sent_time[feed] = now
             return True
         except RequestError as e:
             print(e)
             return False
-
-
-# def push_attn(feed="twitch-attn-indi"):
-#     if AddOhmsBot.AIO_CONNECTION_STATE is False:
-#         print("Not even trying, we aren't connected")
-#         return False
-#     try:
-#         AddOhmsBot.Adafruit_IO.send_data(feed, 1)
-#         return True
-#     except RequestError as e:
-#         print(e)
-#         return False
-
-
-# def increment_feed(feed="treat-counter-text"):
-#     if AddOhmsBot.AIO_CONNECTION_STATE is False:
-#         print("Not publishing, we aren't connected")
-#         return False
-
-#     feed_data = AddOhmsBot.Adafruit_IO.data(feed)  # returns an array of values
-#     feed_value = int(feed_data[0].value)  # this feed only has 1
-
-#     feed_value += 1
-
-#     print("sending count: ", feed_value)
-#     try:
-#         AddOhmsBot.Adafruit_IO.send_data("treat-counter-text", feed_value)
-#         return True
-#     except RequestError as e:
-#         print(e)
-#         return False
