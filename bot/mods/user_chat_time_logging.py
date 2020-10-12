@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Union
 
+from mods.database_models import Users
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import channels
@@ -8,8 +9,6 @@ from twitchbot import get_user_id
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot.database.session import session
-
-from mods.database_models import Users
 
 
 class UserChatTimeLogging(Mod):
@@ -68,11 +67,11 @@ class UserChatTimeLogging(Mod):
                     session.commit()
 
             self.user_joined[(user_name, user_id)] = datetime.now()
-            print(f"{user_name} has joined #{channel.name}, in database: {bool(in_database)}")
+            print(f"{datetime.now().isoformat()}: {user_name} has joined #{channel.name}, in database: {bool(in_database)}")
 
     async def on_user_part(self, user: str, channel: Channel) -> None:
         """User has left the channel"""
-        print(f"{user} left #{channel.name}")
+        print(f"{datetime.now().isoformat()}: {user} left #{channel.name}")
 
         # Don't run if it's just the bot leaving
         if user != cfg.nick:

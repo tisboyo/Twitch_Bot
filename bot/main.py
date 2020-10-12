@@ -1,9 +1,8 @@
 import asyncio
 
-from twitchbot.bots import BaseBot
-
 import version_check  # noqa: F401
 from baldaio import AIO as Adafruit_IO
+from twitchbot.bots import BaseBot
 
 
 class AddOhmsBot(BaseBot):

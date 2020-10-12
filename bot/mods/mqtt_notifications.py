@@ -1,11 +1,10 @@
 from json import dumps
 
+from main import AddOhmsBot
 from twitchbot import Channel
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import PubSubData
-
-from main import AddOhmsBot
 
 
 class MqttNotifications(Mod):

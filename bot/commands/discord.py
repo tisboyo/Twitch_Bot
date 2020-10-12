@@ -1,6 +1,5 @@
-from twitchbot import Command
-
 from main import AddOhmsBot
+from twitchbot import Command
 
 
 @Command("discord")

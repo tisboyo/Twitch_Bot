@@ -1,0 +1,40 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "bot"
+		},
+		{
+			"path": "web"
+		}
+	],
+	"settings": {
+		"platformSettings.autoLoad": true,
+		"platformSettings.platforms": {
+			"win32": {
+				"nodes": {
+					"python.pythonPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+					"python.linting.pylintEnabled": false,
+					"python.linting.flake8Enabled": true,
+					"python.linting.enabled": true,
+					"python.formatting.blackPath": "${env:USERPROFILE}\\.local\\bin\\black.exe",
+					"editor.formatOnPaste": false,
+					"files.eol": "\n",
+				}
+			},
+			"linux": {
+				"nodes": {
+					"python.pythonPath": "/usr/local/bin/python",
+					"python.linting.pylintEnabled": false,
+					"python.linting.flake8Enabled": true,
+					"python.linting.enabled": true,
+					"python.formatting.blackPath": "/usr/local/bin/black",
+					"editor.formatOnPaste": false,
+					"files.eol": "\n",
+				}
+			}
+		},
+	}
+}

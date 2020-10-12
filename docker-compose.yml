@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  bot:
+    build: ./bot/
+    restart: unless-stopped
+    volumes:
+      - ./database.sqlite:/workspace/bot/database.sqlite
+      - ./configs:/workspace/bot/configs/
+      - ./irc_logs:/workspace/bot/irc_logs/
+      - ./jsons:/workspace/bot/jsons/
+      # Uncommenting this disables the requirement to re-build on updates, useful for dev.
+      # - ./bot:/workspace/bot/
+
+  webserver:
+    build: ./web/
+    restart: unless-stopped
+    ports:
+      - 8080:80
+
+    # Uncommenting these disables the requirement to re-build on updates, useful for dev.
+    # volumes:
+    #   - ./web:/workspace/web/

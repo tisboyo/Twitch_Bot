@@ -1,16 +1,19 @@
 from asyncio import sleep
 from datetime import datetime
+from datetime import timedelta
 
+import pytz
+from main import AddOhmsBot
 from twitchbot import add_task
 from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import Mod
 from twitchbot import ModCommand
 from twitchbot import stop_task
+from twitchbot import SubCommand
 from twitchbot import task_exist
 from twitchbot.database.session import session
 
-from main import AddOhmsBot
 from mods.database_models import Announcements
 
 
@@ -22,6 +25,8 @@ class AutoMessageStarterMod(Mod):
         self.enable = True
         self.delay = 900  # seconds
         self.chan = cfg.channels[0]
+        self.next_run = datetime.min
+        self.timezone = pytz.timezone("America/Chicago")
 
     @property
     def delay(self):
@@ -36,6 +41,8 @@ class AutoMessageStarterMod(Mod):
         while True:
             # Try except to prevent loop from accidentally crashing, no known reasons to crash.
             try:
+                now = datetime.now(tz=self.timezone)
+                self.next_run = now + timedelta(seconds=self.delay)
                 await sleep(self.delay)
                 # This is done so the loop will continue to run and not exit out because the loop has ended
                 # if done as a while enabled
@@ -61,19 +68,24 @@ class AutoMessageStarterMod(Mod):
             except Exception as e:
                 print(e)
 
-    @ModCommand(name, "announce_enable", permission="admin")
+    @ModCommand(name, "announce", permission="admin")
+    async def announce(self, msg, *args):
+        # Announce parent command
+        pass
+
+    @SubCommand(announce, "enable", permission="admin")
     async def announce_enable(self, msg, *args):
         self.enable = True
         print("Enabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Announcements, announcements, ANNOUNCEMENTS!")
 
-    @ModCommand(name, "announce_disable", permission="admin")
+    @SubCommand(announce, "disable", permission="admin")
     async def announce_disable(self, msg, *args):
         self.enable = False
         print("Disabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Disabling announcements")
 
-    @ModCommand(name, "announce_time", permission="admin")
+    @SubCommand(announce, "time", permission="admin")
     async def announce_time(self, msg, time: int = 0):
         try:
             # Make sure we receive a positive number
@@ -86,7 +98,7 @@ class AutoMessageStarterMod(Mod):
         except ValueError:
             await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid time, please use an integer in seconds")
 
-    @ModCommand(name, "announce_list", permission="admin")
+    @SubCommand(announce, "list", permission="admin")
     async def announce_list(self, *args):
         result = session.query(Announcements).order_by(Announcements.id).all()
 
@@ -97,7 +109,7 @@ class AutoMessageStarterMod(Mod):
             print(f"{each.id:3} : {each.times_sent:4} : {each.text}")
         print("".center(80, "*"))
 
-    @ModCommand(name, "announce_del", permission="admin")
+    @SubCommand(announce, "del", permission="admin")
     async def announce_del(self, msg, *args):
 
         try:
@@ -119,8 +131,8 @@ class AutoMessageStarterMod(Mod):
         else:
             print(f"{result} Announcement deleted.")
 
-    @ModCommand(name, "announce", permission="admin")
-    async def announce(self, msg, *args):
+    @SubCommand(announce, "add", permission="admin")
+    async def announce_add(self, msg, *args):
 
         message = ""
 
@@ -135,6 +147,23 @@ class AutoMessageStarterMod(Mod):
         session.commit()
 
         print("...done")
+
+    @SubCommand(announce, "status", permission="admin")
+    async def announce_status(self, msg, *args):
+        """Sends the current status of the announcements"""
+
+        status = "Enabled" if self.enable else "Disabled"
+        next_run_seconds = self.next_run - datetime.now(self.timezone)
+        # num_of_announcements = "1/1" # TODO #18
+        replies = [
+            f"Current status is {status}",
+            f"Current delay is {self.delay} seconds. ",
+            f"Next send time will be {self.next_run.strftime('%H:%M:%S')} which is in {str(next_run_seconds)[:-7]}.",
+            # f"{num_of_announcements} of announcements enabled.", # TODO #18
+        ]
+
+        for reply in replies:
+            await msg.reply(reply)
 
     def restart_task(self):
         if task_exist(self.task_name):

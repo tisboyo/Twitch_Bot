@@ -1,12 +1,11 @@
 import re
 
 import aiohttp
+from main import AddOhmsBot
 from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import Message
 from twitchbot import Mod
-
-from main import AddOhmsBot
 
 
 class LinksToDiscord(Mod):
