@@ -15,6 +15,7 @@ from twitchbot import task_exist
 from twitchbot.database.session import session
 
 from mods.database_models import Announcements
+from mods.database_models import Settings
 
 
 class AutoMessageStarterMod(Mod):
@@ -23,7 +24,8 @@ class AutoMessageStarterMod(Mod):
 
     def __init__(self):
         self.enable = True
-        self.delay = 900  # seconds
+        query = session.query(Settings.value).filter(Settings.key == "announcement_delay").one_or_none()
+        self.delay = int(query[0]) if query is not None else 900
         self.chan = cfg.channels[0]
         self.next_run = datetime.min
         self.timezone = pytz.timezone("America/Chicago")
@@ -86,17 +88,29 @@ class AutoMessageStarterMod(Mod):
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Disabling announcements")
 
     @SubCommand(announce, "time", permission="admin")
-    async def announce_time(self, msg, time: int = 0):
+    async def announce_time(self, msg, time: int = None):
         try:
             # Make sure we receive a positive number
             if int(time) < 1:
                 raise ValueError
 
             self.delay = int(time)
+            updated = session.query(Settings).filter(Settings.key == "announcement_delay").update({"value": self.delay})
+
+            if not updated:
+                # Insert if it wasn't updated, because it didn't exist.
+                insert = Settings(key="announcement_delay", value=self.delay)
+                session.add(insert)
+
+            session.commit()
             self.restart_task()
             await msg.reply(f"{AddOhmsBot.msg_prefix}New announce time is {time} seconds")
         except ValueError:
             await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid time, please use an integer in seconds")
+        except TypeError:
+            await msg.reply(f"{AddOhmsBot.msg_prefix} Current announce time is {self.delay} seconds.")
+        except Exception as e:
+            print(type(e), e)
 
     @SubCommand(announce, "list", permission="admin")
     async def announce_list(self, *args):
