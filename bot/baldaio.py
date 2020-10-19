@@ -7,9 +7,9 @@ from typing import Union
 from Adafruit_IO import Client
 from Adafruit_IO.errors import RequestError as RequestError
 from twitchbot import cfg
-from twitchbot.database.session import session
 
-from mods.database_models import Settings
+from mods._database_models import session
+from mods._database_models import Settings
 
 
 class AIO:

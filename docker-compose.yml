@@ -4,12 +4,12 @@ services:
   bot:
     build: ./bot/
     restart: unless-stopped
+    depends_on:
+      - mysql
     volumes:
-      - ./database.sqlite:/workspace/bot/database.sqlite
       - ./configs:/workspace/bot/configs/
       - ./irc_logs:/workspace/bot/irc_logs/
       - ./jsons:/workspace/bot/jsons/
-      # Uncommenting this disables the requirement to re-build on updates, useful for dev.
       # - ./bot:/workspace/bot/
 
   webserver:
@@ -17,7 +17,24 @@ services:
     restart: unless-stopped
     ports:
       - 8080:80
-
+    depends_on:
+      - mysql
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
     #   - ./web:/workspace/web/
+
+  mysql:
+    image: mysql:latest
+    volumes:
+      - ./db_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: twitchbot
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE

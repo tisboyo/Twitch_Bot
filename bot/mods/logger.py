@@ -9,10 +9,10 @@ from twitchbot import Channel
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import PubSubData
-from twitchbot.database.session import session
 
-from mods.database_models import Subscriptions
-from mods.database_models import Users
+from mods._database_models import session
+from mods._database_models import Subscriptions
+from mods._database_models import Users
 
 
 class TwitchLog(Mod):

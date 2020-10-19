@@ -1,9 +1,10 @@
 from datetime import datetime
 
-from mods.database_models import Users
 from twitchbot import Message
 from twitchbot import Mod
-from twitchbot.database.session import session
+
+from mods._database_models import session
+from mods._database_models import Users
 
 
 class UserMessageCount(Mod):

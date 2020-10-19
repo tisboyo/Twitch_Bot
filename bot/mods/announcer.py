@@ -12,10 +12,10 @@ from twitchbot import ModCommand
 from twitchbot import stop_task
 from twitchbot import SubCommand
 from twitchbot import task_exist
-from twitchbot.database.session import session
 
-from mods.database_models import Announcements
-from mods.database_models import Settings
+from mods._database_models import Announcements
+from mods._database_models import session
+from mods._database_models import Settings
 
 
 class AutoMessageStarterMod(Mod):

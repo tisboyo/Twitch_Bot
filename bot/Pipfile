@@ -15,6 +15,7 @@ aiohttp = "==3.6.2"
 adafruit-io = "*"
 sqlalchemy = "*"
 pytz = "*"
+mysql-connector-python = "*"
 
 [requires]
 python_version = "3.8"

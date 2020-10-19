@@ -1,10 +1,11 @@
 from main import AddOhmsBot
-from mods.database_models import Settings
 from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import Command
 from twitchbot import CommandContext
-from twitchbot.database.session import session
+
+from mods._database_models import session
+from mods._database_models import Settings
 
 
 @Command("topic", context=CommandContext.BOTH)

@@ -149,3 +149,4 @@ jsons/*.json
 irc_logs/*.log
 bot/irc_logs/
 bot/jsons/
+db_data/
