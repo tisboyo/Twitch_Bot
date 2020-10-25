@@ -168,6 +168,65 @@ class AutoMessageStarterMod(Mod):
 
         print("...done")
 
+    @SubCommand(announce, "disable", permission="admin")
+    async def announce_disable(self, msg, *args):
+        "Disables posting an announcement by ID"
+        try:
+            index = int(args[0])
+
+        except IndexError:
+            await msg.reply(f"{AddOhmsBot.msg_prefix} Try again with an ID")
+            return
+
+        except ValueError:
+            if args[0] == "last":
+                result = session.query(Announcements.id).order_by(Announcements.last_sent.desc()).first()
+                index = result.id
+                print(f"Disabling ID {index}")
+            else:
+                await msg.reply(f"{AddOhmsBot.msg_prefix} Try again with an ID Number")
+                return
+
+        except Exception as e:
+            print(type(e), e)
+            return
+
+        successful = session.query(Announcements).filter(Announcements.id == index).update({"enabled": False})
+        if successful:
+            print(f"Disabled announcement ID {index}")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Disabled announcement ID {index}")
+            session.commit()
+        else:
+            print(f"Announcement ID {index} not found.")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement ID {index} not found.")
+
+    @SubCommand(announce, "enable", permission="admin")
+    async def announce_enable(self, msg, *args):
+        "Disables posting an announcement by ID"
+        try:
+            index = int(args[0])
+
+        except IndexError:
+            await msg.reply(f"{AddOhmsBot.msg_prefix} Try again with an ID")
+            return
+
+        except ValueError:
+            await msg.reply(f"{AddOhmsBot.msg_prefix} Try again with an ID Number")
+            return
+
+        except Exception as e:
+            print(type(e), e)
+            return
+
+        successful = session.query(Announcements).filter(Announcements.id == index).update({"enabled": True})
+        if successful:
+            print(f"Enabled announcement ID {index}")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Enabled announcement ID {index}")
+            session.commit()
+        else:
+            print(f"Announcement ID {index} not found.")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement ID {index} not found.")
+
     @SubCommand(announce, "status", permission="admin")
     async def announce_status(self, msg, *args):
         """Sends the current status of the announcements"""
