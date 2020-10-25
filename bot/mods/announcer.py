@@ -75,14 +75,14 @@ class AutoMessageStarterMod(Mod):
         # Announce parent command
         pass
 
-    @SubCommand(announce, "enable", permission="admin")
-    async def announce_enable(self, msg, *args):
+    @SubCommand(announce, "start", permission="admin")
+    async def announce_start(self, msg, *args):
         self.enable = True
         print("Enabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Announcements, announcements, ANNOUNCEMENTS!")
 
-    @SubCommand(announce, "disable", permission="admin")
-    async def announce_disable(self, msg, *args):
+    @SubCommand(announce, "stop", permission="admin")
+    async def announce_stop(self, msg, *args):
         self.enable = False
         print("Disabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Disabling announcements")
