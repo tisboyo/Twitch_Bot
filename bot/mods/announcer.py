@@ -193,8 +193,9 @@ class AutoMessageStarterMod(Mod):
 
         successful = session.query(Announcements).filter(Announcements.id == index).update({"enabled": False})
         if successful:
+            result = session.query(Announcements).filter(Announcements.id == index).one_or_none()
             print(f"Disabled announcement ID {index}")
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Disabled announcement ID {index}")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Disabled announcement ID {index}: {str(result.text)}")
             session.commit()
         else:
             print(f"Announcement ID {index} not found.")
@@ -233,12 +234,13 @@ class AutoMessageStarterMod(Mod):
 
         status = "Enabled" if self.enable else "Disabled"
         next_run_seconds = self.next_run - datetime.now(self.timezone)
-        # num_of_announcements = "1/1" # TODO #18
+        enabled = session.query(Announcements).filter(Announcements.enabled == True).count()  # noqa E712
+        total_count = session.query(Announcements).count()
         replies = [
-            f"Current status is {status}",
-            f"Current delay is {self.delay} seconds. ",
-            f"Next send time will be {self.next_run.strftime('%H:%M:%S')} which is in {str(next_run_seconds)[:-7]}.",
-            # f"{num_of_announcements} of announcements enabled.", # TODO #18
+            f"{AddOhmsBot.msg_prefix}Current status is {status}",
+            f"{AddOhmsBot.msg_prefix}Current delay is {self.delay} seconds. ",
+            f"{AddOhmsBot.msg_prefix}Next send time will be {self.next_run.strftime('%H:%M:%S')} which is in {str(next_run_seconds)[:-7]}.",  # noqa E501
+            f"{AddOhmsBot.msg_prefix}{enabled}/{total_count} of announcements enabled.",
         ]
 
         for reply in replies:
