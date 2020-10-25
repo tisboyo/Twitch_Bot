@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import create_engine
 from sqlalchemy import DateTime
@@ -52,6 +53,7 @@ class Announcements(Base):
     created_date = Column(DateTime(), default=datetime.now)
     last_sent = Column(DateTime(), default=datetime.now)
     times_sent = Column(Integer(), default=0)
+    enabled = Column(Boolean(), default=True)
 
 
 class Settings(Base):

@@ -51,7 +51,12 @@ class AutoMessageStarterMod(Mod):
                 if self.enable:
 
                     # data = await load_data(self.__savefile)
-                    result = session.query(Announcements).order_by(Announcements.last_sent).first()
+                    result = (
+                        session.query(Announcements)
+                        .filter(Announcements.enabled == True)  # noqa E712 SQLAlchemy doesn't work with `is True`
+                        .order_by(Announcements.last_sent)
+                        .first()
+                    )
 
                     # Make sure there are entries in the dictioary
                     if result is None:
@@ -117,10 +122,11 @@ class AutoMessageStarterMod(Mod):
         result = session.query(Announcements).order_by(Announcements.id).all()
 
         print("Announcements".center(80, "*"))
-        print("     Times")
-        print(" ID : Sent : Text")
+        print("          Times")
+        print(" ID : EN : Sent : Text")
         for each in result:
-            print(f"{each.id:3} : {each.times_sent:4} : {each.text}")
+            en = "Y" if each.enabled else "N"
+            print(f"{each.id:3} :  {en} : {each.times_sent:4} : {each.text}")
         print("".center(80, "*"))
 
     @SubCommand(announce, "del", permission="admin")
