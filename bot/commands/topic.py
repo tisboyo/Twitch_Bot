@@ -3,6 +3,7 @@ from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import Command
 from twitchbot import CommandContext
+from twitchbot import SubCommand
 
 from mods._database_models import session
 from mods._database_models import Settings
@@ -27,7 +28,7 @@ async def topic(msg, *args):
             print(e)
 
 
-@Command("set_topic", permission="admin", context=CommandContext.BOTH)
+@SubCommand(topic, "set", permission="admin")
 async def set_topic(msg, *args):
 
     topic = ""
