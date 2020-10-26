@@ -146,7 +146,7 @@ class TwitchLog(Mod):
         server_id = raw.message_dict["channel_id"]
         sub_level = raw.message_dict["sub_plan"]
         cumulative_months = raw.message_dict["cumulative_months"]
-        streak_months = raw.message_dict["streak_months"]
+        streak_months = raw.message_dict["streak_months"] if "streak_months" in raw.message_dict else 0
 
         rows_affected = (
             session.query(Subscriptions)
