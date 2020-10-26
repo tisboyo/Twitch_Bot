@@ -17,10 +17,6 @@ repos:
         -   id: mixed-line-ending
             args: ['--fix=lf']
         -   id: no-commit-to-branch
-        -   id: pretty-format-json
-
-
-
 
     -   repo: https://github.com/asottile/reorder_python_imports
         rev: v2.3.5
