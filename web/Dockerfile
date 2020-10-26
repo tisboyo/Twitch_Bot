@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
 
 
 # Setup pipenv
-RUN pip install pipenv
+RUN pip install --upgrade pip pipenv
 RUN pipenv install --system --deploy
 
 # Expose port for debugging

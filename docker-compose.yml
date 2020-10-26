@@ -15,10 +15,17 @@ services:
   webserver:
     build: ./web/
     restart: unless-stopped
-    ports:
-      - 8080:80
+    expose:
+      - 5000
     depends_on:
       - mysql
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`${WEB_HOSTNAME}`)"
+      - "traefik.http.routers.fastapi.tls=true"
+      - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
+
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
     #   - ./web:/workspace/web/
@@ -38,3 +45,15 @@ services:
 
     cap_add:
       - SYS_NICE  # CAP_SYS_NICE
+
+  traefik:
+    image: traefik:v2.3
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/traefik.toml:/etc/traefik/traefik.toml"
+      - "./traefik/acme.json:/acme.json"
+    environment:
+      - "TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL"
