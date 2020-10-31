@@ -1,3 +1,5 @@
+from os import getenv
+
 from twitchbot import cfg
 from twitchbot import get_pubsub
 from twitchbot import Mod
@@ -26,6 +28,6 @@ class PubSub(Mod):
                     PubSubTopics.channel_subscriptions,
                     PubSubTopics.bits_badge_notification,
                 ],
-                access_token=cfg.pubsub_oauth,
+                access_token=getenv("PUBSUB_OAUTH"),
             )
             print(f"PubSub active for {channel}")

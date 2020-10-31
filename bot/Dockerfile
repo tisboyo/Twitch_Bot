@@ -1,5 +1,7 @@
 FROM python:3.8
 
+# Any environment variables that are stored in
+# the .env file must be loaded in docker-compose.yml
 # Set pip to have cleaner logs and no saved cache
 ENV PIP_NO_CACHE_DIR=false \
     PIPENV_HIDE_EMOJIS=1 \

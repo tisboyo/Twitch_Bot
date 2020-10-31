@@ -11,6 +11,13 @@ services:
       - ./irc_logs:/workspace/bot/irc_logs/
       - ./jsons:/workspace/bot/jsons/
       # - ./bot:/workspace/bot/
+    environment:
+      client_id: ${TWITCH_CLIENT_ID} #Lower cased because a framework issue
+      nick: ${TWITCH_NICK}
+      oauth: ${TWITCH_OAUTH}
+      PUBSUB_OAUTH: ${TWITCH_PUBSUB_OAUTH}
+      ADAFRUIT_IO_USER: ${ADAFRUIT_IO_USER}
+      ADAFRUIT_IO_KEY: ${ADAFRUIT_IO_KEY}
 
   webserver:
     build: ./web/
@@ -26,6 +33,10 @@ services:
       - "traefik.http.routers.fastapi.tls=true"
       - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
 
+    environment:
+      WEB_HOSTNAME: ${WEB_HOSTNAME}
+      CLIENT_ID: ${TWITCH_CLIENT_ID}
+
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
     #   - ./web:/workspace/web/
@@ -39,7 +50,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: twitchbot
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 
