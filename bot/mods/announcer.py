@@ -23,12 +23,16 @@ class AutoMessageStarterMod(Mod):
     task_name = "automessage"
 
     def __init__(self):
-        self.enable = True
         query = session.query(Settings.value).filter(Settings.key == "announcement_delay").one_or_none()
         self.delay = int(query[0]) if query is not None else 900
         self.chan = cfg.channels[0]
         self.next_run = datetime.min
         self.timezone = pytz.timezone("America/Chicago")
+
+        self.enable = session.query(Settings.value).filter(Settings.key == "announcement_enabled").one_or_none()
+        if self.enable is None:
+            insert = Settings(key="announcement_enabled", value=True)
+            session.add(insert)
 
     @property
     def delay(self):
@@ -85,12 +89,16 @@ class AutoMessageStarterMod(Mod):
         self.enable = True
         print("Enabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Announcements, announcements, ANNOUNCEMENTS!")
+        session.query(Settings).filter(Settings.key == "announcement_enabled").update({"value": True})
+        session.commit()
 
     @SubCommand(announce, "stop", permission="admin")
     async def announce_stop(self, msg, *args):
         self.enable = False
         print("Disabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Disabling announcements")
+        session.query(Settings).filter(Settings.key == "announcement_enabled").update({"value": False})
+        session.commit()
 
     @SubCommand(announce, "time", permission="admin")
     async def announce_time(self, msg, time: int = None):
