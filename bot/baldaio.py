@@ -16,7 +16,7 @@ class AIO:
 
     def __init__(self):
         # Secret can be set in either an environment variable (used first) or config.json
-        self.ADAFRUIT_IO_USERNAME = getenv("ADAFRUIT_IO_USERNAME")
+        self.ADAFRUIT_IO_USERNAME = getenv("ADAFRUIT_IO_USER")
         self.ADAFRUIT_IO_KEY = getenv("ADAFRUIT_IO_KEY")
 
         # The connection handle for making calls
