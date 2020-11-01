@@ -1,12 +1,11 @@
 # Import standard python modules
 from datetime import datetime
 from datetime import timedelta
-from os import environ as secrets
+from os import getenv
 from typing import Union
 
 from Adafruit_IO import Client
 from Adafruit_IO.errors import RequestError as RequestError
-from twitchbot import cfg
 
 from mods._database_models import session
 from mods._database_models import Settings
@@ -17,8 +16,8 @@ class AIO:
 
     def __init__(self):
         # Secret can be set in either an environment variable (used first) or config.json
-        self.ADAFRUIT_IO_USERNAME = secrets.get("ADAFRUIT_IO_USERNAME", False) or cfg.adafruit_io_user
-        self.ADAFRUIT_IO_KEY = secrets.get("ADAFRUIT_IO_KEY", False) or cfg.adafruit_io_key
+        self.ADAFRUIT_IO_USERNAME = getenv("ADAFRUIT_IO_USERNAME")
+        self.ADAFRUIT_IO_KEY = getenv("ADAFRUIT_IO_KEY")
 
         # The connection handle for making calls
         self.__client = None
