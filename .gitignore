@@ -141,16 +141,15 @@ cython_debug/
 *.sqlite
 
 # pythontwitchbotframework config
-configs/
-keys.py
+configs/*.json
+bot/configs/
 
-*.7z
+#log/data files
+jsons/*.json
+irc_logs/*.log
+bot/irc_logs/
+bot/jsons/
+db_data/
 
-#sound file
-error.wav
-
-#adafruit IO stuff
-aio_secrets.py
-
-#data files
-*.json
+#traefik config file
+traefik/acme.json

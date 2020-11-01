@@ -1,0 +1,70 @@
+version: "3"
+
+services:
+  bot:
+    build: ./bot/
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    volumes:
+      - ./configs:/workspace/bot/configs/
+      - ./irc_logs:/workspace/bot/irc_logs/
+      - ./jsons:/workspace/bot/jsons/
+      # - ./bot:/workspace/bot/
+    environment:
+      client_id: ${TWITCH_CLIENT_ID} #Lower cased because a framework issue
+      nick: ${TWITCH_NICK}
+      oauth: ${TWITCH_OAUTH}
+      PUBSUB_OAUTH: ${TWITCH_PUBSUB_OAUTH}
+      ADAFRUIT_IO_USER: ${ADAFRUIT_IO_USER}
+      ADAFRUIT_IO_KEY: ${ADAFRUIT_IO_KEY}
+
+  webserver:
+    build: ./web/
+    restart: unless-stopped
+    expose:
+      - 5000
+    depends_on:
+      - mysql
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`${WEB_HOSTNAME}`)"
+      - "traefik.http.routers.fastapi.tls=true"
+      - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
+
+    environment:
+      WEB_HOSTNAME: ${WEB_HOSTNAME}
+      CLIENT_ID: ${TWITCH_CLIENT_ID}
+
+    # Uncommenting these disables the requirement to re-build on updates, useful for dev.
+    # volumes:
+    #   - ./web:/workspace/web/
+
+  mysql:
+    image: mysql:latest
+    volumes:
+      - ./db_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE
+
+  traefik:
+    image: traefik:v2.3
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/traefik.toml:/etc/traefik/traefik.toml"
+      - "./traefik/acme.json:/acme.json"
+    environment:
+      - "TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL"

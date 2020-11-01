@@ -2,17 +2,17 @@ from datetime import date
 from datetime import datetime
 
 from aiofile import AIOFile
+from data import load_data
+from data import save_data
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import PubSubData
-from twitchbot.database.session import session
 
-from data import load_data
-from data import save_data
-from mods.database_models import Subscriptions
-from mods.database_models import Users
+from mods._database_models import session
+from mods._database_models import Subscriptions
+from mods._database_models import Users
 
 
 class TwitchLog(Mod):
@@ -61,6 +61,26 @@ class TwitchLog(Mod):
             data = f"{datetime.now().isoformat()}:{raw.raw_data}"
             await afp.write(data + "\n")
             await afp.fsync()
+
+        if len(raw.message_data) == 0:
+            # Happens at startup, and possibly other times.
+            pass
+
+        elif raw.is_channel_points_redeemed:
+            # Channel points received
+            pass
+        elif raw.is_bits:  # Bits receieved
+            # Bits received, nothing to do here
+            pass
+        elif raw.is_moderation_action and raw.moderation_action == "raid":
+            # Raided another channel
+            pass
+        elif raw.is_moderation_action and raw.moderation_action == "ban":
+            # User banned
+            pass
+        else:
+            # Unknown pubsub received, print out the data
+            print(f"Unknown pubsub received: {raw.message_data}")
 
     async def on_pubsub_bits(self, raw: PubSubData, data) -> None:
         """Send MQTT push when a us4er redeems bits"""
@@ -126,7 +146,7 @@ class TwitchLog(Mod):
         server_id = raw.message_dict["channel_id"]
         sub_level = raw.message_dict["sub_plan"]
         cumulative_months = raw.message_dict["cumulative_months"]
-        streak_months = raw.message_dict["streak_months"]
+        streak_months = raw.message_dict["streak_months"] if "streak_months" in raw.message_dict else 0
 
         rows_affected = (
             session.query(Subscriptions)
