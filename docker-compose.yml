@@ -18,6 +18,9 @@ services:
       PUBSUB_OAUTH: ${TWITCH_PUBSUB_OAUTH}
       ADAFRUIT_IO_USER: ${ADAFRUIT_IO_USER}
       ADAFRUIT_IO_KEY: ${ADAFRUIT_IO_KEY}
+      WEB_HOSTNAME: ${WEB_HOSTNAME}
+      TWITCH_CHANNEL: ${TWITCH_CHANNEL}
+
 
   webserver:
     build: ./web/
@@ -36,6 +39,10 @@ services:
     environment:
       WEB_HOSTNAME: ${WEB_HOSTNAME}
       CLIENT_ID: ${TWITCH_CLIENT_ID}
+      PUBSUB_OAUTH: ${TWITCH_PUBSUB_OAUTH}
+      TWITCH_CHANNEL: ${TWITCH_CHANNEL}
+      ADAFRUIT_IO_USER: ${ADAFRUIT_IO_USER}
+      ADAFRUIT_IO_KEY: ${ADAFRUIT_IO_KEY}
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
