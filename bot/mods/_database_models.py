@@ -63,7 +63,7 @@ class Settings(Base):
     # __table_args__ = {"extend_existing": True}
     id = Column(Integer(), primary_key=True)
     key = Column(String(128), nullable=False, unique=True)
-    value = Column(String(256), nullable=False)
+    value = Column(String(1024), nullable=False)
 
 
 # Put all Table classes above here
