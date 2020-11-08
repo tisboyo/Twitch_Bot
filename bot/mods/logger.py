@@ -121,7 +121,12 @@ class TwitchLog(Mod):
             )
             session.add(user_object)
 
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)
 
     async def on_pubsub_subscription(self, raw: "PubSubData", data):
         """Twitch subscription event"""
@@ -166,4 +171,9 @@ class TwitchLog(Mod):
             )
             session.add(user_object)
 
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)
