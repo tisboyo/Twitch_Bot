@@ -9,7 +9,7 @@ flake8 = "*"
 pre-commit = "*"
 
 [packages]
-pythontwitchbotframework = "*"
+pythontwitchbotframework = "1.16.10"
 aiofile = "*"
 aiohttp = "==3.6.2"
 adafruit-io = "*"
