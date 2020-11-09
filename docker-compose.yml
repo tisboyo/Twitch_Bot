@@ -50,6 +50,7 @@ services:
 
   mysql:
     image: mysql:latest
+    restart: unless-stopped
     volumes:
       - ./db_data:/var/lib/mysql
     ports:
@@ -66,6 +67,7 @@ services:
 
   traefik:
     image: traefik:v2.3
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
