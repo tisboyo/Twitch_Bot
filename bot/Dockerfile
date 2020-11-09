@@ -25,6 +25,8 @@ RUN apt-get update && apt-get install -y \
 # Create the working directory
 WORKDIR /workspace/bot/
 
+EXPOSE 13337
+
 #Copy the bot to a working directory
 COPY ./ /workspace/bot/
 
