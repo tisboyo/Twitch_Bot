@@ -35,6 +35,8 @@ services:
       - "traefik.http.routers.fastapi.rule=Host(`${WEB_HOSTNAME}`)"
       - "traefik.http.routers.fastapi.tls=true"
       - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
+      - "deck-chores.webhook-subscribe.command=sh -c /workspace/web/webhook_requests.py &> /proc/1/fd/1"
+      - "deck-chores.webhook-subscribe.cron=* * * * * */6 * *"
 
     environment:
       WEB_HOSTNAME: ${WEB_HOSTNAME}
@@ -77,3 +79,11 @@ services:
       - "./traefik/acme.json:/acme.json"
     environment:
       - "TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL"
+
+  chores:
+    image: funkyfuture/deck-chores:1
+    restart: unless-stopped
+    environment:
+      TIMEZONE: America/Chicago
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

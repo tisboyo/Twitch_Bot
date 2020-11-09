@@ -13,21 +13,7 @@ base_domain = getenv("WEB_HOSTNAME")
 
 @app.on_event("startup")
 async def startup_event():
-    urls = [  # Format is Request, then fastapi path for Twitch to Post to.
-        (  # User Follows
-            "https://api.twitch.tv/helix/users/follows?first=1&to_id=461713054",
-            "/twitch-webhook/follow",
-        ),
-    ]
-
-    for url in urls:
-        await subscribe(url)
-
-
-async def subscribe(urls: tuple):
-    # print(urls)
-    post_url = f"https://{base_domain}{urls[1]}"
-    print(urls[0], post_url)
+    pass
 
 
 @app.get("/")
