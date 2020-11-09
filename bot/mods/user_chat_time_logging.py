@@ -47,7 +47,12 @@ class UserChatTimeLogging(Mod):
             await self.on_user_join(user_name, channel, commit=False)
 
         # Waited to commit so only one database commit was done on the server join
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)
 
     async def on_user_join(self, user_name: str, channel: Channel, commit: bool = True) -> None:
         """User has joined the channel"""
@@ -65,7 +70,12 @@ class UserChatTimeLogging(Mod):
                 user_object = Users(user_id=user_id, channel=channel_id, user=user_name)
                 session.add(user_object)
                 if commit:
-                    session.commit()
+                    try:
+                        session.commit()
+                    except Exception as e:
+                        session.rollback()
+                        print("SQLAlchemy Error, rolling back.")
+                        print(e)
 
             self.user_joined[(user_name, user_id)] = datetime.now()
             print(f"{datetime.now().isoformat()}: {user_name} has joined #{channel.name}, in database: {bool(in_database)}")
@@ -128,4 +138,9 @@ class UserChatTimeLogging(Mod):
                 del self.user_joined[user]
 
         # Commit the changes
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)

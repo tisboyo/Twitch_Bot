@@ -35,4 +35,9 @@ class UserMessageCount(Mod):
             user_object = Users(user_id=user_id, channel=server_id, user=msg.author, message_count=1)
             session.add(user_object)
 
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)

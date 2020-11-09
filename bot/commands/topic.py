@@ -41,6 +41,11 @@ async def set_topic(msg, *args):
         ins = Settings(key="topic", value=topic)
         session.add(ins)
 
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        print("SQLAlchemy Error, rolling back.")
+        print(e)
 
     await msg.reply(f"{AddOhmsBot.msg_prefix}Topic set.")

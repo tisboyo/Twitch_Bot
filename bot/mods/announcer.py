@@ -7,6 +7,7 @@ from main import AddOhmsBot
 from twitchbot import add_task
 from twitchbot import cfg
 from twitchbot import channels
+from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import ModCommand
 from twitchbot import stop_task
@@ -28,6 +29,8 @@ class AutoMessageStarterMod(Mod):
         self.chan = cfg.channels[0]
         self.next_run = datetime.min
         self.timezone = pytz.timezone("America/Chicago")
+        self.channel_active = False
+        self.announcements_sleeping = True
 
         self.enable = session.query(Settings.value).filter(Settings.key == "announcement_enabled").one_or_none()
         if self.enable is None:
@@ -52,10 +55,8 @@ class AutoMessageStarterMod(Mod):
                 await sleep(self.delay)
                 # This is done so the loop will continue to run and not exit out because the loop has ended
                 # if done as a while enabled
-                if self.enable:
-
-                    # data = await load_data(self.__savefile)
-                    result = (
+                if self.enable and self.channel_active:
+                    result = (  # Read the next announcement from the database
                         session.query(Announcements)
                         .filter(Announcements.enabled == True)  # noqa E712 SQLAlchemy doesn't work with `is True`
                         .order_by(Announcements.last_sent)
@@ -74,10 +75,35 @@ class AutoMessageStarterMod(Mod):
                     session.query(Announcements).filter(Announcements.id == result.id).update(
                         {"last_sent": datetime.now(), "times_sent": result.times_sent + 1}
                     )
-                    session.commit()
+                    try:
+                        session.commit()
+                    except Exception as e:
+                        session.rollback()
+                        print("SQLAlchemy Error, rolling back.")
+                        print(e)
+
+                    # Since we sent a message, going to clear the announcements_sleeping flag
+                    self.announcements_sleeping = False
+
+                    # Assuming the channel isn't active until proven otherwise
+                    self.channel_active = False
+
+                elif not self.channel_active:
+                    if not self.announcements_sleeping:
+                        await channels[self.chan].send_message(AddOhmsBot.msg_prefix + "It's so quiet in here...")
+                        self.announcements_sleeping = True
 
             except Exception as e:
                 print(e)
+
+    async def on_raw_message(self, msg: Message):
+        """
+        Tracks the last time a message was sent,
+        and if it was by the bot, consider the channel inactive.
+        """
+        if msg.is_user_message:
+            self.channel_active = True
+            self.announcements_sleeping = False
 
     @ModCommand(name, "announce", permission="admin")
     async def announce(self, msg, *args):
@@ -90,7 +116,12 @@ class AutoMessageStarterMod(Mod):
         print("Enabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Announcements, announcements, ANNOUNCEMENTS!")
         session.query(Settings).filter(Settings.key == "announcement_enabled").update({"value": True})
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)
 
     @SubCommand(announce, "stop", permission="admin")
     async def announce_stop(self, msg, *args):
@@ -98,7 +129,12 @@ class AutoMessageStarterMod(Mod):
         print("Disabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Disabling announcements")
         session.query(Settings).filter(Settings.key == "announcement_enabled").update({"value": False})
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)
 
     @SubCommand(announce, "time", permission="admin")
     async def announce_time(self, msg, time: int = None):
@@ -115,7 +151,13 @@ class AutoMessageStarterMod(Mod):
                 insert = Settings(key="announcement_delay", value=self.delay)
                 session.add(insert)
 
-            session.commit()
+            try:
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                print("SQLAlchemy Error, rolling back.")
+                print(e)
+
             self.restart_task()
             await msg.reply(f"{AddOhmsBot.msg_prefix}New announce time is {time} seconds")
         except ValueError:
@@ -172,7 +214,12 @@ class AutoMessageStarterMod(Mod):
 
         announcement_object = Announcements(text=message)
         session.add(announcement_object)
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)
 
         print("...done")
 
@@ -204,7 +251,12 @@ class AutoMessageStarterMod(Mod):
             result = session.query(Announcements).filter(Announcements.id == index).one_or_none()
             print(f"Disabled announcement ID {index}")
             await msg.reply(f"{AddOhmsBot.msg_prefix}Disabled announcement ID {index}: {str(result.text)}")
-            session.commit()
+            try:
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                print("SQLAlchemy Error, rolling back.")
+                print(e)
         else:
             print(f"Announcement ID {index} not found.")
             await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement ID {index} not found.")
@@ -231,7 +283,12 @@ class AutoMessageStarterMod(Mod):
         if successful:
             print(f"Enabled announcement ID {index}")
             await msg.reply(f"{AddOhmsBot.msg_prefix}Enabled announcement ID {index}")
-            session.commit()
+            try:
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                print("SQLAlchemy Error, rolling back.")
+                print(e)
         else:
             print(f"Announcement ID {index} not found.")
             await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement ID {index} not found.")

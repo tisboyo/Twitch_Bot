@@ -82,7 +82,12 @@ class AIO:
             session.query(Settings).filter(Settings.key == f"mqtt_cooldown_{feed}").update({"value": cooldown})
             self.mqtt_cooldown[feed] = cooldown
 
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)
 
     def send(self, feed, value: Union[str, int] = 1):
         """Send to an AdafruitIO topic"""
