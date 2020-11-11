@@ -76,7 +76,7 @@ class Database(Mod):
         engine = create_engine(
             f"mysql+mysqlconnector://{mysql_cfg.username}:{mysql_cfg.password}@{mysql_cfg.address}:{mysql_cfg.port}/{mysql_cfg.database}"  # noqa E501
         )
-        Session = orm.sessionmaker(bind=engine)
+        Session = orm.sessionmaker(bind=engine, autoflush=True)
         self.session = orm.scoped_session(Session)
         Base.metadata.create_all(engine)
 
