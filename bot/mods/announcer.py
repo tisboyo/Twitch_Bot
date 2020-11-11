@@ -31,6 +31,7 @@ class AutoMessageStarterMod(Mod):
         self.timezone = pytz.timezone("America/Chicago")
         self.channel_active = False
         self.announcements_sleeping = True
+        self.sleep_override = False
 
         self.enable = session.query(Settings.value).filter(Settings.key == "announcement_enabled").one_or_none()
         if self.enable is None:
@@ -55,7 +56,7 @@ class AutoMessageStarterMod(Mod):
                 await sleep(self.delay)
                 # This is done so the loop will continue to run and not exit out because the loop has ended
                 # if done as a while enabled
-                if self.enable and self.channel_active:
+                if self.enable and (self.channel_active or self.sleep_override):
                     result = (  # Read the next announcement from the database
                         session.query(Announcements)
                         .filter(Announcements.enabled == True)  # noqa E712 SQLAlchemy doesn't work with `is True`
@@ -109,6 +110,12 @@ class AutoMessageStarterMod(Mod):
     async def announce(self, msg, *args):
         # Announce parent command
         pass
+
+    @SubCommand(announce, "nosleep", permission="admin")
+    async def announce_nosleep(self, msg, *args):
+        self.sleep_override = not self.sleep_override
+        status = "disabled" if self.sleep_override else "enabled"
+        await msg.reply(f"{AddOhmsBot.msg_prefix}Announce auto-sleep status is now {status}.")
 
     @SubCommand(announce, "start", permission="admin")
     async def announce_start(self, msg, *args):
