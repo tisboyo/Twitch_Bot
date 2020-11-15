@@ -23,7 +23,8 @@ class ChannelPoints(Mod):
         }
 
     async def on_channel_points_redemption(self, msg: Message, reward: str):
-        await self.points_redeemed(reward)
+        # Non-Custom Channel points, like Highlight Message
+        await self.points_redeemed(reward, msg)
 
     async def on_pubsub_received(self, raw: PubSubData):
 
@@ -35,12 +36,11 @@ class ChannelPoints(Mod):
             r = raw.message_data["redemption"]["reward"]["title"]
             await self.points_redeemed(r)
 
-    async def points_redeemed(self, reward: str):
+    async def points_redeemed(self, reward: str, msg: Message):
 
-        print("Redemption".center(80, "*"))
         try:
             # Call the function for the reward that was redeemed.
-            await self.redemptions[reward]()
+            await self.redemptions[reward](msg)
 
         except KeyError:
             # Don't have a function for the reward that was redeemed.
@@ -63,8 +63,10 @@ class ChannelPoints(Mod):
         else:
             print("Shhhhh....")
 
-    async def highlighted_message(self):
-        print("Highlighted message.")
+    async def highlighted_message(self, msg: Message):
+        print("Highlighted message.".center(80, "*"))
+        print(f"{msg.author}({msg.channel}): {msg.content}")
+        print("".center(80, "*"))
 
     @ModCommand(name, "channelpoint_cooldown", permission="admin")
     async def channelpoint_cooldown(self, msg, *args):
