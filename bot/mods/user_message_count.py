@@ -24,18 +24,18 @@ class UserMessageCount(Mod):
         user_id = msg.tags.user_id
         server_id = msg.tags.room_id
 
-        rows_affected = (
-            session.query(Users)
-            .filter(Users.user_id == user_id, Users.channel == server_id)
-            .update({"message_count": Users.message_count + 1, "last_message": datetime.now()})
-        )
-
-        # If the user doesn't exist, insert them
-        if not rows_affected:
-            user_object = Users(user_id=user_id, channel=server_id, user=msg.author, message_count=1)
-            session.add(user_object)
-
         try:
+            rows_affected = (
+                session.query(Users)
+                .filter(Users.user_id == user_id, Users.channel == server_id)
+                .update({"message_count": Users.message_count + 1, "last_message": datetime.now()})
+            )
+
+            # If the user doesn't exist, insert them
+            if not rows_affected:
+                user_object = Users(user_id=user_id, channel=server_id, user=msg.author, message_count=1)
+                session.add(user_object)
+
             session.commit()
         except Exception as e:
             session.rollback()

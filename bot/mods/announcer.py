@@ -57,26 +57,27 @@ class AutoMessageStarterMod(Mod):
                 # This is done so the loop will continue to run and not exit out because the loop has ended
                 # if done as a while enabled
                 if self.enable and (self.channel_active or self.sleep_override):
-                    result = (  # Read the next announcement from the database
-                        session.query(Announcements)
-                        .filter(Announcements.enabled == True)  # noqa E712 SQLAlchemy doesn't work with `is True`
-                        .order_by(Announcements.last_sent)
-                        .first()
-                    )
-
-                    # Make sure there are entries in the dictioary
-                    if result is None:
-                        # Use continue instead of return so more can be added once the bot is run
-                        continue
-
-                    # Send the message
-                    await channels[self.chan].send_message(AddOhmsBot.msg_prefix + result.text)
-
-                    # Update the last time sent of the message
-                    session.query(Announcements).filter(Announcements.id == result.id).update(
-                        {"last_sent": datetime.now(), "times_sent": result.times_sent + 1}
-                    )
                     try:
+                        result = (  # Read the next announcement from the database
+                            session.query(Announcements)
+                            .filter(Announcements.enabled == True)  # noqa E712 SQLAlchemy doesn't work with `is True`
+                            .order_by(Announcements.last_sent)
+                            .first()
+                        )
+
+                        # Make sure there are entries in the dictioary
+                        if result is None:
+                            # Use continue instead of return so more can be added once the bot is run
+                            continue
+
+                        # Send the message
+                        await channels[self.chan].send_message(AddOhmsBot.msg_prefix + result.text)
+
+                        # Update the last time sent of the message
+                        session.query(Announcements).filter(Announcements.id == result.id).update(
+                            {"last_sent": datetime.now(), "times_sent": result.times_sent + 1}
+                        )
+
                         session.commit()
                     except Exception as e:
                         session.rollback()
@@ -122,8 +123,9 @@ class AutoMessageStarterMod(Mod):
         self.enable = True
         print("Enabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Announcements, announcements, ANNOUNCEMENTS!")
-        session.query(Settings).filter(Settings.key == "announcement_enabled").update({"value": True})
         try:
+            session.query(Settings).filter(Settings.key == "announcement_enabled").update({"value": True})
+
             session.commit()
         except Exception as e:
             session.rollback()
@@ -135,8 +137,9 @@ class AutoMessageStarterMod(Mod):
         self.enable = False
         print("Disabling announcements.")
         await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Disabling announcements")
-        session.query(Settings).filter(Settings.key == "announcement_enabled").update({"value": False})
         try:
+            session.query(Settings).filter(Settings.key == "announcement_enabled").update({"value": False})
+
             session.commit()
         except Exception as e:
             session.rollback()
@@ -151,14 +154,14 @@ class AutoMessageStarterMod(Mod):
                 raise ValueError
 
             self.delay = int(time)
-            updated = session.query(Settings).filter(Settings.key == "announcement_delay").update({"value": self.delay})
-
-            if not updated:
-                # Insert if it wasn't updated, because it didn't exist.
-                insert = Settings(key="announcement_delay", value=self.delay)
-                session.add(insert)
-
             try:
+                updated = session.query(Settings).filter(Settings.key == "announcement_delay").update({"value": self.delay})
+
+                if not updated:
+                    # Insert if it wasn't updated, because it didn't exist.
+                    insert = Settings(key="announcement_delay", value=self.delay)
+                    session.add(insert)
+
                 session.commit()
             except Exception as e:
                 session.rollback()
@@ -220,8 +223,8 @@ class AutoMessageStarterMod(Mod):
         print(f"Adding to announce: {message}", end="")
 
         announcement_object = Announcements(text=message)
-        session.add(announcement_object)
         try:
+            session.add(announcement_object)
             session.commit()
         except Exception as e:
             session.rollback()
@@ -253,20 +256,23 @@ class AutoMessageStarterMod(Mod):
             print(type(e), e)
             return
 
-        successful = session.query(Announcements).filter(Announcements.id == index).update({"enabled": False})
-        if successful:
-            result = session.query(Announcements).filter(Announcements.id == index).one_or_none()
-            print(f"Disabled announcement ID {index}")
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Disabled announcement ID {index}: {str(result.text)}")
-            try:
+        try:
+            successful = session.query(Announcements).filter(Announcements.id == index).update({"enabled": False})
+            if successful:
+                result = session.query(Announcements).filter(Announcements.id == index).one_or_none()
+                print(f"Disabled announcement ID {index}")
+                await msg.reply(f"{AddOhmsBot.msg_prefix}Disabled announcement ID {index}: {str(result.text)}")
+
                 session.commit()
-            except Exception as e:
-                session.rollback()
-                print("SQLAlchemy Error, rolling back.")
-                print(e)
-        else:
-            print(f"Announcement ID {index} not found.")
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement ID {index} not found.")
+
+            else:
+                print(f"Announcement ID {index} not found.")
+                await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement ID {index} not found.")
+
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)
 
     @SubCommand(announce, "enable", permission="admin")
     async def announce_enable(self, msg, *args):
@@ -286,19 +292,21 @@ class AutoMessageStarterMod(Mod):
             print(type(e), e)
             return
 
-        successful = session.query(Announcements).filter(Announcements.id == index).update({"enabled": True})
-        if successful:
-            print(f"Enabled announcement ID {index}")
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Enabled announcement ID {index}")
-            try:
+        try:
+            successful = session.query(Announcements).filter(Announcements.id == index).update({"enabled": True})
+            if successful:
+                print(f"Enabled announcement ID {index}")
+                await msg.reply(f"{AddOhmsBot.msg_prefix}Enabled announcement ID {index}")
                 session.commit()
-            except Exception as e:
-                session.rollback()
-                print("SQLAlchemy Error, rolling back.")
-                print(e)
-        else:
-            print(f"Announcement ID {index} not found.")
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement ID {index} not found.")
+
+            else:
+                print(f"Announcement ID {index} not found.")
+                await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement ID {index} not found.")
+
+        except Exception as e:
+            session.rollback()
+            print("SQLAlchemy Error, rolling back.")
+            print(e)
 
     @SubCommand(announce, "status", permission="admin")
     async def announce_status(self, msg, *args):
