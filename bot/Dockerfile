@@ -34,4 +34,4 @@ COPY ./ /workspace/bot/
 # Expose port for debugging
 #EXPOSE 5678:5678
 
-CMD ./wait_for_it.sh mysql:3306 --timeout=60 --strict -- ./wait_for_it.sh api.twitch.tv:443 --strict -- ./wait_for_it.sh tmi.twitch.tv:443 --strict -- python main.py
+CMD ./wait_for_it.sh mysql:3306 --timeout=60 --strict -- ./wait_for_it.sh api.twitch.tv:443 --timeout=60 --strict -- ./wait_for_it.sh tmi.twitch.tv:443 --timeout=60 --strict -- python main.py
