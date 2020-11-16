@@ -45,6 +45,9 @@ services:
       TWITCH_CHANNEL: ${TWITCH_CHANNEL}
       ADAFRUIT_IO_USER: ${ADAFRUIT_IO_USER}
       ADAFRUIT_IO_KEY: ${ADAFRUIT_IO_KEY}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
