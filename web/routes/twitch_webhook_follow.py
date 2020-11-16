@@ -29,7 +29,7 @@ def twitch_webhook_follow_post(body: dict):
 
         # Send the channel that we are connecting to
         s.send(f"{getenv('TWITCH_CHANNEL')}\n".encode("utf8"))
-        s.send(f"Thanks for the follow @{data['from_name']}\n".encode("utf8"))
+        s.send(f"🤖 Thanks for the follow @{data['from_name']}\n".encode("utf8"))
 
         # Close the socket
         s.shutdown(socket.SHUT_RD)
