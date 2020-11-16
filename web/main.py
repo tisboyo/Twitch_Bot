@@ -4,11 +4,14 @@ from os import getenv
 import uvicorn
 from fastapi import FastAPI
 
+from routes import announcements
 from routes import twitch_webhook_follow
+
 
 app = FastAPI()
 base_domain = getenv("WEB_HOSTNAME")
 
+app.include_router(announcements.router)
 app.include_router(twitch_webhook_follow.router)
 
 
