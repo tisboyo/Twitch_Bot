@@ -63,19 +63,21 @@ class UserChatTimeLogging(Mod):
 
         # Don't overwrite if the user is already here, happens if they join twice
         if (user_name, user_id) not in self.user_joined.keys():
-            in_database = session.query(Users).filter(Users.user_id == user_id, Users.channel == channel_id).one_or_none()
+            try:
+                in_database = (
+                    session.query(Users).filter(Users.user_id == user_id, Users.channel == channel_id).one_or_none()
+                )
 
-            # If the user isn't in the database insert them so we can find them later
-            if not in_database:
-                user_object = Users(user_id=user_id, channel=channel_id, user=user_name)
-                session.add(user_object)
-                if commit:
-                    try:
+                # If the user isn't in the database insert them so we can find them later
+                if not in_database:
+                    user_object = Users(user_id=user_id, channel=channel_id, user=user_name)
+                    session.add(user_object)
+                    if commit:
                         session.commit()
-                    except Exception as e:
-                        session.rollback()
-                        print("SQLAlchemy Error, rolling back.")
-                        print(e)
+            except Exception as e:
+                session.rollback()
+                print("SQLAlchemy Error, rolling back.")
+                print(e)
 
             self.user_joined[(user_name, user_id)] = datetime.now()
             print(f"{datetime.now().isoformat()}: {user_name} has joined #{channel.name}, in database: {bool(in_database)}")

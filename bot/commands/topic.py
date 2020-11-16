@@ -35,13 +35,13 @@ async def set_topic(msg, *args):
     for arg in args:
         topic += f"{arg} "
 
-    rows_affected = session.query(Settings).filter(Settings.key == "topic").update({"value": topic})
-
-    if not rows_affected:
-        ins = Settings(key="topic", value=topic)
-        session.add(ins)
-
     try:
+        rows_affected = session.query(Settings).filter(Settings.key == "topic").update({"value": topic})
+
+        if not rows_affected:
+            ins = Settings(key="topic", value=topic)
+            session.add(ins)
+
         session.commit()
     except Exception as e:
         session.rollback()
