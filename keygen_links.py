@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import json
 from dotenv import load_dotenv
 from os import getenv
