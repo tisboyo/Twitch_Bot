@@ -58,6 +58,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./db_data:/var/lib/mysql
+      - ./mysql.cnf:/etc/mysql/conf.d/custom.cnf
     ports:
       - 3306:3306
     restart: always
