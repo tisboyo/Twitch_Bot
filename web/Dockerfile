@@ -11,16 +11,15 @@ ENV PIP_NO_CACHE_DIR=false \
     PIPENV_PIPFILE=/workspace/web/Pipfile
 
 #Copy the dependencies first so they are built as their own layer
-COPY ./Pipfile ./Pipfile.lock /workspace/web/
+COPY ./requirements.txt /workspace/web/
 
-# Setup pipenv
-RUN pip install --upgrade pip pipenv
-RUN pipenv install --system --deploy
+# Install python dependencies
+RUN pip install --upgrade -r requirements.txt
 
 # Install needed libraries
 RUN apt-get update && apt-get install -y \
     git
-    
+
 # Create the working directory
 WORKDIR /workspace/web
 
