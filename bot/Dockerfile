@@ -14,7 +14,7 @@ ENV PIP_NO_CACHE_DIR=false \
 COPY ./requirements.txt /workspace/bot/
 
 # Install python dependencies
-RUN pip install --upgrade -r requirements.txt
+RUN pip install --upgrade -r /workspace/bot/requirements.txt
 
 # Install needed libraries
 RUN apt-get update && apt-get install -y \

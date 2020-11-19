@@ -14,7 +14,7 @@ ENV PIP_NO_CACHE_DIR=false \
 COPY ./requirements.txt /workspace/web/
 
 # Install python dependencies
-RUN pip install --upgrade -r requirements.txt
+RUN pip install --upgrade -r /workspace/web/requirements.txt
 
 # Install needed libraries
 RUN apt-get update && apt-get install -y \
