@@ -65,7 +65,7 @@ class ChannelPoints(Mod):
 
     async def highlighted_message(self, msg: Message):
         print("Highlighted message.".center(80, "*"))
-        print(f"{msg.author}({msg.channel}): {msg.content}")
+        print(f"{msg.author}({msg.channel.name}): {msg.content}")
         print("".center(80, "*"))
 
     @ModCommand(name, "channelpoint_cooldown", permission="admin")
