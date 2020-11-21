@@ -11,11 +11,10 @@ ENV PIP_NO_CACHE_DIR=false \
     PIPENV_PIPFILE=/workspace/bot/Pipfile
 
 #Copy the dependencies first so they are built as their own layer
-COPY ./Pipfile ./Pipfile.lock /workspace/bot/
+COPY ./requirements.txt /workspace/bot/
 
-# Setup pipenv
-RUN pip install --upgrade pip pipenv
-RUN pipenv install --system --deploy
+# Install python dependencies
+RUN pip install --upgrade -r /workspace/bot/requirements.txt
 
 # Install needed libraries
 RUN apt-get update && apt-get install -y \
