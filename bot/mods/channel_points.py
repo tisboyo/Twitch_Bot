@@ -48,9 +48,9 @@ class ChannelPoints(Mod):
 
     async def dispense_treat(self, channel: str = cfg.channels[0]):
         if AddOhmsBot.AIO.send("dispense-treat-toggle"):
-            await msg.channel.send_message(f"{AddOhmsBot.msg_prefix}Teleporting a treat")
+            await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}Teleporting a treat")
         else:
-            await msg.channel.send_message(f"{AddOhmsBot.msg_prefix}I couldn't do that at the moment. Sorry ☹️")
+            await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}I couldn't do that at the moment. Sorry ☹️")
 
         print("Dispensing a treat!")
 
@@ -58,7 +58,7 @@ class ChannelPoints(Mod):
         print("Hey!!!")
         if AddOhmsBot.ATTN_ENABLE:
             if not AddOhmsBot.AIO.send("twitch-attn-indi"):
-                await msg.channel.send_message(f"{AddOhmsBot.msg_prefix}Something went wrong getting my attention. ☹️")
+                await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}Something went wrong getting my attention. ☹️")
 
         else:
             print("Shhhhh....")
