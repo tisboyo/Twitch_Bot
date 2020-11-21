@@ -16,37 +16,37 @@ class ChannelPoints(Mod):
         print("ChannelPoints loaded")
 
         # Create a key as the name of a reward, and a value of the function to call
-        self.redemptions = {
-            "highlighted-message": self.highlighted_message,
+        self.custom_redemptions = {
             "Give BaldEngineer a treat.": self.dispense_treat,
             "Get His Attention!": self.attention_attention,
         }
 
+        self.default_redemptions = {
+            "highlighted-message": self.highlighted_message,
+        }
+
     async def on_channel_points_redemption(self, msg: Message, reward: str):
         # Non-Custom Channel points, like Highlight Message
-        await self.points_redeemed(reward, msg)
+        try:
+            await self.default_redemptions[reward](msg)
+
+        except KeyError:
+            print(f"Unhandled default reward redeemed - '{reward}'")
 
     async def on_pubsub_received(self, raw: PubSubData):
-
+        # Custom Channel Points redeemed
         if len(raw.message_data) == 0:
             # Happens at startup, and possibly other times.
             return
 
         elif raw.is_channel_points_redeemed:
-            r = raw.message_data["redemption"]["reward"]["title"]
-            await self.points_redeemed(r)
+            reward = raw.message_data["redemption"]["reward"]["title"]
+            try:
+                await self.custom_redemptions[reward]
+            except KeyError:
+                print(f"Unhandled custom reward redeemed - '{reward}'")
 
-    async def points_redeemed(self, reward: str, msg: Message):
-
-        try:
-            # Call the function for the reward that was redeemed.
-            await self.redemptions[reward](msg)
-
-        except KeyError:
-            # Don't have a function for the reward that was redeemed.
-            print(f"Unknown reward redeemed - '{reward}'")
-
-    async def dispense_treat(self, channel=cfg.channels[0]):
+    async def dispense_treat(self, channel: str = cfg.channels[0]):
         if AddOhmsBot.AIO.send("dispense-treat-toggle"):
             await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}Teleporting a treat")
         else:
@@ -54,7 +54,7 @@ class ChannelPoints(Mod):
 
         print("Dispensing a treat!")
 
-    async def attention_attention(self, channel=cfg.channels[0]):
+    async def attention_attention(self, channel: str = cfg.channels[0]):
         print("Hey!!!")
         if AddOhmsBot.ATTN_ENABLE:
             if not AddOhmsBot.AIO.send("twitch-attn-indi"):
