@@ -1,12 +1,11 @@
 from main import AddOhmsBot
+from mods._database_models import session
+from mods._database_models import Settings
 from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import Command
 from twitchbot import CommandContext
 from twitchbot import SubCommand
-
-from mods._database_models import session
-from mods._database_models import Settings
 
 
 @Command("topic", context=CommandContext.BOTH)
@@ -35,17 +34,12 @@ async def set_topic(msg, *args):
     for arg in args:
         topic += f"{arg} "
 
-    try:
-        rows_affected = session.query(Settings).filter(Settings.key == "topic").update({"value": topic})
+    rows_affected = session.query(Settings).filter(Settings.key == "topic").update({"value": topic})
 
-        if not rows_affected:
-            ins = Settings(key="topic", value=topic)
-            session.add(ins)
+    if not rows_affected:
+        ins = Settings(key="topic", value=topic)
+        session.add(ins)
 
-        session.commit()
-    except Exception as e:
-        session.rollback()
-        print("SQLAlchemy Error, rolling back.")
-        print(e)
+    session.commit()
 
     await msg.reply(f"{AddOhmsBot.msg_prefix}Topic set.")
