@@ -42,7 +42,7 @@ class ChannelPoints(Mod):
         elif raw.is_channel_points_redeemed:
             reward = raw.message_data["redemption"]["reward"]["title"]
             try:
-                await self.custom_redemptions[reward]
+                await self.custom_redemptions[reward]()
             except KeyError:
                 print(f"Unhandled custom reward redeemed - '{reward}'")
 
