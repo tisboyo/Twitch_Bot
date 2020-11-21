@@ -34,7 +34,7 @@ class ChannelPoints(Mod):
 
         elif raw.is_channel_points_redeemed:
             r = raw.message_data["redemption"]["reward"]["title"]
-            await self.points_redeemed(r)
+            await self.points_redeemed(r, None)
 
     async def points_redeemed(self, reward: str, msg: Message):
 
@@ -46,19 +46,19 @@ class ChannelPoints(Mod):
             # Don't have a function for the reward that was redeemed.
             print(f"Unknown reward redeemed - '{reward}'")
 
-    async def dispense_treat(self, channel=cfg.channels[0]):
+    async def dispense_treat(self, msg: Message):
         if AddOhmsBot.AIO.send("dispense-treat-toggle"):
-            await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}Teleporting a treat")
+            await msg.channel.send_message(f"{AddOhmsBot.msg_prefix}Teleporting a treat")
         else:
-            await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}I couldn't do that at the moment. Sorry ☹️")
+            await msg.channel.send_message(f"{AddOhmsBot.msg_prefix}I couldn't do that at the moment. Sorry ☹️")
 
         print("Dispensing a treat!")
 
-    async def attention_attention(self, channel=cfg.channels[0]):
+    async def attention_attention(self, msg: Message):
         print("Hey!!!")
         if AddOhmsBot.ATTN_ENABLE:
             if not AddOhmsBot.AIO.send("twitch-attn-indi"):
-                await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}Something went wrong getting my attention. ☹️")
+                await msg.channel.send_message(f"{AddOhmsBot.msg_prefix}Something went wrong getting my attention. ☹️")
 
         else:
             print("Shhhhh....")
