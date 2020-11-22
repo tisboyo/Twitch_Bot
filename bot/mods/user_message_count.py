@@ -1,10 +1,9 @@
 from datetime import datetime
 
-from twitchbot import Message
-from twitchbot import Mod
-
 from mods._database_models import session
 from mods._database_models import Users
+from twitchbot import Message
+from twitchbot import Mod
 
 
 class UserMessageCount(Mod):
@@ -24,20 +23,15 @@ class UserMessageCount(Mod):
         user_id = msg.tags.user_id
         server_id = msg.tags.room_id
 
-        try:
-            rows_affected = (
-                session.query(Users)
-                .filter(Users.user_id == user_id, Users.channel == server_id)
-                .update({"message_count": Users.message_count + 1, "last_message": datetime.now()})
-            )
+        rows_affected = (
+            session.query(Users)
+            .filter(Users.user_id == user_id, Users.channel == server_id)
+            .update({"message_count": Users.message_count + 1, "last_message": datetime.now()})
+        )
 
-            # If the user doesn't exist, insert them
-            if not rows_affected:
-                user_object = Users(user_id=user_id, channel=server_id, user=msg.author, message_count=1)
-                session.add(user_object)
+        # If the user doesn't exist, insert them
+        if not rows_affected:
+            user_object = Users(user_id=user_id, channel=server_id, user=msg.author, message_count=1)
+            session.add(user_object)
 
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            print("SQLAlchemy Error, rolling back.")
-            print(e)
+        session.commit()

@@ -1,3 +1,4 @@
+from asyncio import sleep
 from datetime import datetime
 
 from sqlalchemy import Boolean
@@ -11,6 +12,8 @@ from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
 from twitchbot import Mod
 from twitchbot.config import mysql_cfg
+from twitchbot.util import add_task
+from twitchbot.util import task_running
 
 
 Base = declarative_base()
@@ -83,4 +86,18 @@ class Database(Mod):
         Base.metadata.create_all(engine)
 
 
+# Define the session before the keep_alive_loop so it's available to it
 session = Database().session
+
+
+async def keep_alive_loop():
+    while True:
+        session.query(Settings).filter(Settings.key == "keepalive").one_or_none()
+        print("Mysql keep-alive running...")
+
+        await sleep(3600)  # Run the keep alive once an hour
+
+
+# Start the keep-alive loop if it's not running
+if not task_running("mysql-keepalive"):
+    add_task("mysql-keepalive", keep_alive_loop())

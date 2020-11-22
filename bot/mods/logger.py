@@ -4,15 +4,14 @@ from datetime import datetime
 from aiofile import AIOFile
 from data import load_data
 from data import save_data
+from mods._database_models import session
+from mods._database_models import Subscriptions
+from mods._database_models import Users
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import PubSubData
-
-from mods._database_models import session
-from mods._database_models import Subscriptions
-from mods._database_models import Users
 
 
 class TwitchLog(Mod):
@@ -104,29 +103,24 @@ class TwitchLog(Mod):
         server_id = raw.message_dict["data"]["channel_id"]
         bits_used = raw.message_dict["data"]["bits_used"]
 
-        try:
-            rows_affected = (
-                session.query(Users)
-                .filter(Users.user_id == user_id, Users.channel == server_id)
-                .update({"cheers": Users.cheers + bits_used, "last_message": datetime.now()})
+        rows_affected = (
+            session.query(Users)
+            .filter(Users.user_id == user_id, Users.channel == server_id)
+            .update({"cheers": Users.cheers + bits_used, "last_message": datetime.now()})
+        )
+
+        # If the user doesn't exist, insert them
+        if not rows_affected:
+            user_object = Users(
+                user_id=user_id,
+                channel=server_id,
+                user=raw.message_dict["data"]["user_name"],
+                message_count=1,
+                cheers=bits_used,
             )
+            session.add(user_object)
 
-            # If the user doesn't exist, insert them
-            if not rows_affected:
-                user_object = Users(
-                    user_id=user_id,
-                    channel=server_id,
-                    user=raw.message_dict["data"]["user_name"],
-                    message_count=1,
-                    cheers=bits_used,
-                )
-                session.add(user_object)
-
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            print("SQLAlchemy Error, rolling back.")
-            print(e)
+        session.commit()
 
     async def on_pubsub_subscription(self, raw: "PubSubData", data):
         """Twitch subscription event"""
@@ -153,27 +147,22 @@ class TwitchLog(Mod):
         cumulative_months = raw.message_dict["cumulative_months"]
         streak_months = raw.message_dict["streak_months"] if "streak_months" in raw.message_dict else 0
 
-        try:
-            rows_affected = (
-                session.query(Subscriptions)
-                .filter(Subscriptions.user_id == user_id, Subscriptions.channel == server_id)
-                .update(
-                    {"subscription_level": sub_level, "cumulative_months": cumulative_months, "streak_months": streak_months}
-                )
+        rows_affected = (
+            session.query(Subscriptions)
+            .filter(Subscriptions.user_id == user_id, Subscriptions.channel == server_id)
+            .update(
+                {"subscription_level": sub_level, "cumulative_months": cumulative_months, "streak_months": streak_months}
             )
+        )
 
-            if not rows_affected:
-                user_object = Subscriptions(
-                    user_id=user_id,
-                    channel=server_id,
-                    subscription_level=sub_level,
-                    cumulative_months=cumulative_months,
-                    streak_months=streak_months,
-                )
-                session.add(user_object)
+        if not rows_affected:
+            user_object = Subscriptions(
+                user_id=user_id,
+                channel=server_id,
+                subscription_level=sub_level,
+                cumulative_months=cumulative_months,
+                streak_months=streak_months,
+            )
+            session.add(user_object)
 
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            print("SQLAlchemy Error, rolling back.")
-            print(e)
+        session.commit()

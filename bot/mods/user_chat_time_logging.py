@@ -1,15 +1,14 @@
 from datetime import datetime
 from typing import Union
 
+from mods._database_models import session
+from mods._database_models import Users
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import channels
 from twitchbot import get_user_id
 from twitchbot import Message
 from twitchbot import Mod
-
-from mods._database_models import session
-from mods._database_models import Users
 
 
 class UserChatTimeLogging(Mod):
@@ -47,12 +46,7 @@ class UserChatTimeLogging(Mod):
             await self.on_user_join(user_name, channel, commit=False)
 
         # Waited to commit so only one database commit was done on the server join
-        try:
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            print("SQLAlchemy Error, rolling back.")
-            print(e)
+        session.commit()
 
     async def on_user_join(self, user_name: str, channel: Channel, commit: bool = True) -> None:
         """User has joined the channel"""
@@ -63,21 +57,14 @@ class UserChatTimeLogging(Mod):
 
         # Don't overwrite if the user is already here, happens if they join twice
         if (user_name, user_id) not in self.user_joined.keys():
-            try:
-                in_database = (
-                    session.query(Users).filter(Users.user_id == user_id, Users.channel == channel_id).one_or_none()
-                )
+            in_database = session.query(Users).filter(Users.user_id == user_id, Users.channel == channel_id).one_or_none()
 
-                # If the user isn't in the database insert them so we can find them later
-                if not in_database:
-                    user_object = Users(user_id=user_id, channel=channel_id, user=user_name)
-                    session.add(user_object)
-                    if commit:
-                        session.commit()
-            except Exception as e:
-                session.rollback()
-                print("SQLAlchemy Error, rolling back.")
-                print(e)
+            # If the user isn't in the database insert them so we can find them later
+            if not in_database:
+                user_object = Users(user_id=user_id, channel=channel_id, user=user_name)
+                session.add(user_object)
+                if commit:
+                    session.commit()
 
             self.user_joined[(user_name, user_id)] = datetime.now()
             print(f"{datetime.now().isoformat()}: {user_name} has joined #{channel.name}, in database: {bool(in_database)}")
@@ -140,9 +127,4 @@ class UserChatTimeLogging(Mod):
                 del self.user_joined[user]
 
         # Commit the changes
-        try:
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            print("SQLAlchemy Error, rolling back.")
-            print(e)
+        session.commit()

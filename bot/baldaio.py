@@ -6,7 +6,6 @@ from typing import Union
 
 from Adafruit_IO import Client
 from Adafruit_IO.errors import RequestError as RequestError
-
 from mods._database_models import session
 from mods._database_models import Settings
 
@@ -72,22 +71,17 @@ class AIO:
         Updates or inserts the value into the database
         Exception handling should be done in the calling function
         """
-        try:
-            q = session.query(Settings.id).filter(Settings.key == f"mqtt_cooldown_{feed}").one_or_none()
-            if q is None:
-                # Value wasn't in the database, lets insert it.
-                insert = Settings(key=f"mqtt_cooldown_{feed}", value=cooldown)
-                session.add(insert)
-                self.mqtt_cooldown[feed] = cooldown
-            else:
-                session.query(Settings).filter(Settings.key == f"mqtt_cooldown_{feed}").update({"value": cooldown})
-                self.mqtt_cooldown[feed] = cooldown
+        q = session.query(Settings.id).filter(Settings.key == f"mqtt_cooldown_{feed}").one_or_none()
+        if q is None:
+            # Value wasn't in the database, lets insert it.
+            insert = Settings(key=f"mqtt_cooldown_{feed}", value=cooldown)
+            session.add(insert)
+            self.mqtt_cooldown[feed] = cooldown
+        else:
+            session.query(Settings).filter(Settings.key == f"mqtt_cooldown_{feed}").update({"value": cooldown})
+            self.mqtt_cooldown[feed] = cooldown
 
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            print("SQLAlchemy Error, rolling back.")
-            print(e)
+        session.commit()
 
     def send(self, feed, value: Union[str, int] = 1):
         """Send to an AdafruitIO topic"""
