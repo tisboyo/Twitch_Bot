@@ -1,6 +1,7 @@
 from asyncio import sleep
 from datetime import datetime
 from datetime import timedelta
+from os import getenv
 
 import pytz
 from main import AddOhmsBot
@@ -159,7 +160,7 @@ class AutoMessageStarterMod(Mod):
             print(type(e), e)
 
     @SubCommand(announce, "list", permission="admin")
-    async def announce_list(self, *args):
+    async def announce_list(self, msg, *args):
         result = session.query(Announcements).order_by(Announcements.id).all()
 
         print("Announcements".center(80, "*"))
@@ -168,7 +169,8 @@ class AutoMessageStarterMod(Mod):
         for each in result:
             en = "Y" if each.enabled else "N"
             print(f"{each.id:3} :  {en} : {each.times_sent:4} : {each.text}")
-        print("".center(80, "*"))
+        print(f" https://{getenv('WEB_HOSTNAME')}/announcements ".center(80, "*"))
+        await msg.reply(f"{AddOhmsBot.msg_prefix}Announcements listed in console.")
 
     @SubCommand(announce, "del", permission="admin")
     async def announce_del(self, msg, *args):
@@ -191,6 +193,7 @@ class AutoMessageStarterMod(Mod):
             print("Invalid Announcement delete ID, 0 rows deleted.")
         else:
             print(f"{result} Announcement deleted.")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement {id=} deleted.")
 
     @SubCommand(announce, "add", permission="admin")
     async def announce_add(self, msg, *args):
@@ -207,8 +210,12 @@ class AutoMessageStarterMod(Mod):
 
         session.add(announcement_object)
         session.commit()
+        session.refresh(announcement_object)
+        id = announcement_object.id
 
-        print("...done")
+        print(f"...done, {id=}")
+
+        await msg.reply(f"{AddOhmsBot.msg_prefix}Added announce {id=}")
 
     @SubCommand(announce, "disable", permission="admin")
     async def announce_disable(self, msg, *args):
