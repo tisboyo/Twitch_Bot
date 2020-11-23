@@ -2,6 +2,7 @@ version: "3"
 
 services:
   bot:
+    container_name: twitchbot_bot
     build: ./bot/
     restart: unless-stopped
     depends_on:
@@ -21,8 +22,8 @@ services:
       WEB_HOSTNAME: ${WEB_HOSTNAME}
       TWITCH_CHANNEL: ${TWITCH_CHANNEL}
 
-
   webserver:
+    container_name: twitchbot_webserver
     build: ./web/
     restart: unless-stopped
     expose:
@@ -54,6 +55,7 @@ services:
     #   - ./web:/workspace/web/
 
   mysql:
+    container_name: twitchbot_mysql
     image: mysql:latest
     restart: unless-stopped
     volumes:
@@ -61,7 +63,6 @@ services:
       - ./mysql.cnf:/etc/mysql/conf.d/custom.cnf
     ports:
       - 3306:3306
-    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -69,9 +70,10 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 
     cap_add:
-      - SYS_NICE  # CAP_SYS_NICE
+      - SYS_NICE # CAP_SYS_NICE
 
   traefik:
+    container_name: twitchbot_traefik
     image: traefik:v2.3
     restart: unless-stopped
     ports:
@@ -81,10 +83,26 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./traefik/traefik.toml:/etc/traefik/traefik.toml"
       - "./traefik/acme.json:/acme.json"
+      - "./traefik/log:/var/log"
     environment:
       - "TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL"
 
+  fail2ban:
+    container_name: twitchbot_fail2ban
+    image: crazymax/fail2ban:latest
+    network_mode: "host"
+    environment:
+      F2B_DB_PURGE_AGE: "1d"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    restart: unless-stopped
+    volumes:
+      - ./traefik/log:/var/log/traefik:ro
+      - ./fail2ban/data:/data
+
   chores:
+    container_name: twitchbot_chores
     image: funkyfuture/deck-chores:1
     restart: unless-stopped
     environment:

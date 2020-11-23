@@ -10,7 +10,14 @@
   [entryPoints.websecure]
     address = ":443"
 
+[traefikLog]
+
 [accessLog]
+filePath = "/var/log/access.log"
+format = "common"
+
+  [accessLog.filters]
+  statusCodes=["400-499"]
 
 [providers]
   [providers.docker]

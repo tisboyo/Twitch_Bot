@@ -153,3 +153,7 @@ db_data/
 
 #traefik config file
 traefik/acme.json
+
+#fail2ban files
+fail2ban/data/db/
+fail2ban/data/action.d/
