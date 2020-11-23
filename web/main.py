@@ -3,7 +3,7 @@ from os import getenv
 
 import uvicorn
 from fastapi import FastAPI
-
+from fastapi.responses import FileResponse
 from routes import announcements
 from routes import twitch_webhook_follow
 
@@ -23,6 +23,11 @@ async def startup_event():
 @app.get("/")
 def root():
     return {"Hello": "World"}
+
+
+@app.get("/favicon.ico")
+def favicon():
+    return FileResponse("static_files/favicon.ico")
 
 
 if __name__ == "__main__":
