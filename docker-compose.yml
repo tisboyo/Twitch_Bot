@@ -69,14 +69,15 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_TEST_LOGIN_FILE: /var/lib/mysql/.mylogin.cnf #Run mysql_config_editor set -p in container to set password
 
     cap_add:
       - SYS_NICE # CAP_SYS_NICE
 
     labels:
-      - "deck-chores.mysqldump.command=mysqldump --password=$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE"
+      - "deck-chores.mysqldump.command=sh -c mysqldump --all-databases > /home/twitchbot.sql"
       #- "deck-chores.mysqldump.cron=* * * * * 0/6 5 0"
-      - "deco-chorse.mysqldump.cron=* * * * * * * 0"
+      - "deck-chores.mysqldump.cron=* * * * * * * 0"
 
   traefik:
     container_name: twitchbot_traefik
