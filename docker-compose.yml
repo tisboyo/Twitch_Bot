@@ -75,9 +75,10 @@ services:
       - SYS_NICE # CAP_SYS_NICE
 
     labels:
-      - "deck-chores.mysqldump.command=sh -c mysqldump --all-databases > /home/twitchbot.sql"
-      #- "deck-chores.mysqldump.cron=* * * * * 0/6 5 0"
-      - "deck-chores.mysqldump.cron=* * * * * * * 0"
+      - deck-chores.mysqldump.command=sh -c "mysqldump --all-databases > /home/twitchbot.sql"
+      #- deck-chores.mysqldump.cron=* * * * * 0/6 5 0
+      - deck-chores.mysqldump.cron=* * * * * * * 0
+
 
   traefik:
     container_name: twitchbot_traefik
