@@ -61,6 +61,7 @@ services:
     volumes:
       - ./db_data:/var/lib/mysql
       - ./mysql.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./dropbox:/home
     ports:
       - 3306:3306
     environment:
@@ -71,6 +72,11 @@ services:
 
     cap_add:
       - SYS_NICE # CAP_SYS_NICE
+
+    labels:
+      - "deck-chores.mysqldump.command=mysqldump --password=$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE"
+      #- "deck-chores.mysqldump.cron=* * * * * 0/6 5 0"
+      - "deco-chorse.mysqldump.cron=* * * * * * * 0"
 
   traefik:
     container_name: twitchbot_traefik
@@ -109,3 +115,10 @@ services:
       TIMEZONE: America/Chicago
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+  dropbox:
+    container_name: twitchbot_dropbox
+    image: vmirage/dropbox
+    restart: unless-stopped
+    volumes:
+      - ./dropbox:/dbox/Dropbox
