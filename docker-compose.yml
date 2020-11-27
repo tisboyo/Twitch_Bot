@@ -76,8 +76,11 @@ services:
 
     labels:
       - deck-chores.mysqldump.command=sh -c "mysqldump --all-databases > /home/twitchbot.sql"
-      #- deck-chores.mysqldump.cron=* * * * * 0/6 5 0
-      - deck-chores.mysqldump.cron=* * * * * * * 0
+      - deck-chores.mysqldump.cron=* * * * * 0/6 5 0 # Every 6 hours
+      - deck-chores.mysqldump-weekly.command=sh -c "mysqldump --all-databases > /home/twitchbot-weekly.sql"
+      - deck-chores.mysqldump-weekly.cron=* * * * sat 3 0 0 # Saturday 3am
+      - deck-chores.mysqldump-monthly.command=sh -c "mysqldump --all-databases > /home/twitchbot-monthly.sql"
+      - deck-chores.mysqldump-monthly.cron= * * 1 * * 1 0 0 # Monthly on the 1st, 1am
 
 
   traefik:
