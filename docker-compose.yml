@@ -126,4 +126,9 @@ services:
     image: vmirage/dropbox
     restart: unless-stopped
     volumes:
-      - ./dropbox:/dbox
+      - ./dropbox/Dropbox:/dbox/Dropbox
+      - ./dropbox/.dropbox:/dbox/.dropbox
+
+    environment:
+      - DBOX_UID=999
+      - DBOX_GID=999
