@@ -61,7 +61,7 @@ services:
     volumes:
       - ./db_data:/var/lib/mysql
       - ./mysql.cnf:/etc/mysql/conf.d/custom.cnf
-      - ./dropbox:/home
+      - ./dropbox/Dropbox:/home
     ports:
       - 3306:3306
     environment:
@@ -126,4 +126,4 @@ services:
     image: vmirage/dropbox
     restart: unless-stopped
     volumes:
-      - ./dropbox:/dbox/Dropbox
+      - ./dropbox:/dbox
