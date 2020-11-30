@@ -1,14 +1,20 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
+from fastapi import Request
 from fastapi.responses import HTMLResponse
-
-from models import Announcements, session
+from models import Announcements
+from models import session
+from sqlalchemy.exc import OperationalError
 
 router = APIRouter()
 
 
 @router.get("/announcements", response_class=HTMLResponse)
 def get_announcements(request: Request):
-    result = session.query(Announcements).order_by(Announcements.id).all()
+    try:
+        result = session.query(Announcements).order_by(Announcements.id).all()
+    except OperationalError:  # Cheapout database connection handling for now...
+        out = "I'm thinking as hard as I can, can you try refreshing? Thanks."
+        return out
 
     out = """<html>
     <body>
