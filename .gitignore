@@ -158,3 +158,6 @@ traefik/log/access.log
 #fail2ban files
 fail2ban/data/db/
 fail2ban/data/action.d/
+
+#Dropbox
+dropbox/
