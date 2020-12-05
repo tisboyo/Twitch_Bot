@@ -1,21 +1,22 @@
-from os import getenv
 import socket
+from os import getenv
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
+from fastapi import Request
 from fastapi.responses import PlainTextResponse
 
 router = APIRouter()
 
 
 @router.get("/twitch-webhook/follow")
-def twitch_webhook_follow_get(request: Request):
+async def twitch_webhook_follow_get(request: Request):
     params = dict(request.query_params)
     if params.get("hub.challenge", False):
         return PlainTextResponse(params["hub.challenge"])
 
 
 @router.post("/twitch-webhook/follow")
-def twitch_webhook_follow_post(body: dict):
+async def twitch_webhook_follow_post(body: dict):
     # [{'followed_at': '', 'from_id': '',
     # 'from_name': '', 'to_id': '', 'to_name': ''}]
     data = body["data"][0]
