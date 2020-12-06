@@ -5,16 +5,17 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from routes import announcements
+from routes import docs
 from routes import send_message
 from routes import twitch_webhook_follow
 
-
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 base_domain = getenv("WEB_HOSTNAME")
 
 app.include_router(announcements.router)
 app.include_router(twitch_webhook_follow.router)
 app.include_router(send_message.router)
+app.include_router(docs.router)
 
 
 @app.on_event("startup")

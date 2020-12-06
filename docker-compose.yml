@@ -32,6 +32,9 @@ services:
     depends_on:
       - mysql
 
+    volumes:
+      - ./web_user_db.json:/workspace/web/web_user_db.json
+
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`${WEB_HOSTNAME}`)"
@@ -53,6 +56,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       WEB_API_KEY: ${WEB_API_KEY}
       TWITCH_SIGNING_SECRET: ${TWITCH_SIGNING_SECRET}
+      WEB_COOKIE_KEY: ${WEB_COOKIE_KEY}
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
