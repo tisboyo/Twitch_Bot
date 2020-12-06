@@ -161,3 +161,6 @@ fail2ban/data/action.d/
 
 #Dropbox
 dropbox/
+
+#Fast api login credentials
+web_user_db.json

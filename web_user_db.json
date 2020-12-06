@@ -1,0 +1,9 @@
+{
+    "username": {
+        "username": "",
+        "full_name": "",
+        "email": "",
+        "hashed_password": "",
+        "disabled": false
+    }
+}
