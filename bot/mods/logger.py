@@ -4,9 +4,9 @@ from datetime import datetime
 from aiofile import AIOFile
 from data import load_data
 from data import save_data
-from mods._database_models import session
-from mods._database_models import Subscriptions
-from mods._database_models import Users
+from models import Subscriptions
+from models import Users
+from mods._database import session
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import Message
