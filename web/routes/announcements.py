@@ -1,8 +1,8 @@
+from db import session
 from fastapi import APIRouter
 from fastapi import Request
 from fastapi.responses import HTMLResponse
 from models import Announcements
-from models import session
 from sqlalchemy.exc import OperationalError
 
 router = APIRouter()
