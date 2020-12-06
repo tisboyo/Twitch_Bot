@@ -7,7 +7,7 @@ try:
     from passlib.context import CryptContext
 except ImportError:
     print("You need to run")
-    print("pip install passlib bcrypt")
+    print("python -m pip install passlib bcrypt")
     _exit()
 
 
