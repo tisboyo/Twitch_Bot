@@ -49,6 +49,7 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      WEB_API_KEY: ${WEB_API_KEY}
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
