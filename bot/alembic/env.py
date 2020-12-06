@@ -1,8 +1,15 @@
+import os
+import sys
+from json import loads
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from models import Base  # noqa E402
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -16,12 +23,18 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+with open("configs/mysql.json") as f:  # TODO: Rename to file with #71
+    db_cfg = loads(f.read())
+    db_cfg["driver"] = "mysql+mysqlconnector"  # TODO: Remove with #71
+
+db_url = f"{db_cfg['driver']}://{db_cfg['username']}:{db_cfg['password']}@{db_cfg['address']}:{db_cfg['port']}/{db_cfg['database']}"  # noqa E501
+config.set_main_option("sqlalchemy.url", db_url)
 
 
 def run_migrations_offline():
