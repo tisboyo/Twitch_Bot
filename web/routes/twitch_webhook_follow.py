@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from fastapi import Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import PlainTextResponse
+from signing import is_request_valid
 
 router = APIRouter()
 
@@ -17,12 +18,12 @@ async def twitch_webhook_follow_get(request: Request):
 
 
 @router.post("/twitch-webhook/follow")
-async def twitch_webhook_follow_post(body: dict):
+async def twitch_webhook_follow_post(data: dict, request: Request):
     # [{'followed_at': '', 'from_id': '',
     # 'from_name': '', 'to_id': '', 'to_name': ''}]
-    data = body["data"][0]
 
-    if data.get("from_name", False):
+    if await is_request_valid(request):
+        data = data["data"][0]
         try:
             s = socket.socket()
             s.connect(("bot", 13337))
