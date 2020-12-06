@@ -8,7 +8,7 @@ try:
 except ImportError:
     print("You need to run")
     print("pip install passlib bcrypt")
-    _exit
+    _exit()
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
