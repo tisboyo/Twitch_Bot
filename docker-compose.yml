@@ -14,6 +14,7 @@ services:
       # - ./bot:/workspace/bot/
     environment:
       client_id: ${TWITCH_CLIENT_ID} #Lower cased because a framework issue
+      client_secret: ${TWITCH_CLIENT_SECRET}
       nick: ${TWITCH_NICK}
       oauth: ${TWITCH_OAUTH}
       PUBSUB_OAUTH: ${TWITCH_PUBSUB_OAUTH}
@@ -42,6 +43,7 @@ services:
     environment:
       WEB_HOSTNAME: ${WEB_HOSTNAME}
       CLIENT_ID: ${TWITCH_CLIENT_ID}
+      CLIENT_SECRET: ${TWITCH_CLIENT_SECRET}
       PUBSUB_OAUTH: ${TWITCH_PUBSUB_OAUTH}
       TWITCH_CHANNEL: ${TWITCH_CHANNEL}
       ADAFRUIT_IO_USER: ${ADAFRUIT_IO_USER}
@@ -50,6 +52,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       WEB_API_KEY: ${WEB_API_KEY}
+      TWITCH_SIGNING_SECRET: ${TWITCH_SIGNING_SECRET}
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
