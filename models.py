@@ -41,8 +41,6 @@ class Subscriptions(Base):
 class Announcements(Base):
     """Storing data for the announcements command"""
 
-    # Keep in sync with /web/models.py for fastapi to use
-
     __tablename__ = "announcements"
     # __table_args__ = {"extend_existing": True}
     id = Column(Integer(), primary_key=True, nullable=False)
