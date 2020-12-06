@@ -8,7 +8,7 @@ try:
 except ImportError:
     print("You need to run")
     print("python -m pip install passlib bcrypt")
-    _exit()
+    _exit(0)
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -19,7 +19,7 @@ try:
 except FileNotFoundError:
     users_db = {}
     print("web_user_db.json file does not exist.")
-    _exit()
+    _exit(0)
 
 parser = argparse.ArgumentParser(description="Create user for web authentication")
 parser.add_argument("--user", help="Specifiy the username", required=True)
