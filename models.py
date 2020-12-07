@@ -15,7 +15,6 @@ class Users(Base):
     """Storing user data"""
 
     __tablename__ = "users"
-    # __table_args__ = {"extend_existing": True}
     user_id = Column(Integer(), primary_key=True, nullable=False, index=True)
     channel = Column(Integer(), primary_key=True, nullable=False, index=True)
     user = Column(String(64), unique=True)
@@ -30,7 +29,6 @@ class Subscriptions(Base):
     """Store subscription info"""
 
     __tablename__ = "subscriptions"
-    # __table_args__ = {"extend_existing": True}
     user_id = Column(Integer(), ForeignKey("users.user_id"), primary_key=True, nullable=False, index=True)
     channel = Column(Integer(), ForeignKey("users.channel"), primary_key=True, nullable=False, index=True)
     subscription_level = Column(String(64))
@@ -42,20 +40,19 @@ class Announcements(Base):
     """Storing data for the announcements command"""
 
     __tablename__ = "announcements"
-    # __table_args__ = {"extend_existing": True}
     id = Column(Integer(), primary_key=True, nullable=False)
     text = Column(String(1024), nullable=False)
     created_date = Column(DateTime(), default=datetime.now)
     last_sent = Column(DateTime(), default=datetime.now)
     times_sent = Column(Integer(), default=0)
     enabled = Column(Boolean(), default=True)
+    groups = Column(String(1024), nullable=True)
 
 
 class Settings(Base):
     """Used for storing random bot settings"""
 
     __tablename__ = "settings"
-    # __table_args__ = {"extend_existing": True}
     id = Column(Integer(), primary_key=True)
     key = Column(String(128), nullable=False, unique=True)
     value = Column(String(1024), nullable=False)
