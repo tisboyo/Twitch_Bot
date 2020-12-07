@@ -11,7 +11,7 @@ multidict==5.0.2
 mysql-connector-python==8.0.22
 paho-mqtt==1.5.1
 protobuf==3.14.0
-PythonTwitchBotFramework==1.16.10
+git+git://github.com/tisboyo/PythonTwitchBotFramework@master#egg=PythonTwitchBotFramework
 pytz==2020.4
 requests==2.25.0
 six==1.15.0
