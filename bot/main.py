@@ -1,13 +1,14 @@
+import alembic.config
+
+# Update database models, has to be done before loading any bot framework
+alembicArgs = ["--raiseerr", "upgrade", "head"]
+alembic.config.main(argv=alembicArgs)
+
 import asyncio
 
-import alembic.config
 import version_check  # noqa: F401
 from baldaio import AIO as Adafruit_IO
 from twitchbot.bots import BaseBot
-
-# Update database models
-alembicArgs = ["--raiseerr", "upgrade", "head"]
-alembic.config.main(argv=alembicArgs)
 
 
 class AddOhmsBot(BaseBot):
