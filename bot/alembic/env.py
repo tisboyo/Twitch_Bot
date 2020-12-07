@@ -1,8 +1,5 @@
-import importlib
 import os
-import pathlib
 import sys
-import types
 from json import loads
 from logging.config import fileConfig
 
@@ -13,31 +10,8 @@ from sqlalchemy import pool
 sys.path.append(os.getcwd())
 
 from models import Base  # noqa E402
+from twitchbot.database.models import Base as twitchbotBase  # noqa E402
 
-
-def import_module_from_packages(path) -> types.ModuleType:
-    """Import a module from the given path."""
-
-    module_path = pathlib.Path(path)
-    module_path = get_site_packages_path().joinpath(module_path).resolve()
-    module_name = module_path.stem  # 'path/x.py' -> 'x'
-    spec = importlib.util.spec_from_file_location(module_name, module_path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-def get_site_packages_path() -> pathlib.Path:
-    for path in sys.path:
-        if "site-packages" in path:
-            return pathlib.Path(path).resolve()
-
-    return None
-
-
-# Import `my_module` without executing `/path/to/__init__.py`
-twitchbot_modules = import_module_from_packages("twitchbot/database/base_models.py")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -51,7 +25,7 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = [Base.metadata, twitchbot_modules.Base.metadata]
+target_metadata = [Base.metadata, twitchbotBase.metadata]
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
