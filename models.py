@@ -47,7 +47,7 @@ class Announcements(Base):
     times_sent = Column(Integer(), default=0)
     enabled = Column(Boolean(), default=True)
     groups = Column(String(1024), nullable=True)
-    category = Column(Integer(), ForeignKey("announcements_categories.id", name="announcement_id"), default=0)
+    category = Column(Integer(), ForeignKey("announcements_categories.id", name="announcement_id"), default=1)
 
 
 class AnnouncementCategories(Base):
