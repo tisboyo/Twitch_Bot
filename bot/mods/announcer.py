@@ -5,8 +5,6 @@ from os import getenv
 
 import pytz
 from main import AddOhmsBot
-from models import Announcements
-from models import Settings
 from mods._database import session
 from twitchbot import add_task
 from twitchbot import cfg
@@ -17,6 +15,9 @@ from twitchbot import ModCommand
 from twitchbot import stop_task
 from twitchbot import SubCommand
 from twitchbot import task_exist
+
+from models import Announcements
+from models import Settings
 
 
 class AutoMessageStarterMod(Mod):
@@ -194,6 +195,8 @@ class AutoMessageStarterMod(Mod):
         else:
             print(f"{result} Announcement deleted.")
             await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement {id=} deleted.")
+
+        session.commit()
 
     @SubCommand(announce, "add", permission="admin")
     async def announce_add(self, msg, *args):
