@@ -332,9 +332,31 @@ class AutoMessageStarterMod(Mod):
         await msg.reply(f"{AddOhmsBot.msg_prefix}{new_announcement.name} added as id {new_announcement.id}")
 
     @SubCommand(announce_category, "del", permission="admin")
-    async def announce_category_del(self, msg, *args):
+    async def announce_category_del(self, msg, category_id: int):
         """Check if any messages are still assigned to this category, and refuse to delete if so"""
-        ...
+
+        category_id = int(category_id)
+
+        # Quick fail if trying to delete default
+        if category_id == 1:
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Default category will not be deleted.")
+            return
+
+        # Grab the category
+        category = self.get_announcements_category(category_id)
+        if category is None:
+            await msg.reply(f"{AddOhmsBot.msg_prefix} Category id {category_id} does not exist.")
+            return
+
+        # Check to see if there are announcements still assigned to this category
+        announcement_count = session.query(Announcements).filter(Announcements.category == category_id).count()
+        if announcement_count > 0:
+            await msg.reply(f"{AddOhmsBot.msg_prefix}{category.name} is not an empty category, aborting. 🚨🚨")
+            return
+
+        session.delete(category)
+        session.commit()
+        await msg.reply(f"{AddOhmsBot.msg_prefix}{category.name} ({category.id}) has been deleted.")
 
     @SubCommand(announce_category, "list", permission="admin")
     async def announce_category_list(self, msg, *args):
