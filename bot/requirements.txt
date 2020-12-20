@@ -11,7 +11,7 @@ multidict==5.0.2
 mysql-connector-python==8.0.22
 paho-mqtt==1.5.1
 protobuf==3.14.0
-git+git://github.com/sharkbound/PythonTwitchBotFramework@59c938c#egg=PythonTwitchBotFramework
+PythonTwitchBotFramework==1.19.4
 pytz==2020.4
 requests==2.25.0
 six==1.15.0
