@@ -1,14 +1,14 @@
-import asyncio
-
-import version_check  # noqa: F401
 from alembic import config as alembic_config
-from baldaio import AIO as Adafruit_IO
-from twitchbot.bots import BaseBot
-
 
 # Update database models
 alembicArgs = ["--raiseerr", "upgrade", "head"]
 alembic_config.main(argv=alembicArgs)
+
+import asyncio
+
+import version_check  # noqa: F401
+from baldaio import AIO as Adafruit_IO
+from twitchbot.bots import BaseBot
 
 
 class AddOhmsBot(BaseBot):
