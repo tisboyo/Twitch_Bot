@@ -301,6 +301,34 @@ class AutoMessageStarterMod(Mod):
         for reply in replies:
             await msg.reply(reply)
 
+    @SubCommand(announce, "category", permission="admin")
+    async def announce_category(self, msg, *args):
+        """Base command for category management"""
+        pass
+
+    @SubCommand(announce_category, "add", permission="admin")
+    async def announce_category_add(self, msg, *args):
+        """Add a category"""
+        ...
+
+    @SubCommand(announce_category, "del", permission="admin")
+    async def announce_category_del(self, msg, *args):
+        """Check if any messages are still assigned to this category, and refuse to delete if so"""
+        ...
+
+    @SubCommand(announce_category, "list", permission="admin")
+    async def announce_category_list(self, msg, *args):
+        """List the available categories"""
+        ...
+
+    @SubCommand(announce_category, "assign", permission="admin")
+    async def announce_category_assign(self, msg, announcement_id: int, category_id: int):
+        """
+        Assign a category to an Announcement
+        Usage: !announce category assign message_id category_id
+        """
+        ...
+
     def restart_task(self):
         if task_exist(self.task_name):
             stop_task(self.task_name)
