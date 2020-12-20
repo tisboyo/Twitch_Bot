@@ -47,6 +47,15 @@ class Announcements(Base):
     times_sent = Column(Integer(), default=0)
     enabled = Column(Boolean(), default=True)
     groups = Column(String(1024), nullable=True)
+    category = Column(Integer(), ForeignKey("announcements_categories.id", name="announcement_id"), default=0)
+
+
+class AnnouncementCategories(Base):
+    """Announcement Categories"""
+
+    __tablename__ = "announcements_categories"
+    id = Column(Integer(), primary_key=True, nullable=False)
+    name = Column(String(1024), nullable=False)
 
 
 class Settings(Base):
