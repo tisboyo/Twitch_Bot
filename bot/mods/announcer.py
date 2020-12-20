@@ -16,6 +16,7 @@ from twitchbot import stop_task
 from twitchbot import SubCommand
 from twitchbot import task_exist
 
+from models import AnnouncementCategories
 from models import Announcements
 from models import Settings
 
@@ -327,7 +328,37 @@ class AutoMessageStarterMod(Mod):
         Assign a category to an Announcement
         Usage: !announce category assign message_id category_id
         """
-        ...
+
+        # Cast the ID's to ints
+        announcement_id = int(announcement_id)
+        category_id = int(category_id)
+
+        # Check to make sure the announcement category exists
+        if (
+            category := session.query(AnnouncementCategories).filter(AnnouncementCategories.id == category_id).first()
+        ) is None:
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid category id")
+            return
+
+        # Check to make sure the announcement itself exists
+        if not session.query(Announcements).filter(Announcements.id == announcement_id).count():
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid announcement id")
+            return
+
+        # Update the announcement
+        result = (
+            session.query(Announcements)
+            .filter(Announcements.id == announcement_id)
+            .update({Announcements.category: category_id})
+        )
+
+        session.commit()
+
+        # Send response of results
+        if result:
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement id {announcement_id} updated to category {category.name}")
+        else:
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Unable to update.")
 
     def restart_task(self):
         if task_exist(self.task_name):
