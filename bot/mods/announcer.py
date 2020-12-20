@@ -365,7 +365,15 @@ class AutoMessageStarterMod(Mod):
     @SubCommand(announce_category, "list", permission="admin")
     async def announce_category_list(self, msg, *args):
         """List the available categories"""
-        ...
+        result = session.query(AnnouncementCategories).order_by(AnnouncementCategories.id).all()
+
+        print("Announcement Categories".center(80, "*"))
+        print(" ID : Category")
+        for category in result:
+            print(f"{category.id:3} : {category.name}")
+
+        print(f" https://{getenv('WEB_HOSTNAME')}/announcements ".center(80, "*"))
+        await msg.reply(f"{AddOhmsBot.msg_prefix}Categories listed in console.")
 
     @SubCommand(announce_category, "assign", permission="admin")
     async def announce_category_assign(self, msg, announcement_id: int, category_id: int):
