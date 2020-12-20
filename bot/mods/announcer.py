@@ -59,9 +59,14 @@ class AutoMessageStarterMod(Mod):
                 # This is done so the loop will continue to run and not exit out because the loop has ended
                 # if done as a while enabled
                 if self.enable and (self.channel_active or self.sleep_override):
+                    # Grab the currently enabled announcement category
+                    cat = session.query(Settings).filter(Settings.key == "announcement_category").first()
+                    category = self.get_announcements_category(cat.value) if not None else 1
+
                     result = (  # Read the next announcement from the database
                         session.query(Announcements)
                         .filter(Announcements.enabled == True)  # noqa E712 SQLAlchemy doesn't work with `is True`
+                        .filter(Announcements.category == category.id)
                         .order_by(Announcements.last_sent)
                         .first()
                     )
@@ -395,6 +400,9 @@ class AutoMessageStarterMod(Mod):
         category_id = int(category_id)
         category = session.query(AnnouncementCategories).filter(AnnouncementCategories.id == category_id).first()
         return category
+
+    def get_announcement(self, announcement_id):
+        ...
 
     def restart_task(self):
         if task_exist(self.task_name):
