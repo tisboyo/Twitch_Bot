@@ -5,9 +5,9 @@ from os import getenv
 
 import pytz
 from main import AddOhmsBot
-from mods._database_models import Announcements
-from mods._database_models import session
-from mods._database_models import Settings
+from models import Announcements
+from models import Settings
+from mods._database import session
 from twitchbot import add_task
 from twitchbot import cfg
 from twitchbot import channels

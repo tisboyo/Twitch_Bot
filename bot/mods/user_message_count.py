@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from mods._database_models import session
-from mods._database_models import Users
+from models import Users
+from mods._database import session
 from twitchbot import Message
 from twitchbot import Mod
 

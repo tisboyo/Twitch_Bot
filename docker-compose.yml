@@ -11,6 +11,7 @@ services:
       - ./configs:/workspace/bot/configs/
       - ./irc_logs:/workspace/bot/irc_logs/
       - ./jsons:/workspace/bot/jsons/
+      - ./models.py:/workspace/bot/models.py
       # - ./bot:/workspace/bot/
     environment:
       client_id: ${TWITCH_CLIENT_ID} #Lower cased because a framework issue
@@ -34,7 +35,7 @@ services:
 
     volumes:
       - ./web_user_db.json:/workspace/web/web_user_db.json
-
+      - ./models.py:/workspace/web/models.py
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`${WEB_HOSTNAME}`)"
