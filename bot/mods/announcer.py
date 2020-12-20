@@ -168,14 +168,18 @@ class AutoMessageStarterMod(Mod):
 
     @SubCommand(announce, "list", permission="admin")
     async def announce_list(self, msg, *args):
-        result = session.query(Announcements).order_by(Announcements.id).all()
-
+        result = (
+            session.query(Announcements, AnnouncementCategories)
+            .order_by(Announcements.id)
+            .join(AnnouncementCategories)
+            .all()
+        )
         print("Announcements".center(80, "*"))
         print("          Times")
-        print(" ID : EN : Sent : Text")
-        for each in result:
-            en = "Y" if each.enabled else "N"
-            print(f"{each.id:3} :  {en} : {each.times_sent:4} : {each.text}")
+        print(" ID : EN : Sent : Category : Text")
+        for announcement, category in result:
+            en = "Y" if announcement.enabled else "N"
+            print(f"{announcement.id:3} :  {en} : {announcement.times_sent:4} : {category.name[:8]:8} : {announcement.text}")
         print(f" https://{getenv('WEB_HOSTNAME')}/announcements ".center(80, "*"))
         await msg.reply(f"{AddOhmsBot.msg_prefix}Announcements listed in console.")
 
