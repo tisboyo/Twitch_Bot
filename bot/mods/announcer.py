@@ -315,7 +315,21 @@ class AutoMessageStarterMod(Mod):
     @SubCommand(announce_category, "add", permission="admin")
     async def announce_category_add(self, msg, *args):
         """Add a category"""
-        ...
+
+        cat_name = " ".join(map(str, args))
+        exists = session.query(AnnouncementCategories).filter(AnnouncementCategories.name == cat_name).count()
+        if exists:
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Duplicate category name")
+            return
+
+        # Insert the new category into the database
+        new_announcement = AnnouncementCategories(name=cat_name)
+        session.add(new_announcement)
+        session.commit()
+
+        # Refresh to pull the ID inserted as
+        session.refresh(new_announcement)
+        await msg.reply(f"{AddOhmsBot.msg_prefix}{new_announcement.name} added as id {new_announcement.id}")
 
     @SubCommand(announce_category, "del", permission="admin")
     async def announce_category_del(self, msg, *args):
