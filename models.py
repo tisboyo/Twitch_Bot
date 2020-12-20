@@ -17,7 +17,7 @@ class Users(Base):
     __tablename__ = "users"
     user_id = Column(Integer(), primary_key=True, nullable=False, index=True)
     channel = Column(Integer(), primary_key=True, nullable=False, index=True)
-    user = Column(String(64), unique=True)
+    user = Column(String(64))
     time_in_channel = Column(Integer(), default=0)
     message_count = Column(Integer(), default=0)
     cheers = Column(Integer(), default=0)
