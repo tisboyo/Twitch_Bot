@@ -334,9 +334,9 @@ class AutoMessageStarterMod(Mod):
         category_id = int(category_id)
 
         # Check to make sure the announcement category exists
-        if (
-            category := session.query(AnnouncementCategories).filter(AnnouncementCategories.id == category_id).first()
-        ) is None:
+        # Keep inside parens, otherwise this assigns True to category on a good category
+        # instead of the category itself
+        if (category := self.get_announcements_category(category_id)) is None:
             await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid category id")
             return
 
@@ -359,6 +359,42 @@ class AutoMessageStarterMod(Mod):
             await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement id {announcement_id} updated to category {category.name}")
         else:
             await msg.reply(f"{AddOhmsBot.msg_prefix}Unable to update.")
+
+    @SubCommand(announce_category, "activate", permission="admin")
+    async def announce_category_activate(self, msg, category_id: int):
+        """
+        Activate a category to be shown.
+        Usage: !activate category category_id
+        """
+
+        category_id = int(category_id)
+
+        # Verify the category is a valid one
+        if (category := self.get_announcements_category(category_id)) is None:
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid category id.")
+            return
+
+        # TODO Change to just an update, and do a alembic revision to insert a default after #79 is complete.
+        updated = (
+            session.query(Settings).filter(Settings.key == "announcement_category").update({Settings.value: category_id})
+        )
+
+        if not updated:  # Insert the key
+            insert = Settings(key="announcement_category", value=category_id)
+            session.add(insert)
+
+        session.commit()
+
+        await msg.reply(f"{AddOhmsBot.msg_prefix}Active announcement category is now {category.name}")
+
+    def get_announcements_category(self, category_id: int) -> AnnouncementCategories or None:
+        """
+        Returns an AnnouncementCategories object or None
+        Use: if (category := self.get_announcements_category(category_id)) is None:
+        """
+        category_id = int(category_id)
+        category = session.query(AnnouncementCategories).filter(AnnouncementCategories.id == category_id).first()
+        return category
 
     def restart_task(self):
         if task_exist(self.task_name):
