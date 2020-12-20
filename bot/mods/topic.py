@@ -1,6 +1,7 @@
 from main import AddOhmsBot
 from mods._database import session
 from twitchbot import cfg
+from twitchbot import Channel
 from twitchbot import channels
 from twitchbot import CommandContext
 from twitchbot import Mod
@@ -18,15 +19,14 @@ class TopicMod(Mod):
 
     @ModCommand(name, "topic", context=CommandContext.BOTH)
     async def topic(self, msg, *args):
-        result = session.query(Settings).filter(Settings.key == "topic").one_or_none()
-        topic = result.value if result is not None else None
+        topic = self.get_topic()
 
         if not msg.is_whisper:
             if topic:
-                await msg.reply(topic)
+                await msg.reply(f"{AddOhmsBot.msg_prefix}{topic}")
             else:
                 # No topic was set
-                await msg.reply("No current topic.")
+                await msg.reply(f"{AddOhmsBot.msg_prefix}No current topic.")
         else:
             try:
                 # Send message directly to channel 0
@@ -50,3 +50,19 @@ class TopicMod(Mod):
         session.commit()
 
         await msg.reply(f"{AddOhmsBot.msg_prefix}Topic set.")
+
+    def get_topic(self):
+        result = session.query(Settings).filter(Settings.key == "topic").one_or_none()
+        topic = result.value if result is not None else None
+        return topic
+
+    async def on_channel_raided(self, channel: Channel, raider: str, viewer_count: int) -> None:
+        topic = self.get_topic()
+
+        try:
+            # Send message directly to channel 0
+            await channels[cfg.channels[0]].send_message(
+                f"{AddOhmsBot.msg_prefix}Welcome raiders, the current topic is {topic}"
+            )
+        except Exception as e:
+            print(e)
