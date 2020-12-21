@@ -20,6 +20,31 @@ from models import AnnouncementCategories
 from models import Announcements
 from models import Settings
 
+"""
+!announce                             - Base command, doesn't do anything directly
+!announce nosleep                     - Disables automatic sleep
+!announce start                       - Re-enables announcements after being disabled (Sticky)
+!announce stop                        - Disables announcements completely (Sticky)
+!announce time {seconds:int}          - Sets the frequency of Announcements in seconds (Sticky)
+!announce list                        - Lists all of the commands to the console
+!announce del {ID:int}                - Deletes an announcement by ID. If message is the last in the active category,
+                                      - resets active category to Default
+!announce add {Message:str}           - Adds a new announcement to Default category
+!announce enable {ID:int}             - Enables an announcement by ID
+!announce disable {ID:int}            - Disables an announcement by ID
+!announce status                      - Displays status in chat
+!announce category                    - Base command, doesn't do anything directly
+!announce category add {Name:str}     - Add a new category
+!announce category del {ID:int}       - Deletes a category by ID
+                                      -- Must not have any announcements assigned
+                                      -- Can not delete Default
+!announce category list               - Lists the available categories to the console
+!announce category assign \           - Assign an announcement to a category
+  {AnnouncementID:int} {CategoryID:int}
+!announce category activate \         - Sets a category as active
+  {CategoryID:int}
+"""  # noqa W605
+
 
 class AutoMessageStarterMod(Mod):
     name = "automsg"
