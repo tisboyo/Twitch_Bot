@@ -200,12 +200,19 @@ class AutoMessageStarterMod(Mod):
             print(e)
             return
 
-        result = session.query(Announcements).filter(Announcements.id == id).delete()
-        if not result:
+        announcement = self.get_announcement(id)
+
+        if announcement is None:
             print("Invalid Announcement delete ID, 0 rows deleted.")
         else:
-            print(f"{result} Announcement deleted.")
+            session.delete(announcement)
+            print(f"Announcement id {announcement.id} deleted.")
             await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement {id=} deleted.")
+
+        count = session.query(Announcements).filter(Announcements.category == announcement.id).count()
+        if count == 0 and announcement.id != 1:
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Resetting category to Default")
+            session.query(Settings).filter(Settings.key == self.current_category_setting).update({Settings.value: 1})
 
         session.commit()
 
