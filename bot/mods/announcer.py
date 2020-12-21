@@ -34,6 +34,7 @@ class AutoMessageStarterMod(Mod):
         self.channel_active = False
         self.announcements_sleeping = True
         self.sleep_override = False
+        self.current_category_setting = "announcement_category"
 
         self.enable = session.query(Settings.value).filter(Settings.key == "announcement_enabled").one_or_none()
         if self.enable is None:
@@ -60,7 +61,7 @@ class AutoMessageStarterMod(Mod):
                 # if done as a while enabled
                 if self.enable and (self.channel_active or self.sleep_override):
                     # Grab the currently enabled announcement category
-                    cat = session.query(Settings).filter(Settings.key == "announcement_category").first()
+                    cat = session.query(Settings).filter(Settings.key == self.current_category_setting).first()
                     category = self.get_announcements_category(cat.value) if not None else 1
 
                     result = (  # Read the next announcement from the database
@@ -302,7 +303,7 @@ class AutoMessageStarterMod(Mod):
         enabled = session.query(Announcements).filter(Announcements.enabled == True).count()  # noqa E712
         total_count = session.query(Announcements).count()
         # Scalar returns the first element of the first result or None
-        cat_id = int(session.query(Settings.value).filter(Settings.key == "announcement_category").scalar())
+        cat_id = int(session.query(Settings.value).filter(Settings.key == self.current_category_setting).scalar())
         category_name = session.query(AnnouncementCategories.name).filter(AnnouncementCategories.id == cat_id).scalar()
         announcements_in_cat = session.query(Announcements).filter(Announcements.category == cat_id).count()
 
@@ -435,11 +436,13 @@ class AutoMessageStarterMod(Mod):
 
         # TODO Change to just an update, and do a alembic revision to insert a default after #79 is complete.
         updated = (
-            session.query(Settings).filter(Settings.key == "announcement_category").update({Settings.value: category_id})
+            session.query(Settings)
+            .filter(Settings.key == self.current_category_setting)
+            .update({Settings.value: category_id})
         )
 
         if not updated:  # Insert the key
-            insert = Settings(key="announcement_category", value=category_id)
+            insert = Settings(key=self.current_category_setting, value=category_id)
             session.add(insert)
 
         session.commit()
