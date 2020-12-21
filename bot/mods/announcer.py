@@ -458,8 +458,10 @@ class AutoMessageStarterMod(Mod):
         category = session.query(AnnouncementCategories).filter(AnnouncementCategories.id == category_id).first()
         return category
 
-    def get_announcement(self, announcement_id):
-        ...  # TODO
+    def get_announcement(self, announcement_id: int) -> Announcements or None:
+        announcement_id = int(announcement_id)
+        announcement = session.query(Announcements).filter(Announcements.id == announcement_id).first()
+        return announcement
 
     def restart_task(self):
         if task_exist(self.task_name):
