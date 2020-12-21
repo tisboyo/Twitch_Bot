@@ -301,11 +301,17 @@ class AutoMessageStarterMod(Mod):
         next_run_seconds = self.next_run - datetime.now(self.timezone)
         enabled = session.query(Announcements).filter(Announcements.enabled == True).count()  # noqa E712
         total_count = session.query(Announcements).count()
+        # Scalar returns the first element of the first result or None
+        cat_id = int(session.query(Settings.value).filter(Settings.key == "announcement_category").scalar())
+        category_name = session.query(AnnouncementCategories.name).filter(AnnouncementCategories.id == cat_id).scalar()
+        announcements_in_cat = session.query(Announcements).filter(Announcements.category == cat_id).count()
+
         replies = [
             f"{AddOhmsBot.msg_prefix}Current status is {status}",
             f"{AddOhmsBot.msg_prefix}Current delay is {self.delay} seconds. ",
             f"{AddOhmsBot.msg_prefix}Next send time will be {self.next_run.strftime('%H:%M:%S')} which is in {str(next_run_seconds)[:-7]}.",  # noqa E501
-            f"{AddOhmsBot.msg_prefix}{enabled}/{total_count} of announcements enabled.",
+            f"{AddOhmsBot.msg_prefix}{enabled}/{total_count} of all announcements enabled.",
+            f"{AddOhmsBot.msg_prefix}Current category is {category_name}, with {announcements_in_cat} announcements",
         ]
 
         for reply in replies:
@@ -450,7 +456,7 @@ class AutoMessageStarterMod(Mod):
         return category
 
     def get_announcement(self, announcement_id):
-        ...
+        ...  # TODO
 
     def restart_task(self):
         if task_exist(self.task_name):
