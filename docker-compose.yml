@@ -8,9 +8,9 @@ services:
     depends_on:
       - mysql
     volumes:
-      - ./configs:/workspace/bot/configs/
-      - ./irc_logs:/workspace/bot/irc_logs/
-      - ./jsons:/workspace/bot/jsons/
+      - ./bot/configs:/workspace/bot/configs/
+      - ./bot/irc_logs:/workspace/bot/irc_logs/
+      - ./bot/jsons:/workspace/bot/jsons/
       - ./models.py:/workspace/bot/models.py
       # - ./bot:/workspace/bot/
     environment:
@@ -34,7 +34,6 @@ services:
       - mysql
 
     volumes:
-      - ./web_user_db.json:/workspace/web/web_user_db.json
       - ./models.py:/workspace/web/models.py
     labels:
       - "traefik.enable=true"
@@ -68,8 +67,8 @@ services:
     image: mysql:latest
     restart: unless-stopped
     volumes:
-      - ./db_data:/var/lib/mysql
-      - ./mysql.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./mysql/db_data:/var/lib/mysql
+      - ./mysql/mysql.cnf:/etc/mysql/conf.d/custom.cnf
     ports:
       - 3306:3306
     environment:

@@ -8,6 +8,18 @@
 		},
 		{
 			"path": "web"
+		},
+		{
+			"path": "traefik"
+		},
+		{
+			"path": "tools"
+		},
+		{
+			"path": "fail2ban"
+		},
+		{
+			"path": "mysql"
 		}
 	],
 	"settings": {
