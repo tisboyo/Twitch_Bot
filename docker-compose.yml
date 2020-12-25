@@ -88,6 +88,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - 1883:1883
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./traefik/traefik.toml:/etc/traefik/traefik.toml"
@@ -119,7 +120,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  mosquitto:
+  mqtt:
     container_name: twitchbot_mqtt
     image: eclipse-mosquitto
     restart: unless-stopped
@@ -127,5 +128,16 @@ services:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
-    ports:
-      - 1883:1883
+    expose:
+      - 1883
+
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.mqtt.rule=Host(`${WEB_HOSTNAME}`)"
+      - "traefik.http.routers.mqtt.entrypoints=websecure"
+      - "traefik.http.routers.mqtt.tls.certresolver=letsencrypt"
+
+      - "traefik.tcp.routers.mqtt.rule=HostSNI(`*`)"
+      - "traefik.tcp.services.mqtt.loadbalancer.server.port=1883"
+      - "traefik.tcp.routers.mqtt.entrypoints=mqtt"
