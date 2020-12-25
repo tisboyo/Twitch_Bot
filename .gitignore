@@ -168,3 +168,8 @@ web_user_db.json
 #Ignore models file in bot/ and web/
 bot/models.py
 web/models.py
+
+#MQTT
+mosquitto/config/passwd
+mosquitto/data/persist
+mosquitto/log/mosquitto.log
