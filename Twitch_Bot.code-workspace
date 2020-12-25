@@ -1,9 +1,6 @@
 {
 	"folders": [
 		{
-			"path": "."
-		},
-		{
 			"path": "bot"
 		},
 		{
@@ -20,6 +17,9 @@
 		},
 		{
 			"path": "mysql"
+		},
+		{
+			"path": "."
 		}
 	],
 	"settings": {
