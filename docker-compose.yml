@@ -34,6 +34,7 @@ services:
       - mysql
 
     volumes:
+      - ./web/web_user_db.json:/workspace/web/web_user_db.json
       - ./models.py:/workspace/web/models.py
     labels:
       - "traefik.enable=true"
