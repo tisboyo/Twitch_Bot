@@ -14,12 +14,18 @@ except ImportError:
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 try:
-    with open("web_user_db.json", "r") as f:
+    with open("../web/web_user_db.json", "r") as f:
         users_db = json.loads(f.read())
+
 except FileNotFoundError:
     users_db = {}
-    print("web_user_db.json file does not exist.")
-    _exit(0)
+    print("web_user_db.json file does not exist, will create.")
+    users_db = dict()
+
+except json.decoder.JSONDecodeError:
+    print("empty web_user_db.json")
+    # Create an empty dictionary to add to
+    users_db = dict()
 
 parser = argparse.ArgumentParser(description="Create user for web authentication")
 parser.add_argument("--user", help="Specifiy the username", required=True)
@@ -49,5 +55,5 @@ if args.name:
 new_hash = pwd_context.hash(password)
 users_db[args.user]["hashed_password"] = new_hash
 
-with open("web_user_db.json", "w") as f:
+with open("../web/web_user_db.json", "w") as f:
     f.write(json.dumps(users_db, indent=1))

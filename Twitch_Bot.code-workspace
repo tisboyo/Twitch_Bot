@@ -1,13 +1,25 @@
 {
 	"folders": [
 		{
-			"path": "."
-		},
-		{
 			"path": "bot"
 		},
 		{
 			"path": "web"
+		},
+		{
+			"path": "traefik"
+		},
+		{
+			"path": "tools"
+		},
+		{
+			"path": "fail2ban"
+		},
+		{
+			"path": "mysql"
+		},
+		{
+			"path": "."
 		}
 	],
 	"settings": {
