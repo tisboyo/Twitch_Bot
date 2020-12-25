@@ -88,7 +88,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - 1883:1883
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./traefik/traefik.toml:/etc/traefik/traefik.toml"
@@ -122,22 +121,35 @@ services:
 
   mqtt:
     container_name: twitchbot_mqtt
-    image: eclipse-mosquitto
+    image: eclipse-mosquitto:2-openssl
     restart: unless-stopped
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
-    expose:
-      - 1883
+      - ./traefik/certs/${WEB_HOSTNAME}:/mosquitto/certs/site
+      - ./traefik/certs/private/:/mosquitto/certs/private
 
-    labels:
-      - "traefik.enable=true"
+    ports:
+      - 8883:8883
 
-      - "traefik.http.routers.mqtt.rule=Host(`${WEB_HOSTNAME}`)"
-      - "traefik.http.routers.mqtt.entrypoints=websecure"
-      - "traefik.http.routers.mqtt.tls.certresolver=letsencrypt"
+    # labels:
+    #   - "traefik.http.routers.mqtt.rule=Host(`${WEB_HOSTNAME}`)"
+    #   - "traefik.http.routers.mqtt.entrypoints=websecure"
+    #   - "traefik.http.routers.mqtt.tls=true"
+    #   - "traefik.http.routers.mqtt.tls.certresolver=leresolver"
+    #   - "traefik.tcp.routers.mqtt.entrypoints=mqtt"
 
-      - "traefik.tcp.routers.mqtt.rule=HostSNI(`*`)"
-      - "traefik.tcp.services.mqtt.loadbalancer.server.port=1883"
-      - "traefik.tcp.routers.mqtt.entrypoints=mqtt"
+  traefik-certs-dumper:
+      image: ldez/traefik-certs-dumper:v2.7.4
+      entrypoint: sh -c '
+        apk add jq
+        ; while ! [ -e /data/acme.json ]
+        || ! [ `jq ".[] | .Certificates | length" /data/acme.json` != 0 ]; do
+        sleep 1
+        ; done
+        && traefik-certs-dumper file --clean=false --version v2 --watch
+        --domain-subdir --crt-name=certificate --key-name=privkey
+        --source /data/acme.json --dest /data/certs'
+      volumes:
+        - ./traefik:/data

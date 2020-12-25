@@ -154,6 +154,7 @@ db_data/
 #traefik config file
 traefik/acme.json
 traefik/log/access.log
+traefik/certs/
 
 #fail2ban files
 fail2ban/data/db/

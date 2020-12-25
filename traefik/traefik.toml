@@ -11,7 +11,7 @@
     address = ":443"
 
   [entryPoints.mqtt]
-    address = ":1883"
+    address = ":8883"
 
 [traefikLog]
 
