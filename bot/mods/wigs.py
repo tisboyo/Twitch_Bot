@@ -105,7 +105,7 @@ class ChannelPoints(Mod):
             else:
                 await channel.send_message(f"{AddOhmsBot.msg_prefix}Chat has spoken, @baldengineer should wear {winner}")
 
-    @ModCommand(name, "wig", permission="admin")
+    @ModCommand(name, "wig", permission="admin", help="Available subcommands: poll, time, add, del, list, enable, disable")
     async def wig(self, msg, *args):
         pass
 
