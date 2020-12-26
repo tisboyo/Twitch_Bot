@@ -65,3 +65,12 @@ class Settings(Base):
     id = Column(Integer(), primary_key=True)
     key = Column(String(128), nullable=False, unique=True)
     value = Column(String(1024), nullable=False)
+
+
+class Wigs(Base):
+    """We have to keep our wigs somewhere..."""
+
+    __tablename__ = "wigs"
+    id = Column(Integer(), primary_key=True)
+    wig_name = Column(String(128), nullable=False, unique=True)
+    enabled = Column(Boolean())
