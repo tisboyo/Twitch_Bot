@@ -23,6 +23,8 @@ services:
       ADAFRUIT_IO_KEY: ${ADAFRUIT_IO_KEY}
       WEB_HOSTNAME: ${WEB_HOSTNAME}
       TWITCH_CHANNEL: ${TWITCH_CHANNEL}
+      MQTT_USER: ${MQTT_USER}
+      MQTT_KEY: ${MQTT_KEY}
 
   webserver:
     container_name: twitchbot_webserver
