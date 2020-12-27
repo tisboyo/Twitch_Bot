@@ -3,12 +3,12 @@ from twitchbot import Command
 from twitchbot import SubCommand
 
 # Key that is sent to Adafruit.IO
-aio_key = "dispense-treat-toggle"
+aio_key = "stream/dispense-treat-toggle"
 
 
 @Command("treatme")
 async def push_treat(msg, *args):
-    if AddOhmsBot().AIO.send(aio_key):
+    if await AddOhmsBot.MQTT.send(aio_key):
         await msg.reply(f"{AddOhmsBot.msg_prefix}Teleporting a treat")
     else:
         await msg.reply(f"{AddOhmsBot.msg_prefix}I couldn't do that at the moment. Sorry ☹️")
@@ -20,12 +20,12 @@ async def treatme_cooldown(msg, *args):
         new_cooldown = int(args[0])
 
         # Update the database
-        AddOhmsBot.AIO.set_cooldown(aio_key, new_cooldown)
+        AddOhmsBot.MQTT.set_cooldown(aio_key, new_cooldown)
 
         await msg.reply(f"Treatme cooldown changed to {new_cooldown}")
 
     except IndexError:
-        await msg.reply(f"Current cooldown is {AddOhmsBot.AIO.get_cooldown(aio_key)} seconds.")
+        await msg.reply(f"Current cooldown is {AddOhmsBot.MQTT.get_cooldown(aio_key)} seconds.")
         return
 
     except ValueError:

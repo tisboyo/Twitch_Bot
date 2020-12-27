@@ -7,12 +7,13 @@ alembic_config.main(argv=alembicArgs)
 import asyncio
 
 import version_check  # noqa: F401
-from baldaio import AIO as Adafruit_IO
+
+from mqtt import MQTT
 from twitchbot.bots import BaseBot
 
 
 class AddOhmsBot(BaseBot):
-    AIO = Adafruit_IO()
+    MQTT = MQTT()
     msg_prefix = "🤖 "
     ATTN_ENABLE = True
 
