@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("/announcements", response_class=HTMLResponse)
-def get_announcements(request: Request):
+async def get_announcements(request: Request):
     try:
         result = (
             session.query(Announcements, AnnouncementCategories)
