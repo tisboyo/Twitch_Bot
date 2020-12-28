@@ -35,7 +35,7 @@ class ChannelPoints(Mod):
 
             if reward == "Wear A Wig":
                 channel = channels.get(cfg.channels[0])
-                self.wear_a_wig(channel)
+                await self.wear_a_wig(channel)
 
     async def wear_a_wig(self, channel: Channel):
         print("starting wig poll")
@@ -58,7 +58,7 @@ class ChannelPoints(Mod):
         await poll.start()
 
         while poll.seconds_left > 0:
-            print("Poll seconds left", poll.seconds_left)
+            # print("Poll seconds left", poll.seconds_left)
             await asyncio.sleep(1)
         else:
             results = poll.votes.most_common()
@@ -80,7 +80,7 @@ class ChannelPoints(Mod):
                     await runoff_poll.start()
                     while runoff_poll.seconds_left > 0:
                         # Sleep while the poll runs
-                        print("Runoff poll seconds left", runoff_poll.seconds_left)
+                        # print("Runoff poll seconds left", runoff_poll.seconds_left)
                         await asyncio.sleep(1)
 
                     results = runoff_poll.votes.most_common()
