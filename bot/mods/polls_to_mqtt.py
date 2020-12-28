@@ -37,23 +37,23 @@ class PollsToMQTT(Mod):
 
         # Send the setup data to MQTT
         setup_json = self.get_poll_setup(poll)
-        await self.mqtt.send("stream/poll/setup", setup_json)
+        await self.mqtt.send(self.mqtt.Topics.poll_setup, setup_json)
 
         # While the poll is running, send continuous updates
         while not poll.done:
             data_json = self.get_poll_data(poll)
-            await self.mqtt.send("stream/poll/data", data_json)
+            await self.mqtt.send(self.mqtt.Topics.poll_data, data_json)
             await asyncio.sleep(0.5)
 
     async def on_poll_ended(self, channel: Channel, poll: PollData):
 
         # Send final results
         data_json = self.get_poll_data(poll)
-        await self.mqtt.send("stream/poll/data", data_json)
+        await self.mqtt.send(self.mqtt.Topics.poll_data, data_json)
 
         # Sleep for 15 seconds before hiding the canvas
         await asyncio.sleep(15)
 
         # Send the setup data to MQTT
         setup_json = self.get_poll_setup(poll, active=False)
-        await self.mqtt.send("stream/poll/setup", setup_json)
+        await self.mqtt.send(self.mqtt.Topics.poll_setup, setup_json)

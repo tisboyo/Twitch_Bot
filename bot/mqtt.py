@@ -20,6 +20,8 @@ class MqttTopics:
     channel_sub = _prefix + "channel-subscription"
     channel_cheer = _prefix + "channel-cheer"
     yay_toggle = _prefix + "yay-toggle"
+    poll_setup = _prefix + "poll/setup"
+    poll_data = _prefix + "poll/data"
 
 
 class MQTT:
