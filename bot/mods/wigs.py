@@ -35,7 +35,7 @@ class ChannelPoints(Mod):
 
             if reward == "Wear A Wig":
                 channel = channels.get(cfg.channels[0])
-                self.wear_a_wig(channel)
+                await self.wear_a_wig(channel)
 
     async def wear_a_wig(self, channel: Channel):
         print("starting wig poll")
