@@ -49,7 +49,7 @@ class ChannelPoints(Mod):
                 print(f"Unhandled custom reward redeemed - '{reward}'")
 
     async def dispense_treat(self, channel: str = cfg.channels[0]):
-        if await AddOhmsBot.MQTT.send("stream/dispense-treat-toggle"):
+        if await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.dispense_treat_toggle):
             await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}Teleporting a treat")
         else:
             await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}I couldn't do that at the moment. Sorry ☹️")
@@ -59,7 +59,7 @@ class ChannelPoints(Mod):
     async def attention_attention(self, channel: str = cfg.channels[0]):
         print("Hey!!!")
         if AddOhmsBot.ATTN_ENABLE:
-            if not await AddOhmsBot.MQTT.send("stream/twitch-attn-indi"):
+            if not await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.twitch_attention_indicator):
                 await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}Something went wrong getting my attention. ☹️")
 
         else:

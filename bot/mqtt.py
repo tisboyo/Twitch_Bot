@@ -1,4 +1,5 @@
 # Import standard python modules
+from dataclasses import dataclass
 from datetime import datetime
 from datetime import timedelta
 from os import getenv
@@ -8,6 +9,17 @@ from gmqtt import Client
 from mods._database import session
 
 from models import Settings
+
+
+@dataclass
+class MqttTopics:
+    _prefix = "stream/"
+    dispense_treat_toggle = _prefix + "dispense-treat-toggle"
+    twitch_attention_indicator = _prefix + "twitch-attn-indi"
+    channel_raid = _prefix + "channel-raid"
+    channel_sub = _prefix + "channel-subscription"
+    channel_cheer = _prefix + "channel-cheer"
+    yay_toggle = _prefix + "yay-toggle"
 
 
 class MQTT:
@@ -27,6 +39,8 @@ class MQTT:
         # Default to not connected
         self.MQTT_CONNECTION_STATE = False
         self.ATTN_ENABLE = True
+
+        self.Topics = MqttTopics
 
     async def connect_to_mqtt(self):
         """Connect to MQTT Server"""
