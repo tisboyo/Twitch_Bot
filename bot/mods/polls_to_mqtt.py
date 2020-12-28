@@ -12,7 +12,7 @@ class PollsToMQTT(Mod):
 
     def __init__(self):
         super().__init__()
-        self.mqtt = AddOhmsBot.AIO
+        self.mqtt = AddOhmsBot.MQTT
 
     def get_poll_setup(self, poll: PollData, active: bool = True) -> str:
         # Build the dictionary for poll setup
@@ -37,23 +37,23 @@ class PollsToMQTT(Mod):
 
         # Send the setup data to MQTT
         setup_json = self.get_poll_setup(poll)
-        self.mqtt.send("stream/poll/setup", setup_json)
+        await self.mqtt.send("stream/poll/setup", setup_json)
 
         # While the poll is running, send continuous updates
         while not poll.done:
             data_json = self.get_poll_data(poll)
-            self.mqtt.send("stream/poll/data", data_json)
+            await self.mqtt.send("stream/poll/data", data_json)
             await asyncio.sleep(0.5)
 
     async def on_poll_ended(self, channel: Channel, poll: PollData):
 
         # Send final results
         data_json = self.get_poll_data(poll)
-        self.mqtt.send("stream/poll/data", data_json)
+        await self.mqtt.send("stream/poll/data", data_json)
 
         # Sleep for 15 seconds before hiding the canvas
         await asyncio.sleep(15)
 
         # Send the setup data to MQTT
         setup_json = self.get_poll_setup(poll, active=False)
-        self.mqtt.send("stream/poll/setup", setup_json)
+        await self.mqtt.send("stream/poll/setup", setup_json)
