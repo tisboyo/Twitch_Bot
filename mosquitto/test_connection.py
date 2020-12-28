@@ -36,7 +36,7 @@ def on_publish(client, userdata, mid):
     print("message published ")  # , str(message.payload.decode("utf-8")))
 
 
-print("creating client 1 with clean session set to", CLEAN_SESSION)
+print("Testing MQTT over SSL")
 client1 = mqtt.Client("Python1", clean_session=CLEAN_SESSION)  # create new instance
 # edit code for passwords
 print("setting  password")
@@ -55,15 +55,21 @@ time.sleep(3)
 client1.disconnect()
 client1.loop_stop()
 
-# print("Not sending username password")
-# client1 = mqtt.Client("Python1", clean_session=CLEAN_SESSION)
-# client1.on_message = on_message  # attach function to callback
-# client1.on_connect = on_connect
-# print("connecting to ", broker)
-# client1.connect(broker)
-# client1.loop_start()
-# time.sleep(5)
-# print("Disconnecting from ", broker)
-# client1.disconnect()
-# time.sleep(1)
-# client1.loop_stop()
+print("Testing Secure Websockets")
+client1 = mqtt.Client("Python1", clean_session=CLEAN_SESSION, transport="websockets")  # create new instance
+# edit code for passwords
+print("setting  password")
+client1.username_pw_set(username="tisboyo", password="testpass")
+##
+client1.on_message = on_message  # attach function to callback
+client1.on_connect = on_connect
+print("connecting to ", broker)
+# client1.tls_set(cert_reqs=ssl.CERT_NONE)
+client1.tls_set()
+client1.connect(broker, 9883)
+client1.loop_start()
+# client1.on_disconnect=on_disconnect
+time.sleep(3)
+# client1.loop()
+client1.disconnect()
+client1.loop_stop()

@@ -134,13 +134,7 @@ services:
 
     ports:
       - 8883:8883
-
-    # labels:
-    #   - "traefik.http.routers.mqtt.rule=Host(`${WEB_HOSTNAME}`)"
-    #   - "traefik.http.routers.mqtt.entrypoints=websecure"
-    #   - "traefik.http.routers.mqtt.tls=true"
-    #   - "traefik.http.routers.mqtt.tls.certresolver=leresolver"
-    #   - "traefik.tcp.routers.mqtt.entrypoints=mqtt"
+      - 9883:9883
 
   traefik-certs-dumper:
       image: ldez/traefik-certs-dumper:v2.7.4
