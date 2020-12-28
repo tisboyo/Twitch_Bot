@@ -58,7 +58,7 @@ class ChannelPoints(Mod):
         await poll.start()
 
         while poll.seconds_left > 0:
-            print("Poll seconds left", poll.seconds_left)
+            # print("Poll seconds left", poll.seconds_left)
             await asyncio.sleep(1)
         else:
             results = poll.votes.most_common()
@@ -80,7 +80,7 @@ class ChannelPoints(Mod):
                     await runoff_poll.start()
                     while runoff_poll.seconds_left > 0:
                         # Sleep while the poll runs
-                        print("Runoff poll seconds left", runoff_poll.seconds_left)
+                        # print("Runoff poll seconds left", runoff_poll.seconds_left)
                         await asyncio.sleep(1)
 
                     results = runoff_poll.votes.most_common()
