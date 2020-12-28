@@ -25,7 +25,7 @@ class LinksToDiscord(Mod):
 
     async def on_privmsg_received(self, msg: Message):
         # Webhook not configured  or Ignore these users
-        if self.webhook is None or msg.author in ["addohms", "streamlabs"]:
+        if self.webhook is None or msg.author in ["addohms", "streamlabs", "pretzelrocks"]:
             return
 
         urls = self.find_url(msg.content)
