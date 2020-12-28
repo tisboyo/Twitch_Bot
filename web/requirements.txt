@@ -10,3 +10,4 @@ PyJWT==1.7.1
 python-multipart==0.0.5
 mysql-connector-python==8.0.22
 aiofiles==0.6.0
+pythontwitchbotframework
