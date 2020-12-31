@@ -29,14 +29,14 @@ class LinksToDiscord(Mod):
         url = re.findall(regex, string)
         return [x[0] for x in url]
 
-    @ModCommand(name, "ignorelinks", context=CommandContext.BOTH)
+    @ModCommand(name, "ignorelinks", context=CommandContext.BOTH, permission="admin")
     async def ignore_user(self, msg: Message, user: str):
         insert = LinksToDiscordIgnoreList(username=user.lower())
         session.add(insert)
         session.commit()
         await msg.reply(f"I will now ignore links from {user}")
 
-    @ModCommand(name, "allowlinks", context=CommandContext.BOTH)
+    @ModCommand(name, "allowlinks", context=CommandContext.BOTH, permission="admin")
     async def allow_user(self, msg: Message, user: str):
         query = (
             session.query(LinksToDiscordIgnoreList).filter(LinksToDiscordIgnoreList.username == user.lower()).one_or_none()
