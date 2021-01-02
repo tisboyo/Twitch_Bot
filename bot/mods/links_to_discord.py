@@ -2,10 +2,15 @@ import re
 
 import aiohttp
 from main import AddOhmsBot
+from mods._database import session
 from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import Message
 from twitchbot import Mod
+from twitchbot import ModCommand
+from twitchbot.enums import CommandContext
+
+from models import LinksToDiscordIgnoreList
 
 
 class LinksToDiscord(Mod):
@@ -15,6 +20,7 @@ class LinksToDiscord(Mod):
         super().__init__()
         print("LinksToDiscord loaded")
         self.webhook = cfg.webhookurl
+        self.session = session
 
     def find_url(self, string):
         # findall() has been used
@@ -23,9 +29,34 @@ class LinksToDiscord(Mod):
         url = re.findall(regex, string)
         return [x[0] for x in url]
 
+    @ModCommand(name, "ignorelinks", context=CommandContext.BOTH, permission="admin")
+    async def ignore_user(self, msg: Message, user: str):
+        insert = LinksToDiscordIgnoreList(username=user.lower())
+        session.add(insert)
+        session.commit()
+        await msg.reply(f"I will now ignore links from {user}")
+
+    @ModCommand(name, "allowlinks", context=CommandContext.BOTH, permission="admin")
+    async def allow_user(self, msg: Message, user: str):
+        query = (
+            session.query(LinksToDiscordIgnoreList).filter(LinksToDiscordIgnoreList.username == user.lower()).one_or_none()
+        )
+        if query:
+            session.delete(query)
+            session.commit()
+            await msg.reply(f"I will now allow links from {user}")
+        else:
+            await msg.reply(f"{user} wasn't on my ignore list.")
+
     async def on_privmsg_received(self, msg: Message):
         # Webhook not configured  or Ignore these users
-        if self.webhook is None or msg.author in ["addohms", "streamlabs", "pretzelrocks"]:
+        if self.webhook is None:
+            return
+        elif (  # User is in ignore list
+            self.session.query(LinksToDiscordIgnoreList)
+            .filter(LinksToDiscordIgnoreList.username == msg.author.lower())
+            .one_or_none()
+        ):
             return
 
         urls = self.find_url(msg.content)
