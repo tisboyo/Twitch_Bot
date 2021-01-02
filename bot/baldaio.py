@@ -6,8 +6,8 @@ from typing import Union
 
 from Adafruit_IO import Client
 from Adafruit_IO.errors import RequestError as RequestError
-from mods._database_models import session
-from mods._database_models import Settings
+from models import Settings
+from mods._database import session
 
 
 class AIO:

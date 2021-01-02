@@ -4,6 +4,7 @@ from twitchbot import channels
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import PubSubData
+from twitchbot.channel import Channel
 from twitchbot.command import ModCommand
 from twitchbot.command import SubCommand
 
@@ -19,6 +20,7 @@ class ChannelPoints(Mod):
         self.custom_redemptions = {
             "Give BaldEngineer a treat.": self.dispense_treat,
             "Get His Attention!": self.attention_attention,
+            "Wear A Wig": self.wear_a_wig,
         }
 
         self.default_redemptions = {
@@ -62,6 +64,10 @@ class ChannelPoints(Mod):
 
         else:
             print("Shhhhh....")
+
+    async def wear_a_wig(self, channel: Channel):
+        # Handled in wigs.py
+        pass
 
     async def highlighted_message(self, msg: Message):
         print("Highlighted message.".center(80, "*"))

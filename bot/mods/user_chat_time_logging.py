@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Union
 
-from mods._database_models import session
-from mods._database_models import Users
+from models import Users
+from mods._database import session
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import channels

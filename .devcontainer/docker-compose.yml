@@ -26,6 +26,16 @@ services:
 
       # Uncomment the next line to use Docker from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker-compose for details.
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./models.py:/workspace/web/models.py
+      - ./web/web_user_db.json:/workspace/web/web_user_db.json
+
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      WEB_API_KEY: ${WEB_API_KEY}
+      TWITCH_SIGNING_SECRET: ${TWITCH_SIGNING_SECRET}
+      WEB_COOKIE_KEY: ${WEB_COOKIE_KEY}
 
     # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
     # cap_add:

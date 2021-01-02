@@ -1,7 +1,7 @@
 from twitchbot import BOT_VERSION
 
 # Check to make sure the library is new enough for all needed functions
-NEEDED_VERSION = (1, 16, 10)
+NEEDED_VERSION = (1, 19, 4)
 
 if NEEDED_VERSION > BOT_VERSION:
     from os import _exit

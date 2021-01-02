@@ -8,12 +8,14 @@ services:
     depends_on:
       - mysql
     volumes:
-      - ./configs:/workspace/bot/configs/
-      - ./irc_logs:/workspace/bot/irc_logs/
-      - ./jsons:/workspace/bot/jsons/
+      - ./bot/configs:/workspace/bot/configs/
+      - ./bot/irc_logs:/workspace/bot/irc_logs/
+      - ./bot/jsons:/workspace/bot/jsons/
+      - ./models.py:/workspace/bot/models.py
       # - ./bot:/workspace/bot/
     environment:
       client_id: ${TWITCH_CLIENT_ID} #Lower cased because a framework issue
+      client_secret: ${TWITCH_CLIENT_SECRET}
       nick: ${TWITCH_NICK}
       oauth: ${TWITCH_OAUTH}
       PUBSUB_OAUTH: ${TWITCH_PUBSUB_OAUTH}
@@ -31,6 +33,9 @@ services:
     depends_on:
       - mysql
 
+    volumes:
+      - ./web/web_user_db.json:/workspace/web/web_user_db.json
+      - ./models.py:/workspace/web/models.py
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`${WEB_HOSTNAME}`)"
@@ -42,6 +47,7 @@ services:
     environment:
       WEB_HOSTNAME: ${WEB_HOSTNAME}
       CLIENT_ID: ${TWITCH_CLIENT_ID}
+      CLIENT_SECRET: ${TWITCH_CLIENT_SECRET}
       PUBSUB_OAUTH: ${TWITCH_PUBSUB_OAUTH}
       TWITCH_CHANNEL: ${TWITCH_CHANNEL}
       ADAFRUIT_IO_USER: ${ADAFRUIT_IO_USER}
@@ -49,6 +55,9 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      WEB_API_KEY: ${WEB_API_KEY}
+      TWITCH_SIGNING_SECRET: ${TWITCH_SIGNING_SECRET}
+      WEB_COOKIE_KEY: ${WEB_COOKIE_KEY}
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
@@ -59,9 +68,8 @@ services:
     image: mysql:latest
     restart: unless-stopped
     volumes:
-      - ./db_data:/var/lib/mysql
-      - ./mysql.cnf:/etc/mysql/conf.d/custom.cnf
-      - ./dropbox:/home
+      - ./mysql/db_data:/var/lib/mysql
+      - ./mysql/mysql.cnf:/etc/mysql/conf.d/custom.cnf
     ports:
       - 3306:3306
     environment:

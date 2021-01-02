@@ -1,14 +1,16 @@
 #!/usr/local/bin/python
-import requests
-from json import loads
-from os import getenv, _exit
 import datetime
+from json import loads
+from os import _exit
+from os import getenv
 
+import requests
 
 client = getenv("CLIENT_ID") or getenv("client_id")
 auth = getenv("PUBSUB_OAUTH")
 channel = getenv("TWITCH_CHANNEL")
 host = getenv("WEB_HOSTNAME")
+signing_secret = getenv("TWITCH_SIGNING_SECRET")
 
 headers = {"client-id": client, "Authorization": f"Bearer {auth}"}
 r = requests.get(f"https://api.twitch.tv/helix/users?login={channel}", headers=headers)
@@ -37,6 +39,7 @@ for url in urls:
         "hub.mode": "subscribe",
         "hub.topic": url[0],
         "hub.lease_seconds": 90000,  # 25 hours
+        "hub.secret": signing_secret,
     }
     r = requests.post(hub, data=data, headers=headers)
     print(datetime.datetime.now().isoformat(), r, f"{url[1]}")
