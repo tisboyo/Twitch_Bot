@@ -7,6 +7,8 @@
 
 Passwords demo code
 """
+import json
+import random
 import time
 from os import getenv
 
@@ -17,6 +19,9 @@ QOS2 = 1
 CLEAN_SESSION = True
 broker = getenv("WEB_HOSTNAME")
 # broker_address="iot.eclipse.org"
+
+mqtt_user = getenv("MQTT_USER")  # or ""
+mqtt_pass = getenv("MQTT_KEY")  # or ""
 
 
 def on_disconnect(client, userdata, flags, rc=0):
@@ -40,7 +45,7 @@ print("Testing MQTT over SSL")
 client1 = mqtt.Client("Python1", clean_session=CLEAN_SESSION)  # create new instance
 # edit code for passwords
 print("setting  password")
-client1.username_pw_set(username="tisboyo", password="testpass")
+client1.username_pw_set(username=mqtt_user, password=mqtt_pass)
 ##
 client1.on_message = on_message  # attach function to callback
 client1.on_connect = on_connect
@@ -60,7 +65,7 @@ print("Testing Secure Websockets")
 client1 = mqtt.Client("Python1", clean_session=CLEAN_SESSION, transport="websockets")  # create new instance
 # edit code for passwords
 print("setting  password")
-client1.username_pw_set(username="tisboyo", password="testpass")
+client1.username_pw_set(username=mqtt_user, password=mqtt_pass)
 ##
 client1.on_message = on_message  # attach function to callback
 client1.on_connect = on_connect
@@ -71,7 +76,59 @@ client1.connect(broker, 9883)
 client1.loop_start()
 # client1.on_disconnect=on_disconnect
 client1.publish("test/9883", "secure websocket")
-time.sleep(3)
-# client1.loop()
+# time.sleep(3)
+# # client1.loop()
+
+
+# Send sample data
+try:
+    while True:
+        for i in range(1, 10):
+            poll_setup = dict(
+                title=f"Poll Title {i}",
+                total_duration=random.randint(10, 60),
+                choices=[
+                    "Choice 1",
+                    "Choice 2",
+                    "Choice 3",
+                ],
+                active=True,
+                sub_multiplier=0,
+            )
+            res = client1.publish("stream/poll/setup", json.dumps(poll_setup))
+
+            # Reset seconds left counter
+            sec = 5
+            poll_data = dict()
+            for ii in range(1, sec * 2):
+                sec -= 0.5
+                poll_data = dict(
+                    seconds_left=sec,
+                    votes={
+                        "1": 1 * ii,
+                        "2": 2 * ii,
+                        "3": 3 * ii,
+                    },
+                    done=False,
+                )
+
+                client1.publish("stream/poll/data", json.dumps(poll_data))
+
+                time.sleep(0.5)
+
+            poll_data["seconds_left"] = 0
+            poll_data["done"] = True
+            client1.publish("stream/poll/data", json.dumps(poll_data))
+
+            time.sleep(3)
+            poll_setup["active"] = False
+            client1.publish("stream/poll/setup", json.dumps(poll_setup))
+
+except ValueError:
+    print("Probably invalid credentials")
+
+except KeyboardInterrupt:
+    print("Stopped")
+
 client1.disconnect()
 client1.loop_stop()
