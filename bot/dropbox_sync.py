@@ -13,6 +13,7 @@ from models import Settings
 mysql_database = getenv("MYSQL_DATABASE")
 mysql_user = getenv("MYSQL_USER")
 mysql_pass = getenv("MYSQL_PASSWORD")
+webhost = getenv("WEB_HOSTNAME")
 
 engine = create_engine(f"mysql+mysqlconnector://{mysql_user}:{mysql_pass}@mysql:3306/{mysql_database}")
 
@@ -25,7 +26,7 @@ except AttributeError:
     _exit(1)
 
 paths = pathlib.Path("/db_backup/").glob("**/*.sql")
-target = "/twitchbotdb-backup/"  # Dropbox path to save file
+target = f"/twitchbotdb-{webhost}/"  # Dropbox path to save file
 
 d = dropbox.Dropbox(api_key)
 
