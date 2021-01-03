@@ -10,4 +10,4 @@ mysql_pass = getenv("MYSQL_PASSWORD")
 
 engine = create_engine(f"mysql+mysqlconnector://{mysql_user}:{mysql_pass}@mysql:3306/{mysql_database}")
 
-session = scoped_session(sessionmaker(autocommit=True, bind=engine))
+session = scoped_session(sessionmaker(bind=engine))
