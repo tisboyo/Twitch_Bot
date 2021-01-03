@@ -24,7 +24,9 @@ services:
       ADAFRUIT_IO_KEY: ${ADAFRUIT_IO_KEY}
       WEB_HOSTNAME: ${WEB_HOSTNAME}
       TWITCH_CHANNEL: ${TWITCH_CHANNEL}
-      DROPBOX_OAUTH: ${DROPBOX_OAUTH}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 
     labels:
       - "deck-chores.process-dropbox.command=sh -c /workspace/bot/dropbox_sync.py &> /proc/1/fd/1"
