@@ -150,6 +150,7 @@ bot/irc_logs/
 bot/jsons/
 bot/pubsub.log
 db_data/
+mysql/db_backup/
 
 #traefik config file
 traefik/acme.json

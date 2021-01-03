@@ -12,6 +12,7 @@ services:
       - ./bot/irc_logs:/workspace/bot/irc_logs/
       - ./bot/jsons:/workspace/bot/jsons/
       - ./models.py:/workspace/bot/models.py
+      - ./mysql/db_backup:/db_backup
       # - ./bot:/workspace/bot/
     environment:
       client_id: ${TWITCH_CLIENT_ID} #Lower cased because a framework issue
@@ -23,6 +24,12 @@ services:
       ADAFRUIT_IO_KEY: ${ADAFRUIT_IO_KEY}
       WEB_HOSTNAME: ${WEB_HOSTNAME}
       TWITCH_CHANNEL: ${TWITCH_CHANNEL}
+      DROPBOX_OAUTH: ${DROPBOX_OAUTH}
+
+    labels:
+      - "deck-chores.process-dropbox.command=sh -c /workspace/bot/dropbox_sync.py &> /proc/1/fd/1"
+      - "deck-chores.process-dropbox.cron=* * * * * * 10 0" #Hourly @ 10 after
+
 
   webserver:
     container_name: twitchbot_webserver
@@ -70,6 +77,7 @@ services:
     volumes:
       - ./mysql/db_data:/var/lib/mysql
       - ./mysql/mysql.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./mysql/db_backup:/db_backup
     ports:
       - 3306:3306
     environment:
@@ -83,11 +91,11 @@ services:
       - SYS_NICE # CAP_SYS_NICE
 
     labels:
-      - deck-chores.mysqldump.command=sh -c "mysqldump --all-databases > /home/Dropbox/twitchbot_backup/twitchbot.sql"
+      - deck-chores.mysqldump.command=sh -c "mysqldump --all-databases > /db_backup/twitchbot.sql"
       - deck-chores.mysqldump.cron=* * * * * 0/6 5 0 # Every 6 hours
-      - deck-chores.mysqldump-weekly.command=sh -c "mysqldump --all-databases > /home/Dropbox/twitchbot_backup/twitchbot-weekly.sql"
+      - deck-chores.mysqldump-weekly.command=sh -c "mysqldump --all-databases > /db_backup/twitchbot-weekly.sql"
       - deck-chores.mysqldump-weekly.cron=* * * * sat 3 0 0 # Saturday 3am
-      - deck-chores.mysqldump-monthly.command=sh -c "mysqldump --all-databases > /home/Dropbox/twitchbot_backup/twitchbot-monthly.sql"
+      - deck-chores.mysqldump-monthly.command=sh -c "mysqldump --all-databases > /db_backup/twitchbot-monthly.sql"
       - deck-chores.mysqldump-monthly.cron= * * 1 * * 1 0 0 # Monthly on the 1st, 1am
 
 
@@ -128,15 +136,3 @@ services:
       TIMEZONE: America/Chicago
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-
-  dropbox:
-    container_name: twitchbot_dropbox
-    image: vmirage/dropbox
-    restart: unless-stopped
-    volumes:
-      - ./dropbox/Dropbox:/dbox/Dropbox
-      - ./dropbox/.dropbox:/dbox/.dropbox
-
-    environment:
-      - DBOX_UID=999
-      - DBOX_GID=999
