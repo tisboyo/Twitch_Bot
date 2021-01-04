@@ -20,7 +20,9 @@
   - [`!channelpoint_cooldown` - Base command](#channelpoint_cooldown---base-command)
     - [`attention` - Sets Attention cooldown](#attention---sets-attention-cooldown)
     - [`treat` - Sets Treat cooldown](#treat---sets-treat-cooldown)
+  - [`!allowlinks` - Allows links from a user to be sent to discord](#allowlinks---allows-links-from-a-user-to-be-sent-to-discord)
   - [`!disable_attn` - Disable Attention](#disable_attn---disable-attention)
+  - [`!ignorelinks` - Ignore links from a user to be sent to discord](#ignorelinks---ignore-links-from-a-user-to-be-sent-to-discord)
   - [`!treatme` - Sends a Treat](#treatme---sends-a-treat)
   - [`!topic` - Chat Topic](#topic---chat-topic)
     - [`!topic set` - Sets a topic](#topic-set---sets-a-topic)
@@ -89,9 +91,15 @@ Send new cooldown in seconds as parameter
 Permission: Admin
 Send new cooldown in seconds as parameter
 
+## `!allowlinks` - Allows links from a user to be sent to discord
+Permission: Admin
+Send username to allow links from as the parameter
 ## `!disable_attn` - Disable Attention
 Permissions: Admin
 Disables sending the MQTT publish to twitch-attn-indi
+## `!ignorelinks` - Ignore links from a user to be sent to discord
+Permission: Admin
+Send username to ignore links from as the parameter
 ## `!treatme` - Sends a Treat
 Permissions: Everyone
 Sends a MQTT publish of 1 to dispense-treat-toggle
