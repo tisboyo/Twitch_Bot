@@ -11,6 +11,7 @@ from routes import commands
 from routes import docs
 from routes import dropbox
 from routes import send_message
+from routes import topic
 from routes import twitch_webhook_follow
 from uvicorn.main import logger
 
@@ -25,6 +26,7 @@ app.include_router(send_message.router)
 app.include_router(docs.router)
 app.include_router(commands.router)
 app.include_router(dropbox.router)
+app.include_router(topic.router)
 
 
 @app.on_event("startup")

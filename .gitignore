@@ -169,3 +169,4 @@ web_user_db.json
 #Ignore models file in bot/ and web/
 bot/models.py
 web/models.py
+web/configs/*.json
