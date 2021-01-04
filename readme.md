@@ -25,7 +25,15 @@
   - [`!ignorelinks` - Ignore links from a user to be sent to discord](#ignorelinks---ignore-links-from-a-user-to-be-sent-to-discord)
   - [`!treatme` - Sends a Treat](#treatme---sends-a-treat)
   - [`!topic` - Chat Topic](#topic---chat-topic)
-    - [`!topic set` - Sets a topic](#topic-set---sets-a-topic)
+    - [`set` - Sets a topic](#set---sets-a-topic)
+  - [`wig` - Base command](#wig---base-command)
+    - [`poll` - Start a wig poll](#poll---start-a-wig-poll)
+    - [`time` - Set duration of wig poll](#time---set-duration-of-wig-poll)
+    - [`add` - Add a new wig](#add---add-a-new-wig)
+    - [`del` - Delete a wig by ID](#del---delete-a-wig-by-id)
+    - [`list` - Lists current wigs](#list---lists-current-wigs)
+    - [`disable` - Disable a wig](#disable---disable-a-wig)
+    - [`enable` - Enable a wig](#enable---enable-a-wig)
 - [Web](#web)
   - [`/send_command`](#send_command)
     - [`POST` - Send a command to the bot](#post---send-a-command-to-the-bot)
@@ -36,7 +44,7 @@
 
 # Bot
 ## `!announce` - Announcements
-Permissions: Admin (for all sub commands)
+Permission: Admin (for all sub commands)
 
 Base command, doesn't do anything directly
 ### `nosleep` - Disables automatic sleep
@@ -95,20 +103,46 @@ Send new cooldown in seconds as parameter
 Permission: Admin
 Send username to allow links from as the parameter
 ## `!disable_attn` - Disable Attention
-Permissions: Admin
+Permission: Admin
 Disables sending the MQTT publish to twitch-attn-indi
 ## `!ignorelinks` - Ignore links from a user to be sent to discord
 Permission: Admin
 Send username to ignore links from as the parameter
 ## `!treatme` - Sends a Treat
-Permissions: Everyone
+Permission: Everyone
 Sends a MQTT publish of 1 to dispense-treat-toggle
 ## `!topic` - Chat Topic
-Permissions: Everyone
+Permission: Everyone
 Posts to chat the currently set topic
-### `!topic set` - Sets a topic
-Permissions: Admin
+### `set` - Sets a topic
+Permission: Admin
 - `!topic set New topic text`
+
+## `wig` - Base command
+### `poll` - Start a wig poll
+Permission: Admin
+### `time` - Set duration of wig poll
+Permission: Admin
+Send time in seconds as parameter
+
+### `add` - Add a new wig
+Permission: Admin
+Send wig name as parameter
+
+### `del` - Delete a wig by ID
+Permission: Admin
+Send wig ID as parameter
+
+### `list` - Lists current wigs
+Permission: Admin
+
+### `disable` - Disable a wig
+Permission: Admin
+Send wig ID as parameter
+
+### `enable` - Enable a wig
+Permission: Admin
+Send wig ID as parameter
 
 
 # Web
