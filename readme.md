@@ -17,6 +17,9 @@
       - [`list` - Lists the available categories to the console](#list---lists-the-available-categories-to-the-console)
       - [`assign` - Assign an announcement to a category](#assign---assign-an-announcement-to-a-category)
       - [`activate` - Sets a category as active](#activate---sets-a-category-as-active)
+  - [`!channelpoint_cooldown` - Base command](#channelpoint_cooldown---base-command)
+    - [`attention` - Sets Attention cooldown](#attention---sets-attention-cooldown)
+    - [`treat` - Sets Treat cooldown](#treat---sets-treat-cooldown)
   - [`!disable_attn` - Disable Attention](#disable_attn---disable-attention)
   - [`!treatme` - Sends a Treat](#treatme---sends-a-treat)
   - [`!topic` - Chat Topic](#topic---chat-topic)
@@ -74,6 +77,18 @@ Send {AnnouncementID:int} {CategoryID:int} as parameters
 
 #### `activate` - Sets a category as active
 Sets the {CategoryID:int} as the active category.
+
+## `!channelpoint_cooldown` - Base command
+Permission: Admin
+For setting channelpoint cooldowns
+### `attention` - Sets Attention cooldown
+Permission: Admin
+Send new cooldown in seconds as parameter
+
+### `treat` - Sets Treat cooldown
+Permission: Admin
+Send new cooldown in seconds as parameter
+
 ## `!disable_attn` - Disable Attention
 Permissions: Admin
 Disables sending the MQTT publish to twitch-attn-indi
