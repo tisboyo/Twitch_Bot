@@ -8,7 +8,7 @@ aio_key = "dispense-treat-toggle"
 
 @Command("treatme")
 async def push_treat(msg, *args):
-    if AddOhmsBot().AIO.send(aio_key):
+    if AddOhmsBot.AIO.send(aio_key):
         await msg.reply(f"{AddOhmsBot.msg_prefix}Teleporting a treat")
     else:
         await msg.reply(f"{AddOhmsBot.msg_prefix}I couldn't do that at the moment. Sorry ☹️")
