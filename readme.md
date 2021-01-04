@@ -141,4 +141,7 @@ Example with curl:
 # MQTT
 - `dispense-treat-toggle` Sending 1 triggers the treat bot. Bot should reset to 0 when done.
 - `twitch-attn-indi`  Sending 1 triggers the Attention bot. Bot should reset to 0 when done.
+- `channel-raid` Bot sends username of raider
+- `channel-subscription` Bot sends username of subscriber
+- `channel-cheer` Bot sends json of {"username": username, "bits": bits_used, "total_bits": total_bits_used}
 -
