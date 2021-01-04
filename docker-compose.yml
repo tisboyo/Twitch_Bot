@@ -12,6 +12,7 @@ services:
       - ./bot/irc_logs:/workspace/bot/irc_logs/
       - ./bot/jsons:/workspace/bot/jsons/
       - ./models.py:/workspace/bot/models.py
+      - ./mysql/db_backup:/db_backup
       # - ./bot:/workspace/bot/
     environment:
       client_id: ${TWITCH_CLIENT_ID} #Lower cased because a framework issue
@@ -23,6 +24,14 @@ services:
       ADAFRUIT_IO_KEY: ${ADAFRUIT_IO_KEY}
       WEB_HOSTNAME: ${WEB_HOSTNAME}
       TWITCH_CHANNEL: ${TWITCH_CHANNEL}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    labels:
+      - "deck-chores.process-dropbox.command=sh -c /workspace/bot/dropbox_sync.py &> /proc/1/fd/1"
+      - "deck-chores.process-dropbox.cron=* * * * * * 10 0" #Hourly @ 10 after
+
 
   webserver:
     container_name: twitchbot_webserver
@@ -70,6 +79,7 @@ services:
     volumes:
       - ./mysql/db_data:/var/lib/mysql
       - ./mysql/mysql.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./mysql/db_backup:/db_backup
     ports:
       - 3306:3306
     environment:
@@ -77,9 +87,19 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_TEST_LOGIN_FILE: /var/lib/mysql/.mylogin.cnf #Run mysql_config_editor set -p in container to set password
 
     cap_add:
       - SYS_NICE # CAP_SYS_NICE
+
+    labels:
+      - deck-chores.mysqldump.command=sh -c "mysqldump --all-databases > /db_backup/twitchbot.sql"
+      - deck-chores.mysqldump.cron=* * * * * 0/6 5 0 # Every 6 hours
+      - deck-chores.mysqldump-weekly.command=sh -c "mysqldump --all-databases > /db_backup/twitchbot-weekly.sql"
+      - deck-chores.mysqldump-weekly.cron=* * * * sat 3 0 0 # Saturday 3am
+      - deck-chores.mysqldump-monthly.command=sh -c "mysqldump --all-databases > /db_backup/twitchbot-monthly.sql"
+      - deck-chores.mysqldump-monthly.cron= * * 1 * * 1 0 0 # Monthly on the 1st, 1am
+
 
   traefik:
     container_name: twitchbot_traefik

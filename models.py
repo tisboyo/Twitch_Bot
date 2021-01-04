@@ -74,3 +74,11 @@ class Wigs(Base):
     id = Column(Integer(), primary_key=True)
     wig_name = Column(String(128), nullable=False, unique=True)
     enabled = Column(Boolean())
+
+
+class LinksToDiscordIgnoreList(Base):
+    """ List of twitch users to ignore for sending links to discord."""
+
+    __tablename__ = "linkstodiscordignorelist"
+    id = Column(Integer(), primary_key=True)
+    username = Column(String(128), nullable=False, unique=True)
