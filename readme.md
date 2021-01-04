@@ -178,4 +178,3 @@ Example with curl:
 - `channel-raid` Bot sends username of raider
 - `channel-subscription` Bot sends username of subscriber
 - `channel-cheer` Bot sends json of {"username": username, "bits": bits_used, "total_bits": total_bits_used}
--
