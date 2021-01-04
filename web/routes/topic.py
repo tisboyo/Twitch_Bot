@@ -56,7 +56,7 @@ async def post_topic(
     api_key: APIKey = Depends(get_api_key),
 ):
     """Manual testing
-    curl --header "Content-Type: application/json" --header "access_token: testKey" --request POST --data '{"topic":"Test message sent from a json post"}' http://localhost:5000/topic
+    curl --header "Content-Type: application/json" --header "access_token: testKey" --request POST --data '{"topic":"Test topic sent from a json post"}' http://localhost:5000/topic
     curl --header "Content-Type: application/json" --request POST --data '{"topic":"Test"}' http://localhost:5000/topic?access_token=testKey
     """  # noqa E501
     if body.get("topic", False):
