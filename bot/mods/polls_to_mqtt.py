@@ -14,6 +14,9 @@ class PollsToMQTT(Mod):
         super().__init__()
         self.mqtt = AddOhmsBot.MQTT
 
+        # Set how quick to send poll updates
+        self.update_frequency = 0.5
+
     def get_poll_setup(self, poll: PollData, active: bool = True) -> str:
         # Build the dictionary for poll setup
         poll_setup = dict(
@@ -21,6 +24,7 @@ class PollsToMQTT(Mod):
             total_duration=poll.duration_seconds,
             choices=poll.choices,
             active=active,
+            update_frequency=self.update_frequency,
         )
         return json.dumps(poll_setup)
 
@@ -43,7 +47,7 @@ class PollsToMQTT(Mod):
         while not poll.done:
             data_json = self.get_poll_data(poll)
             await self.mqtt.send(self.mqtt.Topics.poll_data, data_json)
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(self.update_frequency)
 
     async def on_poll_ended(self, channel: Channel, poll: PollData):
 
