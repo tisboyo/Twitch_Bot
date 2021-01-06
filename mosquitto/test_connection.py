@@ -94,6 +94,7 @@ try:
                 ],
                 active=True,
                 sub_multiplier=0,
+                update_frequency=0.5,
             )
             res = client1.publish("stream/poll/setup", json.dumps(poll_setup))
 
