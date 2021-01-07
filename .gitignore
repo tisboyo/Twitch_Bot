@@ -175,3 +175,4 @@ web/models.py
 mosquitto/config/passwd
 mosquitto/data/persist
 mosquitto/log/mosquitto.log
+web/configs/*.json
