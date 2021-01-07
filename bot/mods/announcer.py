@@ -488,6 +488,11 @@ class AutoMessageStarterMod(Mod):
         """
         category_id = int(category_id)
         category = session.query(AnnouncementCategories).filter(AnnouncementCategories.id == category_id).first()
+        # Have to check if a valid category was returned
+        # to prevent a NoneType error if an invalid one is found
+        if category is None:
+            category = AnnouncementCategories(id=1, name="Default")
+
         return category
 
     def get_announcement(self, announcement_id: int) -> Announcements or None:

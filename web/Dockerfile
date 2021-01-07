@@ -29,4 +29,4 @@ COPY ./ /workspace/web
 # Expose port for debugging
 #EXPOSE 5678:5678
 
-CMD ["python", "main.py"]
+CMD ./wait_for_it.sh mysql:3306 --timeout=60 --strict -- python main.py

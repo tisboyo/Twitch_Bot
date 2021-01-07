@@ -10,6 +10,9 @@
   [entryPoints.websecure]
     address = ":443"
 
+  [entryPoints.mqtt]
+    address = ":8883"
+
 [traefikLog]
 
 [accessLog]

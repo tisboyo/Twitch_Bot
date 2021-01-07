@@ -155,6 +155,7 @@ mysql/db_backup/
 #traefik config file
 traefik/acme.json
 traefik/log/access.log
+traefik/certs/
 
 #fail2ban files
 fail2ban/data/db/
@@ -169,4 +170,9 @@ web_user_db.json
 #Ignore models file in bot/ and web/
 bot/models.py
 web/models.py
+
+#MQTT
+mosquitto/config/passwd
+mosquitto/data/persist
+mosquitto/log/mosquitto.log
 web/configs/*.json

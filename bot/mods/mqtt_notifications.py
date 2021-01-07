@@ -16,12 +16,12 @@ class MqttNotifications(Mod):
 
     async def on_channel_raided(self, channel: Channel, raider: str, viewer_count: int) -> None:
         """Send MQTT push when the channel is raided."""
-        if AddOhmsBot.AIO.send("channel-raid", raider):
-            print(f"Raid by {raider} announced to AIO")
+        if await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.channel_raid, raider):
+            print(f"Raid by {raider} announced to MQTT")
         else:
-            print(f"Unable to announce raid by {raider} to AIO")
+            print(f"Unable to announce raid by {raider} to MQTT")
 
-        if AddOhmsBot.AIO.send("twitch-attn-indi"):
+        if await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.twitch_attention_indicator):
             print("Notification sent for raid to noise maker")
         else:
             print("Unable to send raid to noise maker")
@@ -36,7 +36,7 @@ class MqttNotifications(Mod):
     async def on_channel_subscription(self, subscriber: str, channel: Channel, msg: Message) -> None:
         """Send MQTT push when a new follower subscribes"""
         # TODO How many months? Is this data accessible
-        if AddOhmsBot.AIO.send("channel-subscription"):
+        if await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.channel_raid):
             print(f"Publishing {subscriber} has Subscribed to the channel to AIO")
         else:
             print(f"Unable to publish {subscriber} has subsbribed to the channel to AIO")
@@ -46,7 +46,7 @@ class MqttNotifications(Mod):
         # No usable data provided in raw or data :(
         send_data = dumps({"username": data.username, "bits": data.bits_used, "total_bits": data.total_bits_used})
 
-        if AddOhmsBot.AIO.send("channel-cheer", send_data):
+        if await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.channel_cheer, send_data):
             print("Cheer announced to AIO")
         else:
             print("Unable to announce Cheer to AIO")
