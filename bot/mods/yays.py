@@ -31,7 +31,7 @@ class Yay(Mod):
 
         # Did a choice to add a little bit or random for other conditions later on
         if choice([self.send_on_message_count(), self.send_on_x_people()]):
-            AddOhmsBot.AIO.send("yay-toggle", 1)
+            await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.yay_toggle, 1)
 
     def send_on_message_count(self):
         if self.count >= self.count_to_send:
