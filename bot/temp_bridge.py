@@ -52,7 +52,7 @@ class AIO:
 
 
 class Paho:
-    def __init__(self, host=getenv("WEB_HOSTNAME"), port=8883, AIO: AIO = AIO(), user=None, key=None):
+    def __init__(self, host="mqtt", port=1883, AIO: AIO = AIO(), user=None, key=None):
         self.username = getenv("MQTT_USER") or user
         self.key = getenv("MQTT_KEY") or key
         self.AIO = AIO
@@ -77,7 +77,7 @@ class Paho:
         self.client.on_message = self.on_message
         self.client.on_connect = self.on_connect
         self.client.on_subscribe = self.on_subscribe
-        self.client.tls_set()
+        # self.client.tls_set()
         self.client.connect(self.host, self.port)
         self.client.loop_forever()
 
