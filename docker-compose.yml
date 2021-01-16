@@ -154,6 +154,9 @@ services:
       - 8883:8883
       - 9883:9883
 
+    expose:
+      - 1883 # For inter-container communication, and is not over SSL. Do not open to host
+
   traefik-certs-dumper:
     image: ldez/traefik-certs-dumper:v2.7.4
     entrypoint: sh -c '
