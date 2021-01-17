@@ -14,13 +14,20 @@ async def resistor(msg, *colors):
 
     r = ResistorDecoder()
 
+    reply = "@tisboyo, something unexpected happened here."
     try:
-        a = r.decode(list(colors))
-        if len(a) == 0:
-            await msg.reply(f"{AddOhmsBot.msg_prefix} Invalid combination.")
-    except ValueError as e:
-        await msg.reply(e)
-        return
+        decoded = r.decode(list(colors))
+        len_decoded = len(decoded)
+        if len_decoded == 0:
+            reply = "Invalid combination."
+        elif len_decoded == 1:
+            reply = str(decoded[0])
+        elif len_decoded > 1:
+            reply = "Multiple possible values. "
+            for value in decoded:
+                reply += str(value) + ", "
 
-    q = str(a[0])
-    await msg.reply(q)
+    except ValueError as e:
+        reply = e
+
+    await msg.reply(f"{AddOhmsBot.msg_prefix}{reply}")

@@ -529,7 +529,9 @@ COLOUR_NAMES = (
     "green",
     "blue",
     "violet",
+    "purple",
     "grey",
+    "gray",
     "white",
 )
 
@@ -545,7 +547,9 @@ TOLERANCES = {
     "green": 0.5,
     "blue": 0.25,
     "violet": 0.1,
+    "purple": 0.1,
     "grey": 0.05,  # 10 %
+    "gray": 0.05,
     "white": None,
     "none": 20,
 }
@@ -563,7 +567,9 @@ TEMPERATURE_COEFFICIENTS = {
     "green": 20,
     "blue": 10,
     "violet": 5,
+    "purple": 5,
     "grey": 1,
+    "gray": 1,
     "white": None,
 }
 
@@ -949,8 +955,6 @@ class ResistorDecoder(object):
             resistor_configuration = {band: colour_names[i] for i, band in enumerate(band_configuration)}
             self._append_hypothesis(resistor_configuration, hypotheses)
 
-        print("")
-
     ##############################################
 
     def decode(self, colour_names):
@@ -965,6 +969,6 @@ class ResistorDecoder(object):
 
         hypotheses = []
         self._decode(colour_names, hypotheses)
-        # self._decode(list(reversed(colour_names)), hypotheses)
+        self._decode(list(reversed(colour_names)), hypotheses)
 
         return hypotheses
