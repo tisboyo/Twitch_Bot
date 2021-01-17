@@ -40,6 +40,7 @@ async def startup_event():
             logger.info("Database keep alive running.")
             q = session.query(Settings).filter(Settings.key == "topic").one_or_none()
             logger.info(f"Current twitch topic: {q.value}")
+            session.commit()  # Required so the object updates and gets new data on the next run.
             await asyncio.sleep(3600)
 
     loop.create_task(keep_database_alive())
