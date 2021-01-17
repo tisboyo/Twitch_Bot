@@ -6,6 +6,11 @@ from twitchbot import Command
 
 @Command("resistor")
 async def resistor(msg, *colors):
+
+    if len(colors) == 0:
+        await msg.reply(f"{AddOhmsBot.msg_prefix}Try: !resistor brown black red gold")
+        return
+
     # Check to make sure all of the colors are in the list of valid colors
     for color in colors:
         if color not in COLOUR_NAMES:
