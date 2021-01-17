@@ -43,13 +43,14 @@ async def post_dropbox(request: Request):
         req_url = "https://api.dropboxapi.com/oauth2/token"
         req_post_data = dict(code=key, grant_type="authorization_code", redirect_uri=return_uri)
         req_auth = aiohttp.BasicAuth(client_id, client_secret)
-        updated = False
+
         async with aiohttp.ClientSession() as aiohttp_session:
             async with aiohttp_session.post(req_url, data=req_post_data, auth=req_auth) as resp:
                 resp = json.loads(await resp.text())
                 try:
                     new_token = resp["access_token"]
                     account_id = resp["account_id"]
+                    refresh_token = resp["refresh_token"]
 
                     valid_account = session.query(Settings).filter(Settings.key == "dropbox_account_id").one_or_none()
 
@@ -63,24 +64,29 @@ async def post_dropbox(request: Request):
                         session.add(insert)
 
                     # Update the API key in the database
-                    updated = (
+                    api_key_updated = (
                         session.query(Settings).filter(Settings.key == "dropbox_api_key").update({Settings.value: new_token})
                     )
-                    if not updated:
+
+                    api_refresh_token_updated = (
+                        session.query(Settings)
+                        .filter(Settings.key == "dropbox_api_refresh_token")
+                        .update({Settings.value: refresh_token})
+                    )
+                    if not api_key_updated:
                         # Insert into the database if it wasn't updatable
-                        insert = Settings(key="dropbox_api_key", value=new_token)
-                        session.add(insert)
-                        session.commit()
-                        session.refresh(insert)
-                        if insert.id is not None:
-                            updated = True
-                    else:
-                        session.commit()
-                        updated = True
+                        insert_key = Settings(key="dropbox_api_key", value=new_token)
+                        session.add(insert_key)
+
+                    if not api_refresh_token_updated:
+                        insert_refresh = Settings(key="dropbox_api_refresh_token", value=refresh_token)
+                        session.add(insert_refresh)
+
+                    session.commit()
 
                 except KeyError as e:
                     # KeyError happens if both an access_token and account_id are not sent
                     print(e)
                     pass
 
-        return "Key updated." if updated else "Key not updated."
+        return "Done"
