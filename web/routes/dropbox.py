@@ -1,4 +1,6 @@
 import json
+from datetime import datetime
+from datetime import timedelta
 from os import getenv
 
 import aiohttp
@@ -51,6 +53,7 @@ async def post_dropbox(request: Request):
                     new_token = resp["access_token"]
                     account_id = resp["account_id"]
                     refresh_token = resp["refresh_token"]
+                    key_expires = datetime.now() + timedelta(seconds=(resp["expires_in"] - 5))
 
                     valid_account = session.query(Settings).filter(Settings.key == "dropbox_account_id").one_or_none()
 
@@ -73,6 +76,11 @@ async def post_dropbox(request: Request):
                         .filter(Settings.key == "dropbox_api_refresh_token")
                         .update({Settings.value: refresh_token})
                     )
+                    api_expires_updated = (
+                        session.query(Settings)
+                        .filter(Settings.key == "dropbox_api_key_expires")
+                        .update({Settings.value: key_expires})
+                    )
                     if not api_key_updated:
                         # Insert into the database if it wasn't updatable
                         insert_key = Settings(key="dropbox_api_key", value=new_token)
@@ -80,6 +88,10 @@ async def post_dropbox(request: Request):
 
                     if not api_refresh_token_updated:
                         insert_refresh = Settings(key="dropbox_api_refresh_token", value=refresh_token)
+                        session.add(insert_refresh)
+
+                    if not api_expires_updated:
+                        insert_refresh = Settings(key="dropbox_api_key_expires", value=key_expires)
                         session.add(insert_refresh)
 
                     session.commit()
