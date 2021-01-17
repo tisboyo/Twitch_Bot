@@ -47,6 +47,7 @@ async def get_api_key(
 @router.get("/topic")
 async def get_topic(request: Request):
     topic = session.query(Settings).filter(Settings.key == "topic").one_or_none()
+    session.commit()  # Required so the object updates and gets new data on the next run.
     return JSONResponse({"topic": topic.value})
 
 

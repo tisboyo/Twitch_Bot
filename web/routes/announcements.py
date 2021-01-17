@@ -19,6 +19,7 @@ def get_announcements(request: Request):
             .join(AnnouncementCategories)
             .all()
         )
+        session.commit()  # Required so the object updates and gets new data on the next run.
     except OperationalError:  # Cheapout database connection handling for now...
         out = "I'm thinking as hard as I can, can you try refreshing? Thanks."
         return out
