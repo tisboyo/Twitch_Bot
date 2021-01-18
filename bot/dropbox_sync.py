@@ -41,6 +41,7 @@ d = dropbox.Dropbox(
 
 d.check_and_refresh_access_token()
 
+# This whole if statement may not be needed, or ever even trigger.
 # Check if the database access tokens are valid, and update them if not
 if (d._oauth2_access_token != access_token) or (d._oauth2_refresh_token != refresh_token):
     print("Updating dropbox access tokens...", end="")
