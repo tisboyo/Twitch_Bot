@@ -2,7 +2,6 @@ import json
 from os import getenv
 
 import websockets
-from db import session
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 from fastapi.params import Body
@@ -13,6 +12,7 @@ from fastapi.security.api_key import APIKey
 from fastapi.security.api_key import APIKeyCookie
 from fastapi.security.api_key import APIKeyHeader
 from fastapi.security.api_key import APIKeyQuery
+from fastapi_sqlalchemy import db
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
 
@@ -46,8 +46,8 @@ async def get_api_key(
 
 @router.get("/topic")
 async def get_topic(request: Request):
-    topic = session.query(Settings).filter(Settings.key == "topic").one_or_none()
-    session.commit()  # Required so the object updates and gets new data on the next run.
+    topic = db.session.query(Settings).filter(Settings.key == "topic").one_or_none()
+    db.session.commit()  # Required so the object updates and gets new data on the next run.
     return JSONResponse({"topic": topic.value})
 
 

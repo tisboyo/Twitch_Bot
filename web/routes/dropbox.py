@@ -4,9 +4,9 @@ from datetime import timedelta
 from os import getenv
 
 import aiohttp
-from db import session
 from fastapi import APIRouter
 from fastapi import Request
+from fastapi_sqlalchemy import db
 from starlette.responses import RedirectResponse
 
 from models import Settings
@@ -19,7 +19,7 @@ return_uri = f"https://{getenv('WEB_HOSTNAME')}/dropbox-response"
 @router.get("/dropbox")  # , response_class=RedirectResponse)
 async def get_dropbox(request: Request):
     try:
-        client_id = session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none().value
+        client_id = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none().value
     except AttributeError:
         print("Dropbox Client ID not set")
         return
@@ -32,8 +32,8 @@ async def get_dropbox(request: Request):
 @router.get("/dropbox-response")
 async def post_dropbox(request: Request):
     try:
-        client_id = session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none().value
-        client_secret = session.query(Settings.value).filter(Settings.key == "dropbox_client_secret").one_or_none().value
+        client_id = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none().value
+        client_secret = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_secret").one_or_none().value
     except AttributeError:
         print("Dropbox Client ID or Secret not set.")
         return
@@ -55,7 +55,7 @@ async def post_dropbox(request: Request):
                     refresh_token = resp["refresh_token"]
                     key_expires = datetime.now() + timedelta(seconds=(resp["expires_in"] - 5))
 
-                    valid_account = session.query(Settings).filter(Settings.key == "dropbox_account_id").one_or_none()
+                    valid_account = db.session.query(Settings).filter(Settings.key == "dropbox_account_id").one_or_none()
 
                     if valid_account:
                         # Make sure the same account is being used
@@ -64,37 +64,39 @@ async def post_dropbox(request: Request):
                     else:
                         # No account was in the database, so add it.
                         insert = Settings(key="dropbox_account_id", value=account_id)
-                        session.add(insert)
+                        db.session.add(insert)
 
                     # Update the API key in the database
                     api_key_updated = (
-                        session.query(Settings).filter(Settings.key == "dropbox_api_key").update({Settings.value: new_token})
+                        db.session.query(Settings)
+                        .filter(Settings.key == "dropbox_api_key")
+                        .update({Settings.value: new_token})
                     )
 
                     api_refresh_token_updated = (
-                        session.query(Settings)
+                        db.session.query(Settings)
                         .filter(Settings.key == "dropbox_api_refresh_token")
                         .update({Settings.value: refresh_token})
                     )
                     api_expires_updated = (
-                        session.query(Settings)
+                        db.session.query(Settings)
                         .filter(Settings.key == "dropbox_api_key_expires")
                         .update({Settings.value: key_expires})
                     )
                     if not api_key_updated:
                         # Insert into the database if it wasn't updatable
                         insert_key = Settings(key="dropbox_api_key", value=new_token)
-                        session.add(insert_key)
+                        db.session.add(insert_key)
 
                     if not api_refresh_token_updated:
                         insert_refresh = Settings(key="dropbox_api_refresh_token", value=refresh_token)
-                        session.add(insert_refresh)
+                        db.session.add(insert_refresh)
 
                     if not api_expires_updated:
                         insert_refresh = Settings(key="dropbox_api_key_expires", value=key_expires)
-                        session.add(insert_refresh)
+                        db.session.add(insert_refresh)
 
-                    session.commit()
+                    db.session.commit()
 
                 except KeyError as e:
                     # KeyError happens if both an access_token and account_id are not sent
