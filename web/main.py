@@ -1,15 +1,14 @@
 # import asyncio
-import asyncio
 from os import getenv
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from fastapi_sqlalchemy import db
 from fastapi_sqlalchemy import DBSessionMiddleware
 from uvicorn.main import logger
 
-from models import Settings
+# from fastapi_sqlalchemy import db
+
 
 # noreorder
 # Routes
@@ -44,18 +43,20 @@ app.include_router(send_command.router)
 
 @app.on_event("startup")
 async def startup_event():
-    loop = asyncio.get_running_loop()
+    # loop = asyncio.get_running_loop()
+    logger.info("Adding MOAR OHMS! ΩΩΩ")
 
-    async def keep_database_alive():
-        while True:
-            with db():
-                logger.info("Database keep alive running.")
-                q = db.session.query(Settings).filter(Settings.key == "topic").one_or_none()
-                logger.info(f"Current twitch topic: {q.value}")
-                db.session.commit()  # Required so the object updates and gets new data on the next run.
-                await asyncio.sleep(3600)
+    # Keep alive loop may no longer be needed, disabling until positive removal is safe.
+    # async def keep_database_alive():
+    #     while True:
+    #         with db():
+    #             logger.info("Database keep alive running.")
+    #             q = db.session.query(Settings).filter(Settings.key == "topic").one_or_none()
+    #             logger.info(f"Current twitch topic: {q.value}")
+    #             db.session.commit()  # Required so the object updates and gets new data on the next run.
+    #             await asyncio.sleep(3600)
 
-    loop.create_task(keep_database_alive())
+    # loop.create_task(keep_database_alive())
 
 
 # @app.get("/")
