@@ -39,25 +39,8 @@ d = dropbox.Dropbox(
     oauth2_access_token=access_token, oauth2_refresh_token=refresh_token, app_key=client_id, app_secret=client_secret
 )
 
+# Refresh the access token if needed.
 d.check_and_refresh_access_token()
-
-# This whole if statement may not be needed, or ever even trigger.
-# Check if the database access tokens are valid, and update them if not
-if (d._oauth2_access_token != access_token) or (d._oauth2_refresh_token != refresh_token):
-    print("Updating dropbox access tokens...", end="")
-
-    api_key_updated = (
-        session.query(Settings).filter(Settings.key == "dropbox_api_key").update({Settings.value: d._oauth2_access_token})
-    )
-
-    api_refresh_token_updated = (
-        session.query(Settings)
-        .filter(Settings.key == "dropbox_api_refresh_token")
-        .update({Settings.value: d._oauth2_refresh_token})
-    )
-
-    session.commit()
-    print("Done.")
 
 paths = pathlib.Path("/db_backup/").glob("**/*.sql")
 target = f"/twitchbotdb-{webhost}/"  # Dropbox path to save file
