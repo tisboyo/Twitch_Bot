@@ -1,8 +1,8 @@
-from db import session
 from fastapi import APIRouter
 from fastapi import Request
 from fastapi.responses import HTMLResponse
-from sqlalchemy.exc import OperationalError
+from fastapi_sqlalchemy import db
+from uvicorn.main import logger
 
 from models import AnnouncementCategories
 from models import Announcements
@@ -14,13 +14,16 @@ router = APIRouter()
 async def get_announcements(request: Request):
     try:
         result = (
-            session.query(Announcements, AnnouncementCategories)
+            db.session.query(Announcements, AnnouncementCategories)
             .order_by(Announcements.id)
             .join(AnnouncementCategories)
             .all()
         )
-    except OperationalError:  # Cheapout database connection handling for now...
+
+    except Exception as e:
         out = "I'm thinking as hard as I can, can you try refreshing? Thanks."
+        logger.warning(e)
+
         return out
 
     out = """<html>

@@ -36,7 +36,8 @@ class MQTT:
         self.__client = None
         self.last_sent_time = dict()
         self.mqtt_cooldown = dict()
-        self.hostname = getenv("WEB_HOSTNAME")
+        self.hostname = "mqtt"
+        self.client_id = getenv("WEB_HOSTNAME") + "-twitchbot-" + str(datetime.now().timestamp())
 
         # Default to not connected
         self.MQTT_CONNECTION_STATE = False
@@ -53,9 +54,9 @@ class MQTT:
 
         try:
             print("Atempting to connect to MQTT as " + self.MQTT_USERNAME)
-            self.__client = Client(client_id="bot-test")
+            self.__client = Client(client_id=self.client_id)
             self.__client.set_auth_credentials(self.MQTT_USERNAME, self.MQTT_PASS)
-            await self.__client.connect(self.hostname, port=8883, ssl=True)
+            await self.__client.connect(self.hostname, port=1883)
             print("Connected to MQTT")
             self.MQTT_CONNECTION_STATE = True
             return True

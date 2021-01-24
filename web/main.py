@@ -1,11 +1,18 @@
-# import asyncio
 import asyncio
 from os import getenv
 
 import uvicorn
-from db import session
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
+from fastapi_sqlalchemy import db
+from fastapi_sqlalchemy import DBSessionMiddleware
+from uvicorn.main import logger
+
+from models import Settings
+
+
+# noreorder
+# Routes
 from routes import announcements
 from routes import commands
 from routes import docs
@@ -15,13 +22,17 @@ from routes import send_command
 from routes import send_message
 from routes import topic
 from routes import twitch_webhook_follow
-from uvicorn.main import logger
-
-from models import Settings
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
-base_domain = getenv("WEB_HOSTNAME")
 
+# Add Database handler
+mysql_database = getenv("MYSQL_DATABASE")
+mysql_user = getenv("MYSQL_USER")
+mysql_pass = getenv("MYSQL_PASSWORD")
+db_url = f"mysql+mysqlconnector://{mysql_user}:{mysql_pass}@mysql:3306/{mysql_database}"
+app.add_middleware(DBSessionMiddleware, db_url=db_url)
+
+# Include the routes
 app.include_router(announcements.router)
 app.include_router(twitch_webhook_follow.router)
 app.include_router(send_message.router)
@@ -36,13 +47,16 @@ app.include_router(send_command.router)
 @app.on_event("startup")
 async def startup_event():
     loop = asyncio.get_running_loop()
+    logger.info("Adding MOAR OHMS! ΩΩΩ")
 
     async def keep_database_alive():
         while True:
-            logger.info("Database keep alive running.")
-            q = session.query(Settings).filter(Settings.key == "topic").one_or_none()
-            logger.info(f"Current twitch topic: {q.value}")
-            await asyncio.sleep(3600)
+            with db():
+                logger.info("Database keep alive running.")
+                q = db.session.query(Settings).filter(Settings.key == "topic").one_or_none()
+                logger.info(f"Current twitch topic: {q.value}")
+
+                await asyncio.sleep(3600)
 
     loop.create_task(keep_database_alive())
 

@@ -1,9 +1,9 @@
-from db import session
 from fastapi import APIRouter
 from fastapi import Request
 from fastapi.responses import HTMLResponse
-from sqlalchemy.exc import OperationalError
+from fastapi_sqlalchemy import db
 from twitchbot.database.models import CustomCommand
+from uvicorn.main import logger
 
 router = APIRouter()
 
@@ -11,9 +11,12 @@ router = APIRouter()
 @router.get("/commands", response_class=HTMLResponse)
 async def get_commands(request: Request):
     try:
-        result = session.query(CustomCommand).order_by(CustomCommand.id).all()
-    except OperationalError:  # Cheapout database connection handling for now...
+        result = db.session.query(CustomCommand).order_by(CustomCommand.id).all()
+
+    except Exception as e:
         out = "I'm thinking as hard as I can, can you try refreshing? Thanks."
+        logger.warning(e)
+
         return out
 
     out = """<html>

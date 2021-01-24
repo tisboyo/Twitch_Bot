@@ -95,7 +95,7 @@ services:
 
     labels:
       - deck-chores.mysqldump.command=sh -c "mysqldump --all-databases > /db_backup/twitchbot.sql"
-      - deck-chores.mysqldump.cron=* * * * * 0/6 5 0 # Every 6 hours
+      - deck-chores.mysqldump.cron=* * * * * 5 0 0 # Daily at 5am
       - deck-chores.mysqldump-weekly.command=sh -c "mysqldump --all-databases > /db_backup/twitchbot-weekly.sql"
       - deck-chores.mysqldump-weekly.cron=* * * * sat 3 0 0 # Saturday 3am
       - deck-chores.mysqldump-monthly.command=sh -c "mysqldump --all-databases > /db_backup/twitchbot-monthly.sql"
@@ -153,6 +153,9 @@ services:
     ports:
       - 8883:8883
       - 9883:9883
+
+    expose:
+      - 1883 # For inter-container communication, and is not over SSL. Do not open to host
 
   traefik-certs-dumper:
     image: ldez/traefik-certs-dumper:v2.7.4
