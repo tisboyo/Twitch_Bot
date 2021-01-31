@@ -42,18 +42,23 @@ d = dropbox.Dropbox(
 # Refresh the access token if needed.
 d.check_and_refresh_access_token()
 
-paths = pathlib.Path("/db_backup/").glob("**/*.sql")
-target = f"/twitchbotdb-{webhost}/"  # Dropbox path to save file
+to_backup = list()
 
-for path in paths:
-    targetfile = target + path.name
-    with path.open("rb") as f:
-        try:
-            now = datetime.now()
-            meta = d.files_upload(f.read(), targetfile, mode=dropbox.files.WriteMode("overwrite"))
-            if meta.server_modified > now:
-                print(f"{path.name} uploaded.")
+# to_backup should contain a tuple of (Pathlib path of local file, string of dropbox destination)
+to_backup.append((pathlib.Path("./irc_logs/").glob("**/*.log"), f"/twitchbotdb-{webhost}/irc_logs/"))
+to_backup.append((pathlib.Path("./jsons/").glob("**/*.json"), f"/twitchbotdb-{webhost}/jsons/"))
+to_backup.append((pathlib.Path("/db_backup/").glob("**/*.sql"), f"/twitchbotdb-{webhost}/"))
 
-        except dropbox.exceptions.AuthError:
-            print("Dropbox auth key error")
-            continue
+for paths, target in to_backup:
+    for file in paths:
+        targetfile = target + file.name
+        with file.open("rb") as f:
+            try:
+                now = datetime.now()
+                meta = d.files_upload(f.read(), targetfile, mode=dropbox.files.WriteMode("overwrite"))
+                if meta.server_modified > now:
+                    print(f"{file.name} uploaded.")
+
+            except dropbox.exceptions.AuthError:
+                print("Dropbox auth key error")
+                continue
