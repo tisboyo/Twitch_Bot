@@ -3,6 +3,8 @@ from main import AddOhmsBot
 from twitchbot.message import Message
 from twitchbot.modloader import Mod
 
+mqtt_topic = AddOhmsBot.MQTT.Topics.yay_toggle
+
 
 class Yay(Mod):
     name = "yay"
@@ -18,10 +20,18 @@ class Yay(Mod):
         how_many_yays = msg.content.count("balden3Yay")
         if how_many_yays > 0:
             if self.points.check(msg, emojis=how_many_yays):
-                await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.yay_toggle, 1)
+                await self.send_yay(msg)
 
             print(self.points.status())
 
         else:
             # If it doesn't include a Yay, we don't care about it at all
             return
+
+    async def send_yay(self, msg: Message) -> bool:
+        if await AddOhmsBot.MQTT.send(mqtt_topic, 1):
+            await msg.reply(f"{AddOhmsBot.msg_prefix}Yay! balden3Yay balden3Yay balden3Yay")
+            return True
+        else:
+            await msg.reply(f"{AddOhmsBot.msg_prefix}I ran into a problem with MQTT. Sorry ☹️")
+            return False
