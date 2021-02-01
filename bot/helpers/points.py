@@ -38,7 +38,7 @@ class Points:
             bits (int, optional): Number of bits required. Defaults to -1.
             commands (int, optional): Number of commands used. Defaults to -1.
             mod_commands (int, optional): Number of mod commands used. Defaults to -1.
-            unique_users (int, optional): Number of unique users needed. Defaults to -1.
+            unique_users (int, optional): Number of unique users needed. Defaults to -1. Must be > 1
             require_all (bool, optional): Require all of the options or False to trigger on any at their threshold . Defaults to False.
             emoji_cap (int, optional): Number of emojis a user can send. Defaults to -1.
         """  # noqa E501
@@ -63,6 +63,8 @@ class Points:
 
         elif self.emojis_required <= self.emoji_cap and self.unique_users_required > 0:
             raise TypeError("One user can trigger event. Clear unique_users or raise emojis_required or lower emoji_cap")
+        elif self.unique_users_required == 1:
+            raise TypeError("unique_users must be either -1 or > 1. Defaults to -1 when not supplied.")
 
         # Set the default starting values.
         self.reset()
