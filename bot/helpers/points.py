@@ -103,8 +103,9 @@ class Points:
             # Only increase if the user hasn't been seen yet.
             if emojis:
                 if msg.author not in self.unique_users["emojis"].keys():
-                    self.emojis += emojis
-                    self.unique_users["emojis"][msg.author] = emojis
+                    count = emojis if emojis <= self.emoji_cap else self.emoji_cap
+                    self.emojis += count
+                    self.unique_users["emojis"][msg.author] = count
                 elif (
                     self.unique_users["emojis"][msg.author] < self.emoji_cap
                 ):  # We've seen this user before, but check to see if they are capped yet
