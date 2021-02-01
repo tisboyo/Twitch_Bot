@@ -1,34 +1,31 @@
-from typing import Callable
-
 from twitchbot.message import Message
 
 
 class Points:
     def __init__(
         self,
-        function_to_call_on_success: Callable,
-        emojis: int = 0,
-        channel_points: int = 0,
-        bits: int = 0,
-        commands: int = 0,
-        mod_commands: int = 0,
-        unique_users: int = 0,
-        require_all: bool = True,
+        emojis: int = -1,
+        channel_points: int = -1,
+        bits: int = -1,
+        commands: int = -1,
+        mod_commands: int = -1,
+        unique_users: int = -1,
+        require_all: bool = False,
+        emoji_cap: int = -1,
     ):
         """Create a check for points to activate a function
 
         Args:
-            function_to_call_on_success (Callable): The function to be called on success.
-            emojis (int, optional): Number of emojis required. Defaults to 0.
-            channel_points (int, optional): Number of channel points required. Defaults to 0.
-            bits (int, optional): Number of bits required. Defaults to 0.
-            commands (int, optional): Number of commands used. Defaults to 0.
-            mod_commands (int, optional): Number of mod commands used. Defaults to 0.
-            unique_users (int, optional): Number of unique users needed. Defaults to 0.
-            require_all (bool, optional): Require all of the options or False to trigger on any at their threshold . Defaults to True.
+            emojis (int, optional): Number of emojis required. Defaults to -1.
+            channel_points (int, optional): Number of channel points required. Defaults to -1.
+            bits (int, optional): Number of bits required. Defaults to -1.
+            commands (int, optional): Number of commands used. Defaults to -1.
+            mod_commands (int, optional): Number of mod commands used. Defaults to -1.
+            unique_users (int, optional): Number of unique users needed. Defaults to -1.
+            require_all (bool, optional): Require all of the options or False to trigger on any at their threshold . Defaults to False.
+            emoji_cap (int, optional): Number of emojis a user can send. Defaults to -1.
         """  # noqa E501
 
-        self.run = function_to_call_on_success
         self.emojis_required = emojis
         self.channel_points_required = channel_points
         self.bits_required = bits
@@ -36,27 +33,29 @@ class Points:
         self.mod_commands_required = mod_commands
         self.unique_users_required = unique_users
         self.require_all = require_all
+        self.emoji_cap = emoji_cap
 
         if (
-            self.channel_points_required == 0
+            self.emojis_required == 0
+            and self.channel_points_required == 0
             and self.bits_required == 0
             and self.commands_required == 0
             and self.mod_commands_required == 0
         ):
-            raise TypeError("One of channel_points, bits, commands or mod_commands required.")
+            raise TypeError("One of emojis, channel_points, bits, commands or mod_commands required.")
 
         # Set the default starting values.
         self.reset()
 
     def reset(self) -> None:
         """Resets the current object"""
-        self.emoji = 0
+        self.emojis = 0
         self.channel_points = 0
         self.bits = 0
         self.commands = 0
         self.mod_commands = 0
         self.unique_users = dict()
-        self.unique_users["emojis"] = set()
+        self.unique_users["emojis"] = dict()
         self.unique_users["channel_points"] = set()
         self.unique_users["bits"] = set()
         self.unique_users["commands"] = set()
@@ -80,9 +79,25 @@ class Points:
         # Increase the counts
         if self.unique_users_required > 0:  # Track unique users
             # Only increase if the user hasn't been seen yet.
-            if emojis and msg.author not in self.unique_users["emojis"]:
-                self.emojis += emojis
-                self.unique_users["emojis"].add(msg.author)
+            if emojis:
+                if msg.author not in self.unique_users["emojis"].keys():
+                    self.emojis += emojis
+                    self.unique_users["emojis"][msg.author] = emojis
+                elif (
+                    self.unique_users["emojis"][msg.author] < self.emoji_cap
+                ):  # We've seen this user before, but check to see if they are capped yet
+                    # Remove their previous counts
+                    self.emojis -= self.unique_users["emojis"][msg.author]
+
+                    new_emoji_count = self.unique_users["emojis"][msg.author] + emojis
+
+                    # Set new count for this user at new count or max if they exceeded it
+                    self.unique_users["emojis"][msg.author] = (
+                        new_emoji_count if new_emoji_count <= self.emoji_cap else self.emoji_cap
+                    )
+
+                    # Add the new count
+                    self.emojis += self.unique_users["emojis"][msg.author]
 
             if channel_points and msg.author not in self.unique_users["channel_points"]:
                 self.channel_points += channel_points
@@ -101,6 +116,7 @@ class Points:
                 self.unique_users["mod_commands"].add(msg.author)
 
         else:  # Not tracking unique users
+            self.emojis += emojis
             self.channel_points += channel_points
             self.bits += bits
             self.commands += commands
@@ -134,6 +150,8 @@ class Points:
         """
 
         return dict(
+            emojis=self.emojis,
+            emojis_required=self.emojis_required,
             channel_points=self.channel_points,
             channel_points_required=self.channel_points_required,
             bits=self.bits,
@@ -142,4 +160,5 @@ class Points:
             commands_required=self.commands_required,
             mod_commands=self.mod_commands,
             mod_commands_required=self.mod_commands_required,
+            unique_users=self.unique_users,
         )
