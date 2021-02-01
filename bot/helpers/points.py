@@ -147,11 +147,11 @@ class Points:
 
         # Check if conditions have been met
         if self.require_all and (
-            self.check_emoji()
-            and self.check_channel_points()
-            and self.check_bits()
-            and self.check_commands()
-            and self.check_mod_commands()
+            self.check_emoji(true_if_not_required=True)
+            and self.check_channel_points(true_if_not_required=True)
+            and self.check_bits(true_if_not_required=True)
+            and self.check_commands(true_if_not_required=True)
+            and self.check_mod_commands(true_if_not_required=True)
         ):  # All conditions have been met
             self.reset()
             return True
@@ -169,42 +169,52 @@ class Points:
         else:  # Conditions not yet met
             return False
 
-    def check_emoji(self) -> bool:
+    def check_emoji(self, true_if_not_required: bool = False) -> bool:
         """Check if the emoji requirement has been met"""
         # Check to make sure we actually require this, and if it's the trigger number
         if self.emojis >= self.emojis_required and self.emojis_required != -1:
             return True
+        elif true_if_not_required and self.emojis_required == -1:
+            return True
         else:
             return False
 
-    def check_channel_points(self) -> bool:
+    def check_channel_points(self, true_if_not_required: bool = False) -> bool:
         """Check if the channel_points requirement has been met"""
         # Check to make sure we actually require this, and if it's the trigger number
         if self.channel_points >= self.channel_points_required and self.channel_points_required != -1:
             return True
+        elif true_if_not_required and self.channel_points_required == -1:
+            return True
         else:
             return False
 
-    def check_bits(self) -> bool:
+    def check_bits(self, true_if_not_required: bool = False) -> bool:
         """Check if the bits requirement has been met"""
         # Check to make sure we actually require this, and if it's the trigger number
         if self.bits >= self.bits_required and self.bits_required != -1:
             return True
-        else:
-            return False
-
-    def check_commands(self) -> bool:
-        """Check if the commands requirement has been met"""
-        # Check to make sure we actually require this, and if it's the trigger number
-        if self.commands >= self.commands_required and self.commands_required != -1:
+        elif true_if_not_required and self.bits_required == -1:
             return True
         else:
             return False
 
-    def check_mod_commands(self) -> bool:
+    def check_commands(self, true_if_not_required: bool = False) -> bool:
+        """Check if the commands requirement has been met"""
+        # Check to make sure we actually require this, and if it's the trigger number
+        if self.commands >= self.commands_required and self.commands_required != -1:
+            return True
+        elif true_if_not_required and self.commands_required == -1:
+            return True
+        else:
+            return False
+
+    def check_mod_commands(self, true_if_not_required: bool = False) -> bool:
         """Check if the mod_commands requirement has been met"""
         # Check to make sure we actually require this, and if it's the trigger number
         if self.mod_commands >= self.mod_commands_required and self.mod_commands_required != -1:
+            return True
+        elif true_if_not_required and self.mod_commands_required == -1:
             return True
         else:
             return False
