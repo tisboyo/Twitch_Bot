@@ -147,6 +147,7 @@ class Points:
             and self.check_commands()
             and self.check_mod_commands()
         ):  # All conditions have been met
+            self.reset()
             return True
 
         elif not self.require_all and (
@@ -156,6 +157,7 @@ class Points:
             or self.check_commands()
             or self.check_mod_commands()
         ):  # Any of the conditions are met
+            self.reset()
             return True
 
         else:  # Conditions not yet met
