@@ -61,6 +61,9 @@ class Points:
         ):
             raise TypeError("One of emojis, channel_points, bits, commands or mod_commands required.")
 
+        elif self.emojis_required <= self.emoji_cap and self.unique_users_required > 0:
+            raise TypeError("One user can trigger event. Clear unique_users or raise emojis_required or lower emoji_cap")
+
         # Set the default starting values.
         self.reset()
 
