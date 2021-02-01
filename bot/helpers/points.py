@@ -1,4 +1,21 @@
+from dataclasses import dataclass
+
 from twitchbot.message import Message
+
+
+@dataclass
+class Status:
+    emojis: int
+    emojis_required: int
+    channel_points: int
+    channel_points_required: int
+    bits: int
+    bits_required: int
+    commands: int
+    commands_required: int
+    mod_commands: int
+    mod_commands_required: int
+    unique_users: dict
 
 
 class Points:
@@ -184,14 +201,13 @@ class Points:
         else:
             return False
 
-    def status(self) -> dict:
+    def status(self) -> Status:
         """Get the current point status
 
         Returns:
-            dict: Dictionary containing the current point status
+            Status: Status dataclass
         """
-
-        return dict(
+        status = Status(
             emojis=self.emojis,
             emojis_required=self.emojis_required,
             channel_points=self.channel_points,
@@ -204,3 +220,5 @@ class Points:
             mod_commands_required=self.mod_commands_required,
             unique_users=self.unique_users,
         )
+
+        return status
