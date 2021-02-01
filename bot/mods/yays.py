@@ -22,8 +22,6 @@ class Yay(Mod):
             if self.points.check(msg, emojis=how_many_yays):
                 await self.send_yay(msg)
 
-            print(self.points.status())
-
         else:
             # If it doesn't include a Yay, we don't care about it at all
             return
