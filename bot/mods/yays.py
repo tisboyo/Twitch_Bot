@@ -12,7 +12,7 @@ class Yay(Mod):
     name = "yay"
 
     def __init__(self):
-        self.points = Points(emojis=5, unique_users=2, emoji_cap=3)
+        self.points = Points(emojis=4, unique_users=2, emoji_cap=2, timeout_seconds=30)
 
     async def on_raw_message(self, msg: Message):
         # If the message is a system message, we're done here
