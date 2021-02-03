@@ -8,7 +8,7 @@ from twitchbot.message import Message
 from twitchbot.modloader import Mod
 
 mqtt_topic = AddOhmsBot.MQTT.Topics.dispense_treat_toggle
-trigger_emoji = "balden3Ducky"
+trigger_emoji = "balden3TreatMe"
 
 
 class Treats(Mod):
