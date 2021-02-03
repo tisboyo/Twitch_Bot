@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass
 
 from twitchbot.message import Message
@@ -29,6 +30,7 @@ class Points:
         unique_users: int = -1,
         require_all: bool = False,
         emoji_cap: int = -1,
+        timeout_seconds: int = 60 * 5,
     ):
         """Create a check for points to activate a function
 
@@ -41,6 +43,7 @@ class Points:
             unique_users (int, optional): Number of unique users needed. Defaults to -1. Must be > 1
             require_all (bool, optional): Require all of the options or False to trigger on any at their threshold . Defaults to False.
             emoji_cap (int, optional): Number of emojis a user can send. Defaults to -1.
+            timeout_seconds (int, optional): Seconds before reset is automagically called. Defaults to 60*5 seconds.
         """  # noqa E501
 
         self.emojis_required = emojis
@@ -51,6 +54,8 @@ class Points:
         self.unique_users_required = unique_users
         self.require_all = require_all
         self.emoji_cap = emoji_cap
+        self.timeout_seconds = timeout_seconds
+        self.timeout_expire = datetime.datetime.min
 
         if (
             self.emojis_required == 0
@@ -98,6 +103,17 @@ class Points:
         Returns:
             bool: True if requirements have been met, False otherwise.
         """
+
+        now = datetime.datetime.now()
+        new_expire = datetime.datetime.now() + datetime.timedelta(seconds=self.timeout_seconds)
+
+        # Check if the last trigger was over the expiration threshold
+        if now > self.timeout_expire:
+            self.reset()
+
+        # Set the new expiration time
+        self.timeout_expire = new_expire
+
         # Increase the counts
         if self.unique_users_required > 0:  # Track unique users
             # Only increase if the user hasn't been seen yet.
