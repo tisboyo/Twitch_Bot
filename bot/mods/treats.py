@@ -79,9 +79,9 @@ class Treats(Mod):
 
         req_users = self.points.unique_users_required - len(status.unique_users["emojis"])
         # Build message to send to chat
-        required = f"{AddOhmsBot.msg_prefix}{status.emojis_required - status.emojis} more {trigger_emoji} "
+        required = f"{AddOhmsBot.msg_prefix}Moar {trigger_emoji} "
         if req_users <= self.points.unique_users_required and self.points.unique_users_required > 0:
-            required += f"from {req_users} more users "
+            required += "from moar users "
         required += "required for a treat!"
 
         return required
