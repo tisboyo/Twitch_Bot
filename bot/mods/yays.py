@@ -1,5 +1,7 @@
 from helpers.points import Points
 from main import AddOhmsBot
+from twitchbot.command import ModCommand
+from twitchbot.command import SubCommand
 from twitchbot.message import Message
 from twitchbot.modloader import Mod
 
@@ -33,3 +35,30 @@ class Yay(Mod):
         else:
             await msg.reply(f"{AddOhmsBot.msg_prefix}I ran into a problem with MQTT. Sorry ☹️")
             return False
+
+    @ModCommand(name, "yay", permission="admin")
+    async def yay(self, msg, *args):
+        # Parent command does nothing.
+        pass
+
+    @SubCommand(yay, "cooldown", permission="admin")
+    async def yay_cooldown(self, msg, *args):
+        """Cooldown for yays"""
+        try:
+            new_cooldown = int(args[0])
+
+            # Update the database
+            AddOhmsBot.MQTT.set_cooldown(mqtt_topic, new_cooldown)
+
+            await msg.reply(f"Treatme cooldown changed to {new_cooldown}")
+
+        except IndexError:
+            await msg.reply(f"Current cooldown is {AddOhmsBot.MQTT.get_cooldown(mqtt_topic)} seconds.")
+            return
+
+        except ValueError:
+            await msg.reply("Invalid value.")
+
+        except Exception as e:
+            print(type(e), e)
+            return
