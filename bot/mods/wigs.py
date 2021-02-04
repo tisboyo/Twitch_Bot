@@ -17,12 +17,12 @@ from models import Settings
 from models import Wigs
 
 
-class ChannelPoints(Mod):
-    name = "channelpoints"
+class Wigs_mod(Mod):
+    name = "wigs"
 
     def __init__(self):
         super().__init__()
-        print("ChannelPoints loaded")
+        print("Wigs loaded")
 
     async def on_pubsub_received(self, raw: PubSubData):
         # Custom Channel Points redeemed
