@@ -75,20 +75,18 @@ class Points:
         self.reset()
 
     def __str__(self):
-        emoji = f"Emojis: {self.emojis}/{self.emojis_required}, " if self.emojis_required is not -1 else ""
+        emoji = f"Emojis: {self.emojis}/{self.emojis_required}, " if self.emojis_required != -1 else ""
         channel_points = (
             f"Channel Points: {self.channel_points}/{self.channel_points_required}, "
-            if self.channel_points_required is not -1
+            if self.channel_points_required != -1
             else ""
         )
-        bits = f"Bits: {self.bits}/{self.bits_required}, " if self.bits_required is not -1 else ""
-        commands = f"Commands: {self.commands}/{self.commands_required}, " if self.commands_required is not -1 else ""
+        bits = f"Bits: {self.bits}/{self.bits_required}, " if self.bits_required != -1 else ""
+        commands = f"Commands: {self.commands}/{self.commands_required}, " if self.commands_required != -1 else ""
         mod_commands = (
-            f"ModCommands: {self.mod_commands}/{self.mod_commands_required}, "
-            if self.mod_commands_required is not -1
-            else ""
+            f"ModCommands: {self.mod_commands}/{self.mod_commands_required}, " if self.mod_commands_required != -1 else ""
         )
-        unique_users = f"Unique Users: {self.unique_users}, " if self.unique_users_required is not -1 else ""
+        unique_users = f"Unique Users: {self.unique_users}, " if self.unique_users_required != -1 else ""
 
         ret = emoji + channel_points + bits + commands + mod_commands + unique_users
         return ret[:-2]  # Strip off the last command and space
@@ -101,15 +99,15 @@ class Points:
         self.commands = 0
         self.mod_commands = 0
         self.unique_users = dict()
-        if self.emojis_required is not -1:
+        if self.emojis_required != -1:
             self.unique_users["emojis"] = dict()
-        if self.channel_points_required is not -1:
+        if self.channel_points_required != -1:
             self.unique_users["channel_points"] = set()
-        if self.bits_required is not -1:
+        if self.bits_required != -1:
             self.unique_users["bits"] = set()
-        if self.commands_required is not -1:
+        if self.commands_required != -1:
             self.unique_users["commands"] = set()
-        if self.mod_commands_required is not -1:
+        if self.mod_commands_required != -1:
             self.unique_users["mod_commands"] = set()
 
     def check(
