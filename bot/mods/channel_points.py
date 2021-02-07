@@ -21,6 +21,7 @@ class ChannelPoints(Mod):
             "Give BaldEngineer a treat.": self.dispense_treat,
             "Get His Attention!": self.attention_attention,
             "Wear A Wig": self.wear_a_wig,
+            "Verify 1k Resistors": self.verify_1k,
         }
 
         self.default_redemptions = {
@@ -73,6 +74,9 @@ class ChannelPoints(Mod):
         print("Highlighted message.".center(80, "*"))
         print(f"{msg.author}({msg.channel.name}): {msg.content}")
         print("".center(80, "*"))
+
+    async def verify_1k(self, msg: Message):
+        await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.verify_1k)
 
     @ModCommand(name, "channelpoint_cooldown", permission="admin")
     async def channelpoint_cooldown(self, msg, *args):
