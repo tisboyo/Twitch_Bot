@@ -1,5 +1,6 @@
 import json
 from os import getenv
+from re import match
 
 import websockets
 from fastapi import APIRouter
@@ -27,6 +28,11 @@ async def twitch_webhook_follow_post(data: dict, request: Request):
 
     if await is_request_valid(request):
         data = data["data"][0]
+
+        if match("heder[0-9]{6}", data["from_name"]):
+            # Ignore the spam follow bot
+            return
+
         uri = "ws://bot:13337"
         try:
             async with websockets.connect(uri) as s:
