@@ -31,6 +31,10 @@ urls = [  # Format is Request, then fastapi path for Twitch to Post to.
         f"https://api.twitch.tv/helix/users/follows?first=1&to_id={channel_id}",
         "/twitch-webhook/follow",
     ),
+    (  # Stream changes
+        f"https://api.twitch.tv/helix/streams?user_id={channel_id}",
+        "/twitch-webhook/stream",
+    ),
 ]
 
 for url in urls:
