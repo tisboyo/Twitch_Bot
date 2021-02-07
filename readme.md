@@ -36,6 +36,11 @@
     - [`enable` - Enable a wig](#enable---enable-a-wig)
     - [`used` - Mark a wig as used for the current stream.](#used---mark-a-wig-as-used-for-the-current-stream)
     - [`reset` - Resets all of the wigs currently marked as used.](#reset---resets-all-of-the-wigs-currently-marked-as-used)
+  - [`stream` - Stream controls](#stream---stream-controls)
+    - [`live` - Sets the bot to Live status](#live---sets-the-bot-to-live-status)
+    - [`status` - Shows the stream status](#status---shows-the-stream-status)
+    - [`lab` - Sets the location to In the Lab](#lab---sets-the-location-to-in-the-lab)
+    - [`office` - Sets the location to In the Office](#office---sets-the-location-to-in-the-office)
 - [Web](#web)
   - [`/send_command`](#send_command)
     - [`POST` - Send a command to the bot](#post---send-a-command-to-the-bot)
@@ -153,6 +158,27 @@ Send wig Name as parameter
 ### `reset` - Resets all of the wigs currently marked as used.
 Permission: Admin
 No parameters
+
+## `stream` - Stream controls
+Permission: Admin
+Base Command
+### `live` - Sets the bot to Live status
+Permission: Admin
+Send "true" or "false" as parameter
+
+This is intended for use by automated scripting, and should only be used to fix an invalid state.
+
+### `status` - Shows the stream status
+Permission: Admin
+
+
+### `lab` - Sets the location to In the Lab
+Permission: Admin
+
+
+### `office` - Sets the location to In the Office
+Permission: Admin
+
 
 # Web
 ## `/send_command`
