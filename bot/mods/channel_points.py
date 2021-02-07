@@ -4,7 +4,6 @@ from twitchbot import channels
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import PubSubData
-from twitchbot.channel import Channel
 from twitchbot.command import ModCommand
 from twitchbot.command import SubCommand
 
@@ -45,11 +44,11 @@ class ChannelPoints(Mod):
         elif raw.is_channel_points_redeemed:
             reward = raw.message_data["redemption"]["reward"]["title"]
             try:
-                await self.custom_redemptions[reward]()
+                await self.custom_redemptions[reward](cfg.channels[0])
             except KeyError:
                 print(f"Unhandled custom reward redeemed - '{reward}'")
 
-    async def dispense_treat(self, channel: str = cfg.channels[0]):
+    async def dispense_treat(self, channel: str):
         if await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.dispense_treat_toggle):
             await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}Teleporting a treat")
         else:
@@ -57,7 +56,7 @@ class ChannelPoints(Mod):
 
         print("Dispensing a treat!")
 
-    async def attention_attention(self, channel: str = cfg.channels[0]):
+    async def attention_attention(self, channel: str):
         print("Hey!!!")
         if AddOhmsBot.ATTN_ENABLE:
             if not await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.twitch_attention_indicator):
@@ -66,7 +65,7 @@ class ChannelPoints(Mod):
         else:
             print("Shhhhh....")
 
-    async def wear_a_wig(self, channel: Channel):
+    async def wear_a_wig(self, channel: str):
         # Handled in wigs.py
         pass
 
@@ -75,7 +74,7 @@ class ChannelPoints(Mod):
         print(f"{msg.author}({msg.channel.name}): {msg.content}")
         print("".center(80, "*"))
 
-    async def verify_1k(self, msg: Message):
+    async def verify_1k(self, channel: str):
         await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.verify_1k)
 
     @ModCommand(name, "channelpoint_cooldown", permission="admin")
