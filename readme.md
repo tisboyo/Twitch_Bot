@@ -34,6 +34,8 @@
     - [`list` - Lists current wigs](#list---lists-current-wigs)
     - [`disable` - Disable a wig](#disable---disable-a-wig)
     - [`enable` - Enable a wig](#enable---enable-a-wig)
+    - [`used` - Mark a wig as used for the current stream.](#used---mark-a-wig-as-used-for-the-current-stream)
+    - [`reset` - Resets all of the wigs currently marked as used.](#reset---resets-all-of-the-wigs-currently-marked-as-used)
 - [Web](#web)
   - [`/send_command`](#send_command)
     - [`POST` - Send a command to the bot](#post---send-a-command-to-the-bot)
@@ -144,6 +146,13 @@ Send wig ID as parameter
 Permission: Admin
 Send wig ID as parameter
 
+### `used` - Mark a wig as used for the current stream.
+Permission: Admin
+Send wig Name as parameter
+
+### `reset` - Resets all of the wigs currently marked as used.
+Permission: Admin
+No parameters
 
 # Web
 ## `/send_command`
