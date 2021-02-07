@@ -4,14 +4,15 @@ from datetime import datetime
 from aiofile import AIOFile
 from data import load_data
 from data import save_data
-from models import Subscriptions
-from models import Users
 from mods._database import session
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import PubSubData
+
+from models import Subscriptions
+from models import Users
 
 
 class TwitchLog(Mod):
@@ -122,7 +123,7 @@ class TwitchLog(Mod):
 
         session.commit()
 
-    async def on_pubsub_subscription(self, raw: "PubSubData", data):
+    async def on_pubsub_subscription(self, raw: PubSubData, data):
         """Twitch subscription event"""
 
         """
@@ -141,11 +142,18 @@ class TwitchLog(Mod):
         "months":0,"cumulative_months":4,"streak_months":4,"context":"resub","is_gift":false,"multi_month_duration":0}'}}
         """
 
-        user_id = raw.message_dict["user_id"]
+        if raw.message_dict["is_gift"]:  # A gift subscription
+            user_id = raw.message_dict["recipient_id"]
+
+        else:  # A regular subscription
+            user_id = raw.message_dict["user_id"]
+
+        cumulative_months = raw.message_dict["cumulative_months"] if "cumulative_months" in raw.message_dict else 0
+        streak_months = raw.message_dict["streak_months"] if "streak_months" in raw.message_dict else 0
+
+        # In both gift and regular sub
         server_id = raw.message_dict["channel_id"]
         sub_level = raw.message_dict["sub_plan"]
-        cumulative_months = raw.message_dict["cumulative_months"]
-        streak_months = raw.message_dict["streak_months"] if "streak_months" in raw.message_dict else 0
 
         rows_affected = (
             session.query(Subscriptions)
@@ -155,6 +163,7 @@ class TwitchLog(Mod):
             )
         )
 
+        # Add row if one wasn't updated.
         if not rows_affected:
             user_object = Subscriptions(
                 user_id=user_id,
