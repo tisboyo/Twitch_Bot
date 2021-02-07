@@ -24,6 +24,7 @@ class Wigs_mod(Mod):
         super().__init__()
         print("Wigs loaded")
         self.used_wigs = list()
+        self.seconds_between_poll_reminders = 45
 
     async def on_pubsub_received(self, raw: PubSubData):
         # Custom Channel Points redeemed
@@ -66,6 +67,18 @@ class Wigs_mod(Mod):
         while poll.seconds_left > 0:
             # Sleep while the poll is active
             await asyncio.sleep(1)
+            # If poll.seconds_left is divisible by seconds_between_poll_reminders or at 15 seconds
+            # and the poll isn't at 0 seconds (which was sending the message 2 more times without)
+            if (int(poll.seconds_left) % self.seconds_between_poll_reminders == 0 or int(poll.seconds_left) == 15) and int(
+                poll.seconds_left
+            ) != 0:
+                await channel.send_message(
+                    (
+                        f"POLL INFO #{poll.id} ~ {poll.title} ~ {poll.formatted_choices()} "
+                        f"~ {int(poll.seconds_left)} seconds left"
+                    )
+                )
+
         else:
             results = poll.votes.most_common()
 
@@ -106,8 +119,10 @@ class Wigs_mod(Mod):
                 winner = poll.choices[results[0][0] - 1]
 
             if winner_count > 1:
+                await asyncio.sleep(2)  # Sleep two seconds so the results are sent before the determination message
                 await channel.send_message(f"{AddOhmsBot.msg_prefix}Chat can't decide, it's @baldengineer choice!")
             else:
+                await asyncio.sleep(2)  # Sleep two seconds so the results are sent before the determination message
                 await channel.send_message(f"{AddOhmsBot.msg_prefix}Chat has spoken, @baldengineer should wear {winner}")
                 self.used_wigs.append(winner)
 
