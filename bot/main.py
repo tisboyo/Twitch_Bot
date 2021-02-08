@@ -44,8 +44,9 @@ class AddOhmsBot(BaseBot):
 
         r = requests.get(url=url, headers=headers)
         data = loads(r.text)
-        data = data["data"][0]
+        data = data["data"]
         if len(data) > 0:
+            data = data[0]
             if data["type"] == "live":
                 return True
             else:
