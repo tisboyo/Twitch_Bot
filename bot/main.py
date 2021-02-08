@@ -6,6 +6,7 @@ alembic_config.main(argv=alembicArgs)
 
 import asyncio
 import requests
+from os import _exit
 
 import version_check  # noqa: F401
 
@@ -44,6 +45,10 @@ class AddOhmsBot(BaseBot):
 
         r = requests.get(url=url, headers=headers)
         data = loads(r.text)
+        if data.get("error", False):
+            print(f"{data['status']} {data['message']}")
+            _exit(0)
+
         data = data["data"]
         if len(data) > 0:
             data = data[0]
