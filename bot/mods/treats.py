@@ -55,7 +55,7 @@ class Treats(Mod):
         else:
             await msg.reply(
                 f"{AddOhmsBot.msg_prefix} NEW! Send balden3TreatMe to trigger the Treat Bot!"
-            )  # TODO #135 Change phrasing eventually
+            )  # TODO #136 Change phrasing eventually
 
     @SubCommand(push_treat, "cooldown", permission="admin")
     async def treatme_cooldown(self, msg, *args):
