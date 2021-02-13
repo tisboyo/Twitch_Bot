@@ -1,4 +1,5 @@
 from main import AddOhmsBot
+from mqtt import MqttTopics
 from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import Message
@@ -84,17 +85,17 @@ class ChannelPoints(Mod):
 
     @SubCommand(channelpoint_cooldown, "attention", permission="admin")
     async def attention_cooldown(self, msg, *args):
-        aio_key = "twitch-attn-indi"
+        topic = MqttTopics.twitch_attention_indicator
 
         try:
             new_cooldown = int(args[0])
             # Update the database
-            AddOhmsBot.MQTT.set_cooldown(aio_key, new_cooldown)
+            AddOhmsBot.MQTT.set_cooldown(topic, new_cooldown)
 
             await msg.reply(f"Attention cooldown changed to {new_cooldown}")
 
         except IndexError:
-            await msg.reply(f"Current cooldown is {AddOhmsBot.MQTT.get_cooldown(aio_key)} seconds.")
+            await msg.reply(f"Current cooldown is {AddOhmsBot.MQTT.get_cooldown(topic)} seconds.")
             return
 
         except ValueError:
@@ -110,18 +111,18 @@ class ChannelPoints(Mod):
         This entire function is a duplicate from `commands/treatme.py`
         and is only here for completeness, or if the command is removed.
         """
-        aio_key = "dispense-treat-toggle"
+        topic = MqttTopics.dispense_treat_toggle
 
         try:
             new_cooldown = int(args[0])
 
             # Update the database
-            AddOhmsBot.MQTT.set_cooldown(aio_key, new_cooldown)
+            AddOhmsBot.MQTT.set_cooldown(topic, new_cooldown)
 
             await msg.reply(f"Treatme cooldown changed to {new_cooldown}")
 
         except IndexError:
-            await msg.reply(f"Current cooldown is {AddOhmsBot.MQTT.get_cooldown(aio_key)} seconds.")
+            await msg.reply(f"Current cooldown is {AddOhmsBot.MQTT.get_cooldown(topic)} seconds.")
             return
 
         except ValueError:

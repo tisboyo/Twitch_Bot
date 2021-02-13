@@ -37,9 +37,9 @@ class MqttNotifications(Mod):
         """Send MQTT push when a new follower subscribes"""
         # TODO How many months? Is this data accessible
         if await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.channel_raid):
-            print(f"Publishing {subscriber} has Subscribed to the channel to AIO")
+            print(f"Publishing {subscriber} has Subscribed to the channel to MQTT")
         else:
-            print(f"Unable to publish {subscriber} has subsbribed to the channel to AIO")
+            print(f"Unable to publish {subscriber} has subsbribed to the channel to MQTT")
 
     async def on_pubsub_bits(self, raw: PubSubData, data) -> None:
         """Send MQTT push when a user redeems bits"""
@@ -47,6 +47,6 @@ class MqttNotifications(Mod):
         send_data = dumps({"username": data.username, "bits": data.bits_used, "total_bits": data.total_bits_used})
 
         if await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.channel_cheer, send_data):
-            print("Cheer announced to AIO")
+            print("Cheer announced to MQTT")
         else:
-            print("Unable to announce Cheer to AIO")
+            print("Unable to announce Cheer to MQTT")
