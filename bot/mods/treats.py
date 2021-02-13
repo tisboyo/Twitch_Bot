@@ -3,9 +3,9 @@ from helpers.points import Status
 from main import AddOhmsBot
 from twitchbot.command import ModCommand
 from twitchbot.command import SubCommand
-from twitchbot.enums import CommandContext
 from twitchbot.message import Message
 from twitchbot.modloader import Mod
+from twitchbot.permission import perms
 
 mqtt_topic = AddOhmsBot.MQTT.Topics.dispense_treat_toggle
 trigger_emoji = "balden3TreatMe"
@@ -44,13 +44,18 @@ class Treats(Mod):
             self.reminder_enable = True  # Allow the reminder to be sent again
             return
 
-    @ModCommand(name, "treatme", context=CommandContext.BOTH, permission="admin")
-    async def push_treat(self, msg, *args):
-        if self.points.check(msg, mod_commands=1):
-            await self.send_treat(msg)
+    @ModCommand(name, "treatme")
+    async def push_treat(self, msg: Message, *args):
+        if perms.has_permission(msg.channel.name, str(msg.author), "admin"):
+            if self.points.check(msg, mod_commands=1):
+                await self.send_treat(msg)
+            else:
+                status = self.points.status()
+                await msg.reply(self.build_required_message(status))
         else:
-            status = self.points.status()
-            await msg.reply(self.build_required_message(status))
+            await msg.reply(
+                f"{AddOhmsBot.msg_prefix} NEW! Send balden3TreatMe to trigger the Treat Bot!"
+            )  # TODO #135 Change phrasing eventually
 
     @SubCommand(push_treat, "cooldown", permission="admin")
     async def treatme_cooldown(self, msg, *args):
