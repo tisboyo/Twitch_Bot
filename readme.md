@@ -41,6 +41,7 @@
     - [`status` - Shows the stream status](#status---shows-the-stream-status)
     - [`lab` - Sets the location to In the Lab](#lab---sets-the-location-to-in-the-lab)
     - [`office` - Sets the location to In the Office](#office---sets-the-location-to-in-the-office)
+  - [`mqtttest` - Tests the connection to MQTT](#mqtttest---tests-the-connection-to-mqtt)
 - [Web](#web)
   - [`/send_command`](#send_command)
     - [`POST` - Send a command to the bot](#post---send-a-command-to-the-bot)
@@ -179,6 +180,10 @@ Permission: Admin
 ### `office` - Sets the location to In the Office
 Permission: Admin
 
+## `mqtttest` - Tests the connection to MQTT
+Permission: Admin
+
+Sends the arguments as the value to `stream/mqtttest` topic.
 
 # Web
 ## `/send_command`

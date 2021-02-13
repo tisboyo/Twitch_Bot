@@ -23,6 +23,7 @@ class MqttTopics:
     poll_setup = _prefix + "poll/setup"
     poll_data = _prefix + "poll/data"
     verify_1k = _prefix + "verify1k"
+    test = _prefix + "mqtttest"
 
 
 class MQTT:
