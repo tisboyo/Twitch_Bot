@@ -1,7 +1,7 @@
 import re
 
 import aiohttp
-from main import AddOhmsBot
+from main import bot
 from mods._database import session
 from twitchbot import cfg
 from twitchbot import channels
@@ -34,7 +34,7 @@ class LinksToDiscord(Mod):
         insert = LinksToDiscordIgnoreList(username=user.lower())
         session.add(insert)
         session.commit()
-        await msg.reply(f"I will now ignore links from {user}")
+        await msg.reply(f"{bot.msg_prefix}I will now ignore links from {user}")
 
     @ModCommand(name, "allowlinks", context=CommandContext.BOTH, permission="admin")
     async def allow_user(self, msg: Message, user: str):
@@ -44,9 +44,9 @@ class LinksToDiscord(Mod):
         if query:
             session.delete(query)
             session.commit()
-            await msg.reply(f"I will now allow links from {user}")
+            await msg.reply(f"{bot.msg_prefix}I will now allow links from {user}")
         else:
-            await msg.reply(f"{user} wasn't on my ignore list.")
+            await msg.reply(f"{bot.msg_prefix}{user} wasn't on my ignore list.")
 
     async def on_privmsg_received(self, msg: Message):
         # Webhook not configured  or Ignore these users
@@ -69,4 +69,4 @@ class LinksToDiscord(Mod):
                 )
                 if response.status == 204:
                     message = "Thanks for the link, I posted it to discord."
-                    await channels[cfg.channels[0]].send_message(AddOhmsBot.msg_prefix + message)
+                    await channels[cfg.channels[0]].send_message(bot.msg_prefix + message)

@@ -4,7 +4,7 @@ from datetime import timedelta
 from os import getenv
 
 import pytz
-from main import AddOhmsBot
+from main import bot
 from mods._database import session
 from twitchbot import add_task
 from twitchbot import cfg
@@ -103,7 +103,7 @@ class AutoMessageStarterMod(Mod):
                         continue
 
                     # Send the message
-                    await channels[self.chan].send_message(AddOhmsBot.msg_prefix + result.text)
+                    await channels[self.chan].send_message(bot.msg_prefix + result.text)
 
                     # Update the last time sent of the message
                     session.query(Announcements).filter(Announcements.id == result.id).update(
@@ -120,7 +120,7 @@ class AutoMessageStarterMod(Mod):
 
                 elif not self.channel_active:
                     if not self.announcements_sleeping:
-                        await channels[self.chan].send_message(AddOhmsBot.msg_prefix + "It's so quiet in here...")
+                        await channels[self.chan].send_message(bot.msg_prefix + "It's so quiet in here...")
                         self.announcements_sleeping = True
 
             except Exception as e:
@@ -144,13 +144,13 @@ class AutoMessageStarterMod(Mod):
     async def announce_nosleep(self, msg, *args):
         self.sleep_override = not self.sleep_override
         status = "disabled" if self.sleep_override else "enabled"
-        await msg.reply(f"{AddOhmsBot.msg_prefix}Announce auto-sleep status is now {status}.")
+        await msg.reply(f"{bot.msg_prefix}Announce auto-sleep status is now {status}.")
 
     @SubCommand(announce, "start", permission="admin")
     async def announce_start(self, msg, *args):
         self.enable = True
         print("Enabling announcements.")
-        await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Announcements, announcements, ANNOUNCEMENTS!")
+        await channels[self.chan].send_message(f"{bot.msg_prefix}Announcements, announcements, ANNOUNCEMENTS!")
         session.query(Settings).filter(Settings.key == "announcement_enabled").update({"value": True})
 
         session.commit()
@@ -159,7 +159,7 @@ class AutoMessageStarterMod(Mod):
     async def announce_stop(self, msg, *args):
         self.enable = False
         print("Disabling announcements.")
-        await channels[self.chan].send_message(f"{AddOhmsBot.msg_prefix}Disabling announcements")
+        await channels[self.chan].send_message(f"{bot.msg_prefix}Disabling announcements")
 
         session.query(Settings).filter(Settings.key == "announcement_enabled").update({"value": False})
 
@@ -184,11 +184,11 @@ class AutoMessageStarterMod(Mod):
             session.commit()
 
             self.restart_task()
-            await msg.reply(f"{AddOhmsBot.msg_prefix}New announce time is {time} seconds")
+            await msg.reply(f"{bot.msg_prefix}New announce time is {time} seconds")
         except ValueError:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid time, please use an integer in seconds")
+            await msg.reply(f"{bot.msg_prefix}Invalid time, please use an integer in seconds")
         except TypeError:
-            await msg.reply(f"{AddOhmsBot.msg_prefix} Current announce time is {self.delay} seconds.")
+            await msg.reply(f"{bot.msg_prefix} Current announce time is {self.delay} seconds.")
         except Exception as e:
             print(type(e), e)
 
@@ -207,7 +207,7 @@ class AutoMessageStarterMod(Mod):
             en = "Y" if announcement.enabled else "N"
             print(f"{announcement.id:3} :  {en} : {announcement.times_sent:4} : {category.name[:8]:8} : {announcement.text}")
         print(f" https://{getenv('WEB_HOSTNAME')}/announcements ".center(80, "*"))
-        await msg.reply(f"{AddOhmsBot.msg_prefix}Announcements listed in console.")
+        await msg.reply(f"{bot.msg_prefix}Announcements listed in console.")
 
     @SubCommand(announce, "del", permission="admin")
     async def announce_del(self, msg, *args):
@@ -232,11 +232,11 @@ class AutoMessageStarterMod(Mod):
         else:
             session.delete(announcement)
             print(f"Announcement id {announcement.id} deleted.")
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement {id=} deleted.")
+            await msg.reply(f"{bot.msg_prefix}Announcement {id=} deleted.")
 
         count = session.query(Announcements).filter(Announcements.category == announcement.id).count()
         if count == 0 and announcement.id != 1:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Resetting category to Default")
+            await msg.reply(f"{bot.msg_prefix}Resetting category to Default")
             session.query(Settings).filter(Settings.key == self.current_category_setting).update({Settings.value: 1})
 
         session.commit()
@@ -261,7 +261,7 @@ class AutoMessageStarterMod(Mod):
 
         print(f"...done, {id=}")
 
-        await msg.reply(f"{AddOhmsBot.msg_prefix}Added announce {id=}")
+        await msg.reply(f"{bot.msg_prefix}Added announce {id=}")
 
     @SubCommand(announce, "disable", permission="admin")
     async def announce_disable(self, msg, *args):
@@ -270,7 +270,7 @@ class AutoMessageStarterMod(Mod):
             index = int(args[0])
 
         except IndexError:
-            await msg.reply(f"{AddOhmsBot.msg_prefix} Try again with an ID")
+            await msg.reply(f"{bot.msg_prefix} Try again with an ID")
             return
 
         except ValueError:
@@ -279,7 +279,7 @@ class AutoMessageStarterMod(Mod):
                 index = result.id
                 print(f"Disabling ID {index}")
             else:
-                await msg.reply(f"{AddOhmsBot.msg_prefix} Try again with an ID Number")
+                await msg.reply(f"{bot.msg_prefix} Try again with an ID Number")
                 return
 
         except Exception as e:
@@ -290,13 +290,13 @@ class AutoMessageStarterMod(Mod):
         if successful:
             result = session.query(Announcements).filter(Announcements.id == index).one_or_none()
             print(f"Disabled announcement ID {index}")
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Disabled announcement ID {index}: {str(result.text)}")
+            await msg.reply(f"{bot.msg_prefix}Disabled announcement ID {index}: {str(result.text)}")
 
             session.commit()
 
         else:
             print(f"Announcement ID {index} not found.")
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement ID {index} not found.")
+            await msg.reply(f"{bot.msg_prefix}Announcement ID {index} not found.")
 
     @SubCommand(announce, "enable", permission="admin")
     async def announce_enable(self, msg, *args):
@@ -305,11 +305,11 @@ class AutoMessageStarterMod(Mod):
             index = int(args[0])
 
         except IndexError:
-            await msg.reply(f"{AddOhmsBot.msg_prefix} Try again with an ID")
+            await msg.reply(f"{bot.msg_prefix} Try again with an ID")
             return
 
         except ValueError:
-            await msg.reply(f"{AddOhmsBot.msg_prefix} Try again with an ID Number")
+            await msg.reply(f"{bot.msg_prefix} Try again with an ID Number")
             return
 
         except Exception as e:
@@ -319,12 +319,12 @@ class AutoMessageStarterMod(Mod):
         successful = session.query(Announcements).filter(Announcements.id == index).update({"enabled": True})
         if successful:
             print(f"Enabled announcement ID {index}")
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Enabled announcement ID {index}")
+            await msg.reply(f"{bot.msg_prefix}Enabled announcement ID {index}")
             session.commit()
 
         else:
             print(f"Announcement ID {index} not found.")
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement ID {index} not found.")
+            await msg.reply(f"{bot.msg_prefix}Announcement ID {index} not found.")
 
     @SubCommand(announce, "status", permission="admin")
     async def announce_status(self, msg, *args):
@@ -340,11 +340,11 @@ class AutoMessageStarterMod(Mod):
         announcements_in_cat = session.query(Announcements).filter(Announcements.category == cat_id).count()
 
         replies = [
-            f"{AddOhmsBot.msg_prefix}Current status is {status}",
-            f"{AddOhmsBot.msg_prefix}Current delay is {self.delay} seconds. ",
-            f"{AddOhmsBot.msg_prefix}Next send time will be {self.next_run.strftime('%H:%M:%S')} which is in {str(next_run_seconds)[:-7]}.",  # noqa E501
-            f"{AddOhmsBot.msg_prefix}{enabled}/{total_count} of all announcements enabled.",
-            f"{AddOhmsBot.msg_prefix}Current category is {category_name}, with {announcements_in_cat} announcements",
+            f"{bot.msg_prefix}Current status is {status}",
+            f"{bot.msg_prefix}Current delay is {self.delay} seconds. ",
+            f"{bot.msg_prefix}Next send time will be {self.next_run.strftime('%H:%M:%S')} which is in {str(next_run_seconds)[:-7]}.",  # noqa E501
+            f"{bot.msg_prefix}{enabled}/{total_count} of all announcements enabled.",
+            f"{bot.msg_prefix}Current category is {category_name}, with {announcements_in_cat} announcements",
         ]
 
         for reply in replies:
@@ -362,7 +362,7 @@ class AutoMessageStarterMod(Mod):
         cat_name = " ".join(map(str, args))
         exists = session.query(AnnouncementCategories).filter(AnnouncementCategories.name == cat_name).count()
         if exists:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Duplicate category name")
+            await msg.reply(f"{bot.msg_prefix}Duplicate category name")
             return
 
         # Insert the new category into the database
@@ -372,7 +372,7 @@ class AutoMessageStarterMod(Mod):
 
         # Refresh to pull the ID inserted as
         session.refresh(new_announcement)
-        await msg.reply(f"{AddOhmsBot.msg_prefix}{new_announcement.name} added as id {new_announcement.id}")
+        await msg.reply(f"{bot.msg_prefix}{new_announcement.name} added as id {new_announcement.id}")
 
     @SubCommand(announce_category, "del", permission="admin")
     async def announce_category_del(self, msg, category_id: int):
@@ -382,24 +382,24 @@ class AutoMessageStarterMod(Mod):
 
         # Quick fail if trying to delete default
         if category_id == 1:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Default category will not be deleted.")
+            await msg.reply(f"{bot.msg_prefix}Default category will not be deleted.")
             return
 
         # Grab the category
         category = self.get_announcements_category(category_id)
         if category is None:
-            await msg.reply(f"{AddOhmsBot.msg_prefix} Category id {category_id} does not exist.")
+            await msg.reply(f"{bot.msg_prefix} Category id {category_id} does not exist.")
             return
 
         # Check to see if there are announcements still assigned to this category
         announcement_count = session.query(Announcements).filter(Announcements.category == category_id).count()
         if announcement_count > 0:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}{category.name} is not an empty category, aborting. 🚨🚨")
+            await msg.reply(f"{bot.msg_prefix}{category.name} is not an empty category, aborting. 🚨🚨")
             return
 
         session.delete(category)
         session.commit()
-        await msg.reply(f"{AddOhmsBot.msg_prefix}{category.name} ({category.id}) has been deleted.")
+        await msg.reply(f"{bot.msg_prefix}{category.name} ({category.id}) has been deleted.")
 
     @SubCommand(announce_category, "list", permission="admin")
     async def announce_category_list(self, msg, *args):
@@ -412,7 +412,7 @@ class AutoMessageStarterMod(Mod):
             print(f"{category.id:3} : {category.name}")
 
         print(f" https://{getenv('WEB_HOSTNAME')}/announcements ".center(80, "*"))
-        await msg.reply(f"{AddOhmsBot.msg_prefix}Categories listed in console.")
+        await msg.reply(f"{bot.msg_prefix}Categories listed in console.")
 
     @SubCommand(announce_category, "assign", permission="admin")
     async def announce_category_assign(self, msg, announcement_id: int, category_id: int):
@@ -429,12 +429,12 @@ class AutoMessageStarterMod(Mod):
         # Keep inside parens, otherwise this assigns True to category on a good category
         # instead of the category itself
         if (category := self.get_announcements_category(category_id)) is None:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid category id")
+            await msg.reply(f"{bot.msg_prefix}Invalid category id")
             return
 
         # Check to make sure the announcement itself exists
         if not session.query(Announcements).filter(Announcements.id == announcement_id).count():
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid announcement id")
+            await msg.reply(f"{bot.msg_prefix}Invalid announcement id")
             return
 
         # Update the announcement
@@ -448,9 +448,9 @@ class AutoMessageStarterMod(Mod):
 
         # Send response of results
         if result:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Announcement id {announcement_id} updated to category {category.name}")
+            await msg.reply(f"{bot.msg_prefix}Announcement id {announcement_id} updated to category {category.name}")
         else:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Unable to update.")
+            await msg.reply(f"{bot.msg_prefix}Unable to update.")
 
     @SubCommand(announce_category, "activate", permission="admin")
     async def announce_category_activate(self, msg, category_id: int):
@@ -463,7 +463,7 @@ class AutoMessageStarterMod(Mod):
 
         # Verify the category is a valid one
         if (category := self.get_announcements_category(category_id)) is None:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid category id.")
+            await msg.reply(f"{bot.msg_prefix}Invalid category id.")
             return
 
         # TODO Change to just an update, and do a alembic revision to insert a default after #79 is complete.
@@ -479,7 +479,7 @@ class AutoMessageStarterMod(Mod):
 
         session.commit()
 
-        await msg.reply(f"{AddOhmsBot.msg_prefix}Active announcement category is now {category.name}")
+        await msg.reply(f"{bot.msg_prefix}Active announcement category is now {category.name}")
 
     def get_announcements_category(self, category_id: int) -> AnnouncementCategories or None:
         """
