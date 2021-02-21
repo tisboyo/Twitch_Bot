@@ -1,4 +1,4 @@
-from main import AddOhmsBot
+from main import bot
 from mods._database import session
 from twitchbot import cfg
 from twitchbot import Channel
@@ -23,10 +23,10 @@ class TopicMod(Mod):
 
         if not msg.is_whisper:
             if topic:
-                await msg.reply(f"{AddOhmsBot.msg_prefix}{topic}")
+                await msg.reply(f"{bot.msg_prefix}{topic}")
             else:
                 # No topic was set
-                await msg.reply(f"{AddOhmsBot.msg_prefix}No current topic.")
+                await msg.reply(f"{bot.msg_prefix}No current topic.")
         else:
             try:
                 # Send message directly to channel 0
@@ -49,7 +49,7 @@ class TopicMod(Mod):
 
         session.commit()
 
-        await msg.reply(f"{AddOhmsBot.msg_prefix}Topic set.")
+        await msg.reply(f"{bot.msg_prefix}Topic set.")
 
     def get_topic(self):
         result = session.query(Settings).filter(Settings.key == "topic").one_or_none()
@@ -61,8 +61,6 @@ class TopicMod(Mod):
 
         try:
             # Send message directly to channel 0
-            await channels[cfg.channels[0]].send_message(
-                f"{AddOhmsBot.msg_prefix}Welcome raiders, the current topic is {topic}"
-            )
+            await channels[cfg.channels[0]].send_message(f"{bot.msg_prefix}Welcome raiders, the current topic is {topic}")
         except Exception as e:
             print(e)

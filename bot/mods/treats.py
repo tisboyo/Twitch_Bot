@@ -1,13 +1,13 @@
 from helpers.points import Points
 from helpers.points import Status
-from main import AddOhmsBot
+from main import bot
 from twitchbot.command import ModCommand
 from twitchbot.command import SubCommand
 from twitchbot.message import Message
 from twitchbot.modloader import Mod
 from twitchbot.permission import perms
 
-mqtt_topic = AddOhmsBot.MQTT.Topics.dispense_treat_toggle
+mqtt_topic = bot.MQTT.Topics.dispense_treat_toggle
 trigger_emoji = "balden3TreatMe"
 
 
@@ -34,10 +34,10 @@ class Treats(Mod):
                 status = self.points.status()
 
                 if status.emojis_required >= status.emojis and self.reminder_enable:
-                    await msg.reply(f"{AddOhmsBot.msg_prefix} {self.build_required_message(status)}")
+                    await msg.reply(f"{bot.msg_prefix} {self.build_required_message(status)}")
                     self.reminder_enable = False
                 elif status.emojis >= status.emojis_required:
-                    await msg.reply(f"{AddOhmsBot.msg_prefix} A treat is in the queue!!")
+                    await msg.reply(f"{bot.msg_prefix} A treat is in the queue!!")
 
         else:
             # If it doesn't include a Yay, we don't care about it at all
@@ -54,7 +54,7 @@ class Treats(Mod):
                 await msg.reply(self.build_required_message(status))
         else:
             await msg.reply(
-                f"{AddOhmsBot.msg_prefix} NEW! Send balden3TreatMe to trigger the Treat Bot!"
+                f"{bot.msg_prefix} NEW! Send balden3TreatMe to trigger the Treat Bot!"
             )  # TODO #136 Change phrasing eventually
 
     @SubCommand(push_treat, "cooldown", permission="admin")
@@ -63,13 +63,13 @@ class Treats(Mod):
             new_cooldown = int(args[0])
 
             # Update the database
-            AddOhmsBot.MQTT.set_cooldown(mqtt_topic, new_cooldown)
+            bot.MQTT.set_cooldown(mqtt_topic, new_cooldown)
 
             await msg.reply(f"Treatme cooldown changed to {new_cooldown}")
 
         except IndexError:
             # Happens if no arguments are presented
-            await msg.reply(f"Current cooldown is {AddOhmsBot.MQTT.get_cooldown(mqtt_topic)} seconds.")
+            await msg.reply(f"Current cooldown is {bot.MQTT.get_cooldown(mqtt_topic)} seconds.")
             return
 
         except ValueError:
@@ -84,7 +84,7 @@ class Treats(Mod):
 
         req_users = self.points.unique_users_required - len(status.unique_users["emojis"])
         # Build message to send to chat
-        required = f"{AddOhmsBot.msg_prefix}Moar {trigger_emoji} "
+        required = f"{bot.msg_prefix}Moar {trigger_emoji} "
         if req_users <= self.points.unique_users_required and self.points.unique_users_required > 0:
             required += "from moar users "
         required += "required for a treat!"
@@ -92,9 +92,9 @@ class Treats(Mod):
         return required
 
     async def send_treat(self, msg: Message) -> bool:
-        if await AddOhmsBot.MQTT.send(mqtt_topic, 1):
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Treats!! balden3Yay balden3Yay balden3Yay")
+        if await bot.MQTT.send(mqtt_topic, 1):
+            await msg.reply(f"{bot.msg_prefix}Treats!! balden3Yay balden3Yay balden3Yay")
             return True
         else:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}I ran into a problem with MQTT. Sorry ☹️")
+            await msg.reply(f"{bot.msg_prefix}I ran into a problem with MQTT. Sorry ☹️")
             return False

@@ -3,7 +3,7 @@ import datetime
 import aiohttp
 from dateutil import parser
 from dateutil.tz import tzutc
-from main import AddOhmsBot
+from main import bot
 from twitchbot import Command
 from twitchbot.config import get_client_id
 from twitchbot.config import get_oauth
@@ -34,7 +34,7 @@ async def uptime(msg, *args):
 
         if len(response_js["data"]) <= 0:
             await msg.reply(
-                f"{AddOhmsBot.msg_prefix} Unable to query uptime at the moment. Most likely less than 5 minutes or offline."
+                f"{bot.msg_prefix} Unable to query uptime at the moment. Most likely less than 5 minutes or offline."
             )
 
         else:
@@ -47,4 +47,4 @@ async def uptime(msg, *args):
             minutes = (seconds % 3600) // 60
 
             h = str(hours) + " hours and " if hours > 0 else ""
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Stream has been live for {h}{minutes} minutes.")
+            await msg.reply(f"{bot.msg_prefix}Stream has been live for {h}{minutes} minutes.")

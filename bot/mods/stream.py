@@ -1,4 +1,4 @@
-from main import AddOhmsBot
+from main import bot
 from twitchbot import Mod
 from twitchbot import ModCommand
 from twitchbot import SubCommand
@@ -18,20 +18,20 @@ class StreamMod(Mod):
     @SubCommand(stream, "live", permission="admin")
     async def stream_live(self, msg: Message, *args):
         if args[0] == "true":
-            AddOhmsBot.live = True
+            bot.live = True
         else:
-            AddOhmsBot.live = False
+            bot.live = False
 
     @SubCommand(stream, "status", permission="admin")
     async def stream_status(self, msg: Message, *args):
-        await msg.reply(f"{AddOhmsBot.msg_prefix} Stream status: {AddOhmsBot.live}, In the {AddOhmsBot.location}")
+        await msg.reply(f"{bot.msg_prefix} Stream status: {bot.live}, In the {bot.location}")
 
     @SubCommand(stream, "lab", permission="admin")
     async def stream_lab(self, msg: Message, *args):
-        AddOhmsBot.location = "Lab"
-        await msg.reply(f"{AddOhmsBot.msg_prefix} Location is now In the Lab")
+        bot.location = "Lab"
+        await msg.reply(f"{bot.msg_prefix} Location is now In the Lab")
 
     @SubCommand(stream, "office", permission="admin")
     async def stream_office(self, msg: Message, *args):
-        AddOhmsBot.location = "Office"
-        await msg.reply(f"{AddOhmsBot.msg_prefix} Location is now In the Office")
+        bot.location = "Office"
+        await msg.reply(f"{bot.msg_prefix} Location is now In the Office")

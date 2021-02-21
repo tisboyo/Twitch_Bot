@@ -4,7 +4,7 @@ from datetime import datetime
 
 from aiofile import AIOFile
 from aiohttp import ClientSession
-from main import AddOhmsBot
+from main import bot
 from twitchbot import Mod
 from twitchbot.channel import channels
 from twitchbot.config import cfg
@@ -44,7 +44,7 @@ class HostsMod(Mod):
                 return
 
         while True:
-            while AddOhmsBot.live:
+            while bot.live:
                 try:
                     # Try except to prevent loop from accidentally crashing, no known reasons to crash.
                     url = "https://tmi.twitch.tv/hosts"
@@ -73,7 +73,7 @@ class HostsMod(Mod):
 
                                     # Send to channel
                                     await channels[cfg.channels[0]].send_message(
-                                        f"{AddOhmsBot.msg_prefix} Thanks for hosting {hoster}"
+                                        f"{bot.msg_prefix} Thanks for hosting {hoster}"
                                     )
 
                                     # Log to json file
