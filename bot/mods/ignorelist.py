@@ -39,8 +39,9 @@ class Ignore(Mod):
             insert = IgnoreList(pattern=pattern)
             session.add(insert)
             session.commit()
+            session.refresh(insert)
             await msg.reply(f"{bot.msg_prefix}I will now ignore links from {pattern}")
-            bot.ignore_list_patterns.append(pattern)
+            bot.ignore_list_patterns[insert.id] = pattern
 
         else:
             await msg.reply(f"{bot.msg_prefix}That pattern is already in the database.")
@@ -54,7 +55,7 @@ class Ignore(Mod):
             session.delete(query)
             session.commit()
             await msg.reply(f"{bot.msg_prefix}I will no longer ignore {query.pattern}")
-            bot.ignore_list_patterns.remove(query.pattern)
+            del bot.ignore_list_patterns[id]
         else:
             await msg.reply(f"{bot.msg_prefix}ID:{id} doesn't exist.")
 
@@ -65,6 +66,9 @@ class Ignore(Mod):
         session.commit()
         if query:
             await msg.reply(f"{bot.msg_prefix}ID:{id} enabled.")
+            if id not in bot.ignore_list_patterns.keys():
+                bot.ignore_list_patterns[id] = query.pattern
+
         else:
             await msg.reply(f"{bot.msg_prefix}Invalid ID.")
 
@@ -75,5 +79,7 @@ class Ignore(Mod):
         session.commit()
         if query:
             await msg.reply(f"{bot.msg_prefix}ID:{id} disabled.")
+            if id in bot.ignore_list_patterns.keys():
+                del bot.ignore_list_patterns[id]
         else:
             await msg.reply(f"{bot.msg_prefix}Invalid ID.")

@@ -33,10 +33,10 @@ class AddOhmsBot(BaseBot):
         super().__init__()
 
         # Load the ignore list from the database on startup
-        self.ignore_list_patterns = list()
-        query = session.query(IgnoreList).all()
+        self.ignore_list_patterns = dict()
+        query = session.query(IgnoreList).filter(IgnoreList.enabled == True).all()  # noqa E712
         for each in query:
-            self.ignore_list_patterns.append(each.pattern)
+            self.ignore_list_patterns[each.id] = each.pattern
 
         # Check and set the status of the bot on startup.
         AddOhmsBot.live = self.check_live_status()
@@ -71,7 +71,7 @@ class AddOhmsBot(BaseBot):
 
     def user_ignored(self, username: str) -> bool:
         """Returns True if the user is on the ignore list"""
-        for pattern in self.ignore_list_patterns:
+        for pattern in self.ignore_list_patterns.values():
             if re.match(pattern, username):
                 print(f"Ignoring command from {username} matching pattern {pattern}")
                 return True
