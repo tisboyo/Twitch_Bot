@@ -7,6 +7,7 @@ alembic_config.main(argv=alembicArgs)
 import asyncio
 import requests
 from os import _exit
+import re
 
 import version_check  # noqa: F401
 
@@ -16,6 +17,9 @@ from twitchbot.bots import BaseBot
 from twitchbot.config import get_client_id
 from twitchbot.config import get_oauth
 from twitchbot.config import cfg
+
+from mods._database import session
+from models import IgnoreList
 
 
 class AddOhmsBot(BaseBot):
@@ -27,6 +31,12 @@ class AddOhmsBot(BaseBot):
 
     def __init__(self):
         super().__init__()
+
+        # Load the ignore list from the database on startup
+        self.ignore_list_patterns = list()
+        query = session.query(IgnoreList).all()
+        for each in query:
+            self.ignore_list_patterns.append(each.pattern)
 
         # Check and set the status of the bot on startup.
         AddOhmsBot.live = self.check_live_status()
@@ -59,9 +69,20 @@ class AddOhmsBot(BaseBot):
         else:
             return False
 
+    def user_ignored(self, username: str) -> bool:
+        """Returns True if the user is on the ignore list"""
+        for pattern in self.ignore_list_patterns:
+            if re.match(pattern, username):
+                print(f"Ignoring command from {username} matching pattern {pattern}")
+                return True
+
+        # Nothing matched, so return False
+        return False
+
+
+bot = AddOhmsBot()  # Needs to be out here so it's able to be imported from other modules
 
 if __name__ == "__main__":
-    bot = AddOhmsBot()
     try:
         bot.run()
     except KeyboardInterrupt:
