@@ -8,8 +8,11 @@ from fastapi import Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import PlainTextResponse
 from fastapi.responses import Response
+from fastapi_sqlalchemy import db
 from signing import is_request_valid
 from starlette.status import HTTP_204_NO_CONTENT
+
+from models import IgnoreList
 
 router = APIRouter()
 
@@ -29,9 +32,17 @@ async def twitch_webhook_follow_post(data: dict, request: Request):
     if await is_request_valid(request):
         data = data["data"][0]
 
-        if match("heder[0-9]{6}", data["from_name"]):
-            # Ignore the spam follow bot
-            return
+        # Load the ignore list from the database on startup
+        ignore_list_patterns = dict()
+        query = db.session.query(IgnoreList).filter(IgnoreList.enabled == True).all()  # noqa E712
+        for each in query:
+            ignore_list_patterns[each.id] = each.pattern
+
+        # Check the ignore list to see if the user matches any of the requirements to be ignored
+        for pattern in ignore_list_patterns.values():
+            if match(pattern, data["from_name"]):
+                # Ignore the user, still return 204 so twitch doesn't keep resending.
+                return Response(status_code=HTTP_204_NO_CONTENT)
 
         uri = "ws://bot:13337"
         try:
