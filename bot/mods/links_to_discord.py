@@ -34,7 +34,7 @@ class LinksToDiscord(Mod):
         insert = LinksToDiscordIgnoreList(username=user.lower())
         session.add(insert)
         session.commit()
-        await msg.reply(f"I will now ignore links from {user}")
+        await msg.reply(f"{AddOhmsBot.msg_prefix}I will now ignore links from {user}")
 
     @ModCommand(name, "allowlinks", context=CommandContext.BOTH, permission="admin")
     async def allow_user(self, msg: Message, user: str):
@@ -44,9 +44,9 @@ class LinksToDiscord(Mod):
         if query:
             session.delete(query)
             session.commit()
-            await msg.reply(f"I will now allow links from {user}")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}I will now allow links from {user}")
         else:
-            await msg.reply(f"{user} wasn't on my ignore list.")
+            await msg.reply(f"{AddOhmsBot.msg_prefix}{user} wasn't on my ignore list.")
 
     async def on_privmsg_received(self, msg: Message):
         # Webhook not configured  or Ignore these users
