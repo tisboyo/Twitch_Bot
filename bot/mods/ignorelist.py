@@ -1,6 +1,6 @@
 import re
 
-from main import AddOhmsBot
+from main import bot
 from mods._database import session
 from twitchbot import Message
 from twitchbot import Mod
@@ -29,7 +29,7 @@ class Ignore(Mod):
         try:
             re.compile(pattern)
         except re.error:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid regex pattern.")
+            await msg.reply(f"{bot.msg_prefix}Invalid regex pattern.")
             return
 
         # Will not support a space in the pattern, but that doesn't matter because usernames can't have spaces
@@ -39,9 +39,11 @@ class Ignore(Mod):
             insert = IgnoreList(pattern=pattern)
             session.add(insert)
             session.commit()
-            await msg.reply(f"{AddOhmsBot.msg_prefix}I will now ignore links from {pattern}")
+            await msg.reply(f"{bot.msg_prefix}I will now ignore links from {pattern}")
+            bot.ignore_list_patterns.append(pattern)
+
         else:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}That pattern is already in the database.")
+            await msg.reply(f"{bot.msg_prefix}That pattern is already in the database.")
 
     @SubCommand(ignore, "del", permission="admin")
     async def ignore_del(self, msg: Message, id: int):
@@ -51,9 +53,10 @@ class Ignore(Mod):
         if query:
             session.delete(query)
             session.commit()
-            await msg.reply(f"{AddOhmsBot.msg_prefix}I will no longer ignore {query.pattern}")
+            await msg.reply(f"{bot.msg_prefix}I will no longer ignore {query.pattern}")
+            bot.ignore_list_patterns.remove(query.pattern)
         else:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}ID:{id} doesn't exist.")
+            await msg.reply(f"{bot.msg_prefix}ID:{id} doesn't exist.")
 
     @SubCommand(ignore, "enable", permission="admin")
     async def ignore_enable(self, msg: Message, id: int):
@@ -61,9 +64,9 @@ class Ignore(Mod):
         query = session.query(IgnoreList).filter(IgnoreList.id == id).update({IgnoreList.enabled: True})
         session.commit()
         if query:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}ID:{id} enabled.")
+            await msg.reply(f"{bot.msg_prefix}ID:{id} enabled.")
         else:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid ID.")
+            await msg.reply(f"{bot.msg_prefix}Invalid ID.")
 
     @SubCommand(ignore, "disable", permission="admin")
     async def ignore_disable(self, msg: Message, id: int):
@@ -71,6 +74,6 @@ class Ignore(Mod):
         query = session.query(IgnoreList).filter(IgnoreList.id == id).update({IgnoreList.enabled: False})
         session.commit()
         if query:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}ID:{id} disabled.")
+            await msg.reply(f"{bot.msg_prefix}ID:{id} disabled.")
         else:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}Invalid ID.")
+            await msg.reply(f"{bot.msg_prefix}Invalid ID.")
