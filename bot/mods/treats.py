@@ -53,6 +53,10 @@ class Treats(Mod):
                 status = self.points.status()
                 await msg.reply(self.build_required_message(status))
         else:
+            # Check if user is on ignore list
+            if bot.user_ignored(str(msg.author)):
+                return
+
             await msg.reply(
                 f"{bot.msg_prefix} NEW! Send balden3TreatMe to trigger the Treat Bot!"
             )  # TODO #136 Change phrasing eventually

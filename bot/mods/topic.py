@@ -19,6 +19,10 @@ class TopicMod(Mod):
 
     @ModCommand(name, "topic", context=CommandContext.BOTH)
     async def topic(self, msg, *args):
+        # Check if user is on ignore list
+        if bot.user_ignored(str(msg.author)):
+            return
+
         topic = self.get_topic()
 
         if not msg.is_whisper:
