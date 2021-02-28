@@ -1,3 +1,4 @@
+import datetime
 from asyncio import sleep
 
 from helpers.points import Points
@@ -23,6 +24,7 @@ class Treats(Mod):
         )
         self.reminder_enable = True
         self.ready_for_trigger = True
+        self.last_lab_check = datetime.datetime.min
 
     async def on_raw_message(self, msg: Message):
         # If the message is a system message, we're done here
@@ -32,9 +34,15 @@ class Treats(Mod):
         emoji_count = msg.content.count(trigger_emoji)
         if emoji_count > 0:
             if bot.location != "Lab":
-                await msg.reply(f"{bot.msg_prefix} Sorry, no treats today. We are in the {bot.location}.")
+                # If we aren't in the Lab and we haven't said something in the last 5 minutes, let the user know
+                if (self.last_lab_check + datetime.timedelta(minutes=5)) < datetime.datetime.now():
+                    await msg.reply(f"{bot.msg_prefix} Sorry, no treats today. We are in the {bot.location}.")
+                    self.last_lab_check = datetime.datetime.now()
+                    print(self.last_lab_check)
+
             elif self.points.check(msg, emojis=emoji_count):
                 await self.send_treat(msg)
+
             else:  # Check how many more we need
                 status = self.points.status()
 
