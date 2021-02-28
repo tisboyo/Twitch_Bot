@@ -1,3 +1,5 @@
+from asyncio import sleep
+
 from helpers.points import Points
 from helpers.points import Status
 from main import bot
@@ -7,7 +9,8 @@ from twitchbot.message import Message
 from twitchbot.modloader import Mod
 from twitchbot.permission import perms
 
-mqtt_topic = bot.MQTT.Topics.dispense_treat_toggle
+mqtt_topic_dispense = bot.MQTT.Topics.dispense_treat_toggle
+mqtt_topic_treat_in_queue = bot.MQTT.Topics.treat_in_queue
 trigger_emoji = "balden3TreatMe"
 
 
@@ -37,10 +40,10 @@ class Treats(Mod):
                     await msg.reply(f"{bot.msg_prefix} {self.build_required_message(status)}")
                     self.reminder_enable = False
                 elif status.emojis >= status.emojis_required:
-                    await msg.reply(f"{bot.msg_prefix} A treat is in the queue!!")
+                    await self.send_treat_in_queue(msg)
 
         else:
-            # If it doesn't include a Yay, we don't care about it at all
+            # If it doesn't include a Treat, we don't care about it at all
             self.reminder_enable = True  # Allow the reminder to be sent again
             return
 
@@ -48,6 +51,11 @@ class Treats(Mod):
     async def push_treat(self, msg: Message, *args):
         if perms.has_permission(msg.channel.name, str(msg.author), "admin"):
             if self.points.check(msg, mod_commands=1):
+                await self.send_treat(msg)
+            elif msg.args[0] == "test":
+                # Use for testing the bots
+                await self.send_treat_in_queue(msg)
+                await sleep(3)
                 await self.send_treat(msg)
             else:
                 status = self.points.status()
@@ -67,13 +75,13 @@ class Treats(Mod):
             new_cooldown = int(args[0])
 
             # Update the database
-            bot.MQTT.set_cooldown(mqtt_topic, new_cooldown)
+            bot.MQTT.set_cooldown(mqtt_topic_dispense, new_cooldown)
 
             await msg.reply(f"Treatme cooldown changed to {new_cooldown}")
 
         except IndexError:
             # Happens if no arguments are presented
-            await msg.reply(f"Current cooldown is {bot.MQTT.get_cooldown(mqtt_topic)} seconds.")
+            await msg.reply(f"Current cooldown is {bot.MQTT.get_cooldown(mqtt_topic_dispense)} seconds.")
             return
 
         except ValueError:
@@ -96,9 +104,17 @@ class Treats(Mod):
         return required
 
     async def send_treat(self, msg: Message) -> bool:
-        if await bot.MQTT.send(mqtt_topic, 1):
+        if await bot.MQTT.send(mqtt_topic_dispense, 1):
             await msg.reply(f"{bot.msg_prefix}Treats!! balden3Yay balden3Yay balden3Yay")
             return True
         else:
             await msg.reply(f"{bot.msg_prefix}I ran into a problem with MQTT. Sorry ☹️")
+            return False
+
+    async def send_treat_in_queue(self, msg: Message) -> bool:
+        if await bot.MQTT.send(mqtt_topic_treat_in_queue, 1):
+            await msg.reply(f"{bot.msg_prefix}A treat is in the queue!!")
+            return True
+        else:
+            await msg.reply(f"{bot.msg_prefix}A treat is in the queue!! (But there's an MQTT problem too)")
             return False
