@@ -127,6 +127,14 @@ async def twitch_webhook_stream_post(data: dict, request: Request):
                     channel=getenv("TWITCH_CHANNEL"),
                     args=["live", live],
                 )
+
+                reset_wigs_msg = dict(
+                    type="run_command",
+                    command="wig",
+                    channel=getenv("TWITCH_CHANNEL"),
+                    args=["reset"],
+                )
+
                 # Combine to an interable and loop over them
                 messages = list()
                 if live == "true":
@@ -135,6 +143,7 @@ async def twitch_webhook_stream_post(data: dict, request: Request):
                 else:
                     # Commands sent when going offline
                     messages.append(going_live_msg)
+                    messages.append(reset_wigs_msg)
 
                 for msg in messages:
                     await s.send((json.dumps(msg) + "\n").encode("utf8"))
