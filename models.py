@@ -23,6 +23,7 @@ class Users(Base):
     cheers = Column(Integer(), default=0)
     last_update = Column(DateTime(), onupdate=datetime.now)
     last_message = Column(DateTime())
+    subs_gifted = Column(Integer(), default=0)
 
 
 class Subscriptions(Base):
