@@ -31,13 +31,15 @@ class Treats(Mod):
 
         emoji_count = msg.content.count(trigger_emoji)
         if emoji_count > 0:
-            if self.points.check(msg, emojis=emoji_count):
+            if bot.location != "Lab":
+                await msg.reply(f"{bot.msg_prefix} Sorry, no treats today. We are in the {bot.location}.")
+            elif self.points.check(msg, emojis=emoji_count):
                 await self.send_treat(msg)
             else:  # Check how many more we need
                 status = self.points.status()
 
                 if status.emojis_required >= status.emojis and self.reminder_enable:
-                    await msg.reply(f"{bot.msg_prefix} {self.build_required_message(status)}")
+                    await msg.reply(f"{bot.msg_prefix}{self.build_required_message(status)}")
                     self.reminder_enable = False
                 elif status.emojis >= status.emojis_required:
                     await self.send_treat_in_queue(msg)
