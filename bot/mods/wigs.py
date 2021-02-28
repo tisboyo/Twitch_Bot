@@ -148,8 +148,9 @@ class WigsMod(Mod):
 
     @SubCommand(wig, "reset", permission="admin")
     async def wig_reset(self, msg: Message, *args):
-        self.used_wigs = list()
-        await msg.reply(f"{bot.msg_prefix} Used wigs have been cleared.")
+        if len(self.used_wigs) > 0:
+            self.used_wigs = list()
+            await msg.reply(f"{bot.msg_prefix} Used wigs have been cleared.")
 
     @SubCommand(wig, "poll", permission="admin")
     async def wig_poll(self, msg: Message, *args):

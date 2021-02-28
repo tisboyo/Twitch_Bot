@@ -120,18 +120,38 @@ async def twitch_webhook_stream_post(data: dict, request: Request):
                 # There are two entries returned, and we need to return both
                 await s.recv()
 
-                msg = dict(
+                # Define the messages to send
+                going_live_msg = dict(
                     type="run_command",
                     command="stream",
                     channel=getenv("TWITCH_CHANNEL"),
                     args=["live", live],
                 )
-                await s.send((json.dumps(msg) + "\n").encode("utf8"))
 
-                # Check if the message was successful
-                resp = json.loads(await s.recv())
-                if resp.get("type", "fail") != "success":
-                    raise HTTPException(status_code=503)
+                reset_wigs_msg = dict(
+                    type="run_command",
+                    command="wig",
+                    channel=getenv("TWITCH_CHANNEL"),
+                    args=["reset"],
+                )
+
+                # Combine to an interable and loop over them
+                messages = list()
+                if live == "true":
+                    # Commands sent when going live
+                    messages.append(going_live_msg)
+                else:
+                    # Commands sent when going offline
+                    messages.append(going_live_msg)
+                    messages.append(reset_wigs_msg)
+
+                for msg in messages:
+                    await s.send((json.dumps(msg) + "\n").encode("utf8"))
+
+                    # Check if the message was successful
+                    resp = json.loads(await s.recv())
+                    if resp.get("type", "fail") != "success":
+                        raise HTTPException(status_code=503)
 
                 # 204 is a No Content status code
                 return Response(status_code=HTTP_204_NO_CONTENT)
