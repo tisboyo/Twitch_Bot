@@ -144,6 +144,12 @@ class TwitchLog(Mod):
 
         if raw.message_dict["is_gift"]:  # A gift subscription
             user_id = raw.message_dict["recipient_id"]
+            # Add count to the user for gifting a sub
+            gifter_id = int(raw.message_dict["user_id"])
+            channel_id = int(raw.message_dict["channel_id"])
+            session.query(Users).filter(Users.user_id == gifter_id, Users.channel == channel_id).update(
+                {Users.subs_gifted: Users.subs_gifted + 1}
+            )
 
         else:  # A regular subscription
             user_id = raw.message_dict["user_id"]
