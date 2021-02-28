@@ -17,8 +17,8 @@ from models import Settings
 from models import Wigs
 
 
-class Wigs_mod(Mod):
-    name = "wigs"
+class WigsMod(Mod):
+    name = "wigsmod"
 
     def __init__(self):
         super().__init__()
