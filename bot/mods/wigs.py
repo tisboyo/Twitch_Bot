@@ -1,6 +1,6 @@
 import asyncio
 
-from main import AddOhmsBot
+from main import bot
 from mods._database import session
 from twitchbot import cfg
 from twitchbot import channels
@@ -17,12 +17,14 @@ from models import Settings
 from models import Wigs
 
 
-class ChannelPoints(Mod):
-    name = "channelpoints"
+class Wigs_mod(Mod):
+    name = "wigs"
 
     def __init__(self):
         super().__init__()
-        print("ChannelPoints loaded")
+        print("Wigs loaded")
+        self.used_wigs = list()
+        self.seconds_between_poll_reminders = 45
 
     async def on_pubsub_received(self, raw: PubSubData):
         # Custom Channel Points redeemed
@@ -42,7 +44,12 @@ class ChannelPoints(Mod):
 
         title = session.query(Settings.value).filter(Settings.key == "WigPollTitle").one_or_none()
         time = session.query(Settings.value).filter(Settings.key == "WigPollTime").one_or_none()
-        choices = session.query(Wigs.wig_name).filter(Wigs.enabled == True).all()  # noqa #712
+        choices = (  # Grabs all fo the wigs from the database, filtering out disabled and already used
+            session.query(Wigs.wig_name)
+            .filter(Wigs.enabled == True)  # noqa #712
+            .filter(Wigs.wig_name.notin_(self.used_wigs))
+            .all()
+        )
 
         # Cleanup the query data
         title, time = title[0], int(time[0])
@@ -50,16 +57,28 @@ class ChannelPoints(Mod):
 
         # The poll can't have a blank title and must have choices
         if title == "" or len(choices) == 0:
-            await channel.send_message(f"{AddOhmsBot.msg_prefix} Wig poll isn't configured yet.")
+            await channel.send_message(f"{bot.msg_prefix} No wigs currently available.")
             return
 
         # Create the poll object, and start the poll
-        poll = PollData(channel, get_nick(), f"{AddOhmsBot.msg_prefix}{title}", time, *choices)
+        poll = PollData(channel, get_nick(), f"{bot.msg_prefix}{title}", time, *choices)
         await poll.start()
 
         while poll.seconds_left > 0:
-            # print("Poll seconds left", poll.seconds_left)
+            # Sleep while the poll is active
             await asyncio.sleep(1)
+            # If poll.seconds_left is divisible by seconds_between_poll_reminders or at 15 seconds
+            # and the poll isn't at 0 seconds (which was sending the message 2 more times without)
+            if (int(poll.seconds_left) % self.seconds_between_poll_reminders == 0 or int(poll.seconds_left) == 15) and int(
+                poll.seconds_left
+            ) != 0:
+                await channel.send_message(
+                    (
+                        f"POLL INFO #{poll.id} ~ {poll.title} ~ {poll.formatted_choices()} "
+                        f"~ {int(poll.seconds_left)} seconds left"
+                    )
+                )
+
         else:
             results = poll.votes.most_common()
 
@@ -76,11 +95,10 @@ class ChannelPoints(Mod):
 
                     # Run runoff poll
                     await asyncio.sleep(3)  # Let the previous results get posted
-                    runoff_poll = PollData(channel, get_nick(), f"{AddOhmsBot.msg_prefix}RUNOFF:{title}", time, *new_choices)
+                    runoff_poll = PollData(channel, get_nick(), f"{bot.msg_prefix}RUNOFF:{title}", time, *new_choices)
                     await runoff_poll.start()
                     while runoff_poll.seconds_left > 0:
                         # Sleep while the poll runs
-                        # print("Runoff poll seconds left", runoff_poll.seconds_left)
                         await asyncio.sleep(1)
 
                     results = runoff_poll.votes.most_common()
@@ -101,13 +119,27 @@ class ChannelPoints(Mod):
                 winner = poll.choices[results[0][0] - 1]
 
             if winner_count > 1:
-                await channel.send_message(f"{AddOhmsBot.msg_prefix}Chat can't decide, it's @baldengineer choice!")
+                await asyncio.sleep(2)  # Sleep two seconds so the results are sent before the determination message
+                await channel.send_message(f"{bot.msg_prefix}Chat can't decide, it's @baldengineer choice!")
             else:
-                await channel.send_message(f"{AddOhmsBot.msg_prefix}Chat has spoken, @baldengineer should wear {winner}")
+                await asyncio.sleep(2)  # Sleep two seconds so the results are sent before the determination message
+                await channel.send_message(f"{bot.msg_prefix}Chat has spoken, @baldengineer should wear {winner}")
+                self.used_wigs.append(winner)
 
     @ModCommand(name, "wig", permission="admin", help="Available subcommands: poll, time, add, del, list, enable, disable")
     async def wig(self, msg, *args):
         pass
+
+    @SubCommand(wig, "used", permission="admin")
+    async def wig_used(self, msg: Message, *args):
+        wig_name = " ".join(map(str, args))
+        self.used_wigs.append(wig_name)
+        await msg.reply(f"{bot.msg_prefix} '{wig_name}' has been recorded as used this stream.")
+
+    @SubCommand(wig, "reset", permission="admin")
+    async def wig_reset(self, msg: Message, *args):
+        self.used_wigs = list()
+        await msg.reply(f"{bot.msg_prefix} Used wigs have been cleared.")
 
     @SubCommand(wig, "poll", permission="admin")
     async def wig_poll(self, msg: Message, *args):
@@ -121,7 +153,7 @@ class ChannelPoints(Mod):
         session.query(Settings.value).filter(Settings.key == "WigPollTime").update({Settings.value: time})
         session.commit()
 
-        await msg.reply(f"{AddOhmsBot.msg_prefix}Time updated to {time}")
+        await msg.reply(f"{bot.msg_prefix}Time updated to {time}")
 
     @SubCommand(wig, "add", permission="admin", syntax="<text>", help="Add a new wig!")
     async def wig_add(self, msg: Message, *args):
@@ -133,7 +165,7 @@ class ChannelPoints(Mod):
         session.commit()
 
         session.refresh(new_wig)
-        await msg.reply(f"{AddOhmsBot.msg_prefix}New wig added as id {new_wig.id}.")
+        await msg.reply(f"{bot.msg_prefix}New wig added as id {new_wig.id}.")
 
     @SubCommand(wig, "del", permission="admin", syntax="<id>", help="Delete a wig by ID")
     async def wig_del(self, msg: Message, id: int):
@@ -144,7 +176,7 @@ class ChannelPoints(Mod):
         if wig is not None:
             session.delete(wig)
             session.commit()
-            await msg.reply(f"{AddOhmsBot.msg_prefix}{wig.wig_name} deleted.")
+            await msg.reply(f"{bot.msg_prefix}{wig.wig_name} deleted.")
 
     @SubCommand(wig, "list", permission="admin", help="Lists the available wigs")
     async def wig_list(self, msg: Message, *args):
@@ -152,7 +184,7 @@ class ChannelPoints(Mod):
         wig_list = [f"{'🔕' if not wig.enabled else '🔔'}({wig.id}){wig.wig_name}" for wig in wigs]
 
         for w in wig_list:
-            await msg.reply(f"{AddOhmsBot.msg_prefix} {w}")
+            await msg.reply(f"{bot.msg_prefix} {w}")
 
     @SubCommand(wig, "disable", permission="admin", syntax="<id>", help="Disables a wig")
     async def wig_disable(self, msg: Message, id: int):
@@ -162,7 +194,7 @@ class ChannelPoints(Mod):
         successful = session.query(Wigs).filter(Wigs.id == id).update({Wigs.enabled: False})
 
         if successful:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}{wig.wig_name} disabled.")
+            await msg.reply(f"{bot.msg_prefix}{wig.wig_name} disabled.")
 
     @SubCommand(wig, "enable", permission="admin", syntax="<id>", help="Enables a wig")
     async def wig_enable(self, msg: Message, id: int):
@@ -172,4 +204,4 @@ class ChannelPoints(Mod):
         successful = session.query(Wigs).filter(Wigs.id == id).update({Wigs.enabled: True})
 
         if successful:
-            await msg.reply(f"{AddOhmsBot.msg_prefix}{wig.wig_name} enabled.")
+            await msg.reply(f"{bot.msg_prefix}{wig.wig_name} enabled.")

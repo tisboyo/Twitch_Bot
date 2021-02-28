@@ -1,7 +1,7 @@
 import asyncio
 import json
 
-from main import AddOhmsBot
+from main import bot
 from twitchbot.channel import Channel
 from twitchbot.modloader import Mod
 from twitchbot.poll.polldata import PollData
@@ -12,7 +12,7 @@ class PollsToMQTT(Mod):
 
     def __init__(self):
         super().__init__()
-        self.mqtt = AddOhmsBot.MQTT
+        self.mqtt = bot.MQTT
 
         # Set how quick to send poll updates
         self.update_frequency = 0.5

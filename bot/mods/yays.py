@@ -1,18 +1,18 @@
-from random import choice
-
-from main import AddOhmsBot
+from helpers.points import Points
+from main import bot
+from twitchbot.command import ModCommand
+from twitchbot.command import SubCommand
 from twitchbot.message import Message
 from twitchbot.modloader import Mod
+
+mqtt_topic = bot.MQTT.Topics.yay_toggle
 
 
 class Yay(Mod):
     name = "yay"
 
     def __init__(self):
-        self.count = 0
-        self.count_to_send = 5
-        self.people_that_yay = set()
-        self.people_count_to_send = 2
+        self.points = Points(emojis=4, unique_users=2, emoji_cap=2, timeout_seconds=30)
 
     async def on_raw_message(self, msg: Message):
         # If the message is a system message, we're done here
@@ -21,28 +21,44 @@ class Yay(Mod):
 
         how_many_yays = msg.content.count("balden3Yay")
         if how_many_yays > 0:
-            self.count += how_many_yays if how_many_yays <= 3 else 3
-            self.people_that_yay.add(msg.author)
+            if self.points.check(msg, emojis=how_many_yays):
+                await self.send_yay(msg)
 
-            print(f"Yay count: {self.count}")
         else:
             # If it doesn't include a Yay, we don't care about it at all
             return
 
-        # Did a choice to add a little bit or random for other conditions later on
-        if choice([self.send_on_message_count(), self.send_on_x_people()]):
-            await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.yay_toggle, 1)
-
-    def send_on_message_count(self):
-        if self.count >= self.count_to_send:
-            self.count = 0
+    async def send_yay(self, msg: Message) -> bool:
+        if await bot.MQTT.send(mqtt_topic, 1):
+            await msg.reply(f"{bot.msg_prefix}Yay! balden3Yay balden3Yay balden3Yay")
             return True
         else:
+            await msg.reply(f"{bot.msg_prefix}I ran into a problem with MQTT. Sorry ☹️")
             return False
 
-    def send_on_x_people(self):
-        if len(self.people_that_yay) >= self.people_count_to_send:
-            self.people_that_yay = set()
-            return True
-        else:
-            return False
+    @ModCommand(name, "yay", permission="admin")
+    async def yay(self, msg, *args):
+        # Parent command does nothing.
+        pass
+
+    @SubCommand(yay, "cooldown", permission="admin")
+    async def yay_cooldown(self, msg, *args):
+        """Cooldown for yays"""
+        try:
+            new_cooldown = int(args[0])
+
+            # Update the database
+            bot.MQTT.set_cooldown(mqtt_topic, new_cooldown)
+
+            await msg.reply(f"Treatme cooldown changed to {new_cooldown}")
+
+        except IndexError:
+            await msg.reply(f"Current cooldown is {bot.MQTT.get_cooldown(mqtt_topic)} seconds.")
+            return
+
+        except ValueError:
+            await msg.reply("Invalid value.")
+
+        except Exception as e:
+            print(type(e), e)
+            return

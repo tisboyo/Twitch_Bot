@@ -27,7 +27,8 @@
 		"eamodio.gitlens",
 		"ms-azuretools.vscode-docker",
 		"github.vscode-pull-request-github",
-		"njpwerner.autodocstring"
+		"njpwerner.autodocstring",
+		"yzhang.markdown-all-in-one"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

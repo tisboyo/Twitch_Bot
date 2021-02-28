@@ -34,12 +34,27 @@
     - [`list` - Lists current wigs](#list---lists-current-wigs)
     - [`disable` - Disable a wig](#disable---disable-a-wig)
     - [`enable` - Enable a wig](#enable---enable-a-wig)
+    - [`used` - Mark a wig as used for the current stream.](#used---mark-a-wig-as-used-for-the-current-stream)
+    - [`reset` - Resets all of the wigs currently marked as used.](#reset---resets-all-of-the-wigs-currently-marked-as-used)
+  - [`stream` - Stream controls](#stream---stream-controls)
+    - [`live` - Sets the bot to Live status](#live---sets-the-bot-to-live-status)
+    - [`status` - Shows the stream status](#status---shows-the-stream-status)
+    - [`lab` - Sets the location to In the Lab](#lab---sets-the-location-to-in-the-lab)
+    - [`office` - Sets the location to In the Office](#office---sets-the-location-to-in-the-office)
+  - [`mqtttest` - Tests the connection to MQTT](#mqtttest---tests-the-connection-to-mqtt)
+- [`ignore` - Ignore users based on a pattern](#ignore---ignore-users-based-on-a-pattern)
+  - [`add` - Adds a user to the ignore list](#add---adds-a-user-to-the-ignore-list)
+  - [`del` - Removes a pattern from the ignore list](#del---removes-a-pattern-from-the-ignore-list)
+  - [`enable` - Enable pattern by ID](#enable---enable-pattern-by-id)
+  - [`disable` - Disable pattern by ID](#disable---disable-pattern-by-id)
 - [Web](#web)
   - [`/send_command`](#send_command)
     - [`POST` - Send a command to the bot](#post---send-a-command-to-the-bot)
   - [`/topic`](#topic)
     - [`GET` - Show chat topic](#get---show-chat-topic)
     - [`POST` - Set chat topic](#post---set-chat-topic)
+  - [`/ignore`](#ignore)
+    - [`GET` - Show table of ignored users](#get---show-table-of-ignored-users)
 - [MQTT](#mqtt)
 
 # Bot
@@ -144,6 +159,55 @@ Send wig ID as parameter
 Permission: Admin
 Send wig ID as parameter
 
+### `used` - Mark a wig as used for the current stream.
+Permission: Admin
+Send wig Name as parameter
+
+### `reset` - Resets all of the wigs currently marked as used.
+Permission: Admin
+No parameters
+
+## `stream` - Stream controls
+Permission: Admin
+Base Command
+### `live` - Sets the bot to Live status
+Permission: Admin
+Send "true" or "false" as parameter
+
+This is intended for use by automated scripting, and should only be used to fix an invalid state.
+
+### `status` - Shows the stream status
+Permission: Admin
+
+
+### `lab` - Sets the location to In the Lab
+Permission: Admin
+
+
+### `office` - Sets the location to In the Office
+Permission: Admin
+
+## `mqtttest` - Tests the connection to MQTT
+Permission: Admin
+
+Sends the arguments as the value to `stream/mqtttest` topic.
+
+# `ignore` - Ignore users based on a pattern
+## `add` - Adds a user to the ignore list
+Permission: Admin
+
+Parameters: Regex pattern for desired username to be ignored.
+
+## `del` - Removes a pattern from the ignore list
+Permission: Admin
+
+Paramaters: ID of pattern to remove.
+
+## `enable` - Enable pattern by ID
+Permission: Admin
+
+## `disable` - Disable pattern by ID
+Permission: Admin
 
 # Web
 ## `/send_command`
@@ -171,6 +235,9 @@ Requires
 Example with curl:
 
 > `curl --header "Content-Type: application/json" --header "access_token: testKey" --request POST --data '{"topic":"Test topic sent from a json post"}' http://{WEB_HOSTNAME}/topic`
+
+## `/ignore`
+### `GET` - Show table of ignored users
 
 # MQTT
 - `dispense-treat-toggle` Sending 1 triggers the treat bot. Bot should reset to 0 when done.

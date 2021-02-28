@@ -1,10 +1,10 @@
-from main import AddOhmsBot
+from main import bot
+from mqtt import MqttTopics
 from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import Message
 from twitchbot import Mod
 from twitchbot import PubSubData
-from twitchbot.channel import Channel
 from twitchbot.command import ModCommand
 from twitchbot.command import SubCommand
 
@@ -21,6 +21,7 @@ class ChannelPoints(Mod):
             "Give BaldEngineer a treat.": self.dispense_treat,
             "Get His Attention!": self.attention_attention,
             "Wear A Wig": self.wear_a_wig,
+            "Verify 1k Resistors": self.verify_1k,
         }
 
         self.default_redemptions = {
@@ -44,28 +45,28 @@ class ChannelPoints(Mod):
         elif raw.is_channel_points_redeemed:
             reward = raw.message_data["redemption"]["reward"]["title"]
             try:
-                await self.custom_redemptions[reward]()
+                await self.custom_redemptions[reward](cfg.channels[0])
             except KeyError:
                 print(f"Unhandled custom reward redeemed - '{reward}'")
 
-    async def dispense_treat(self, channel: str = cfg.channels[0]):
-        if await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.dispense_treat_toggle):
-            await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}Teleporting a treat")
+    async def dispense_treat(self, channel: str):
+        if await bot.MQTT.send(bot.MQTT.Topics.dispense_treat_toggle):
+            await channels[channel].send_message(f"{bot.msg_prefix}Teleporting a treat")
         else:
-            await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}I couldn't do that at the moment. Sorry ☹️")
+            await channels[channel].send_message(f"{bot.msg_prefix}I couldn't do that at the moment. Sorry ☹️")
 
         print("Dispensing a treat!")
 
-    async def attention_attention(self, channel: str = cfg.channels[0]):
+    async def attention_attention(self, channel: str):
         print("Hey!!!")
-        if AddOhmsBot.ATTN_ENABLE:
-            if not await AddOhmsBot.MQTT.send(AddOhmsBot.MQTT.Topics.twitch_attention_indicator):
-                await channels[channel].send_message(f"{AddOhmsBot.msg_prefix}Something went wrong getting my attention. ☹️")
+        if bot.ATTN_ENABLE:
+            if not await bot.MQTT.send(bot.MQTT.Topics.twitch_attention_indicator):
+                await channels[channel].send_message(f"{bot.msg_prefix}Something went wrong getting my attention. ☹️")
 
         else:
             print("Shhhhh....")
 
-    async def wear_a_wig(self, channel: Channel):
+    async def wear_a_wig(self, channel: str):
         # Handled in wigs.py
         pass
 
@@ -74,6 +75,9 @@ class ChannelPoints(Mod):
         print(f"{msg.author}({msg.channel.name}): {msg.content}")
         print("".center(80, "*"))
 
+    async def verify_1k(self, channel: str):
+        await bot.MQTT.send(bot.MQTT.Topics.verify_1k)
+
     @ModCommand(name, "channelpoint_cooldown", permission="admin")
     async def channelpoint_cooldown(self, msg, *args):
         # Nothing really to do here
@@ -81,17 +85,17 @@ class ChannelPoints(Mod):
 
     @SubCommand(channelpoint_cooldown, "attention", permission="admin")
     async def attention_cooldown(self, msg, *args):
-        aio_key = "twitch-attn-indi"
+        topic = MqttTopics.twitch_attention_indicator
 
         try:
             new_cooldown = int(args[0])
             # Update the database
-            AddOhmsBot.MQTT.set_cooldown(aio_key, new_cooldown)
+            bot.MQTT.set_cooldown(topic, new_cooldown)
 
             await msg.reply(f"Attention cooldown changed to {new_cooldown}")
 
         except IndexError:
-            await msg.reply(f"Current cooldown is {AddOhmsBot.MQTT.get_cooldown(aio_key)} seconds.")
+            await msg.reply(f"Current cooldown is {bot.MQTT.get_cooldown(topic)} seconds.")
             return
 
         except ValueError:
@@ -107,18 +111,18 @@ class ChannelPoints(Mod):
         This entire function is a duplicate from `commands/treatme.py`
         and is only here for completeness, or if the command is removed.
         """
-        aio_key = "dispense-treat-toggle"
+        topic = MqttTopics.dispense_treat_toggle
 
         try:
             new_cooldown = int(args[0])
 
             # Update the database
-            AddOhmsBot.MQTT.set_cooldown(aio_key, new_cooldown)
+            bot.MQTT.set_cooldown(topic, new_cooldown)
 
             await msg.reply(f"Treatme cooldown changed to {new_cooldown}")
 
         except IndexError:
-            await msg.reply(f"Current cooldown is {AddOhmsBot.MQTT.get_cooldown(aio_key)} seconds.")
+            await msg.reply(f"Current cooldown is {bot.MQTT.get_cooldown(topic)} seconds.")
             return
 
         except ValueError:

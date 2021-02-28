@@ -82,3 +82,12 @@ class LinksToDiscordIgnoreList(Base):
     __tablename__ = "linkstodiscordignorelist"
     id = Column(Integer(), primary_key=True)
     username = Column(String(128), nullable=False, unique=True)
+
+
+class IgnoreList(Base):
+    """ Table of regex patterns to ignore all commands from."""
+
+    __tablename__ = "ignorelist"
+    id = Column(Integer(), primary_key=True)
+    pattern = Column(String(128), nullable=False, unique=True)
+    enabled = Column(Boolean(), default=True)

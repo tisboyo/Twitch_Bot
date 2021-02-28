@@ -1,6 +1,6 @@
 from helpers.ResistorColourCode import COLOUR_NAMES
 from helpers.ResistorColourCode import ResistorDecoder
-from main import AddOhmsBot
+from main import bot
 from twitchbot import Command
 
 
@@ -8,7 +8,7 @@ from twitchbot import Command
 async def resistor(msg, *colors):
 
     if len(colors) == 0:
-        await msg.reply(f"{AddOhmsBot.msg_prefix}Try: !resistor brown black red gold")
+        await msg.reply(f"{bot.msg_prefix}Try: !resistor brown black red gold")
         return
 
     # Check to make sure all of the colors are in the list of valid colors
@@ -35,4 +35,4 @@ async def resistor(msg, *colors):
     except ValueError as e:
         reply = e
 
-    await msg.reply(f"{AddOhmsBot.msg_prefix}{reply}")
+    await msg.reply(f"{bot.msg_prefix}{reply}")

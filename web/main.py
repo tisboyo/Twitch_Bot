@@ -22,6 +22,7 @@ from routes import send_command
 from routes import send_message
 from routes import topic
 from routes import twitch_webhook_follow
+from routes import ignore
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -42,6 +43,7 @@ app.include_router(poll_display.router)
 app.include_router(dropbox.router)
 app.include_router(topic.router)
 app.include_router(send_command.router)
+app.include_router(ignore.router)
 
 
 @app.on_event("startup")
