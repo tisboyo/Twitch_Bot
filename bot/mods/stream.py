@@ -19,8 +19,12 @@ class StreamMod(Mod):
     async def stream_live(self, msg: Message, *args):
         if args[0] == "true":
             bot.live = True
+            await msg.reply(f"{bot.msg_prefix}Hey @baldengineer, put your razor down! You're live!")
         else:
             bot.live = False
+            await msg.reply(
+                f"{bot.msg_prefix}Thank you for joining the stream! Keep the conversation going: https://bald.ee/discord"
+            )
 
     @SubCommand(stream, "status", permission="admin")
     async def stream_status(self, msg: Message, *args):
