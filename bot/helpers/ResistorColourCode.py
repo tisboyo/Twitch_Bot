@@ -518,6 +518,7 @@ def series_iterator(number_of_digits_min=2, number_of_digits_max=3, tolerance_mi
 ####################################################################################################
 
 #: This list defines the ordered set of colours.
+# Do not add colors, it will break everything and you will spend hours trying to fix it. See Issue #138
 COLOUR_NAMES = (
     "silver",
     "gold",
@@ -529,9 +530,9 @@ COLOUR_NAMES = (
     "green",
     "blue",
     "violet",
-    "purple",
+    #    "purple",
     "grey",
-    "gray",
+    #    "gray",
     "white",
 )
 
