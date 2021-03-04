@@ -16,9 +16,9 @@ async def get_obs_poll(request: Request):
     url = (
         f"{request.base_url}poll-display?"
         f"url={request.base_url.hostname}&"
-        "port=8883&"
+        "port=9883&"
         f"username={mqtt_user}&"
-        f"password={mqtt_pass}&"
+        f"password={mqtt_pass}"
     )
 
     return RedirectResponse(url)
