@@ -1,8 +1,27 @@
+from os import getenv
+
 from fastapi import APIRouter
 from fastapi import Request
 from fastapi.responses import FileResponse
+from starlette.responses import RedirectResponse
 
 router = APIRouter()
+
+
+@router.get("/obs_poll")
+async def get_obs_poll(request: Request):
+    mqtt_user = getenv("MQTT_USER")
+    mqtt_pass = getenv("MQTT_KEY")
+
+    url = (
+        f"{request.base_url}poll-display?"
+        f"url={request.base_url.hostname}&"
+        "port=8883&"
+        f"username={mqtt_user}&"
+        f"password={mqtt_pass}&"
+    )
+
+    return RedirectResponse(url)
 
 
 @router.get("/poll-display", response_class=FileResponse)
@@ -10,6 +29,11 @@ async def get_poll_display(request: Request):
     return FileResponse("static_files/poll-display.html")
 
 
-@router.get("/poll-display.js", response_class=FileResponse)
-async def get_poll_js(request: Request):
-    return FileResponse("static_files/poll-display.js")
+@router.get("/poll.css", response_class=FileResponse)
+async def get_poll_css(request: Request):
+    return FileResponse("static_files/poll.css")
+
+
+@router.get("/mqtt-source.js", response_class=FileResponse)
+async def get_mqtt_source_js(request: Request):
+    return FileResponse("static_files/mqtt-source.js")
