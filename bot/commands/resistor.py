@@ -11,6 +11,18 @@ async def resistor(msg, *colors):
         await msg.reply(f"{bot.msg_prefix}Try: !resistor brown black red gold")
         return
 
+    # Override colors
+    temp_colors = list()
+    for color in colors:
+        if color == "gray":
+            color = "grey"
+        elif color == "purple":
+            color = "violet"
+
+        temp_colors.append(color)
+
+    colors = temp_colors
+
     # Check to make sure all of the colors are in the list of valid colors
     for color in colors:
         if color not in COLOUR_NAMES:

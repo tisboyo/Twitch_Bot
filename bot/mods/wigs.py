@@ -17,8 +17,8 @@ from models import Settings
 from models import Wigs
 
 
-class Wigs_mod(Mod):
-    name = "wigs"
+class WigsMod(Mod):
+    name = "wigsmod"
 
     def __init__(self):
         super().__init__()
@@ -100,6 +100,16 @@ class Wigs_mod(Mod):
                     while runoff_poll.seconds_left > 0:
                         # Sleep while the poll runs
                         await asyncio.sleep(1)
+                        if (  # Auto post pollinfo
+                            int(runoff_poll.seconds_left) % self.seconds_between_poll_reminders == 0
+                            or int(runoff_poll.seconds_left) == 15
+                        ) and int(runoff_poll.seconds_left) != 0:
+                            await channel.send_message(
+                                (
+                                    f"POLL INFO #{poll.id} ~ {poll.title} ~ {poll.formatted_choices()} "
+                                    f"~ {int(poll.seconds_left)} seconds left"
+                                )
+                            )
 
                     results = runoff_poll.votes.most_common()
                     winner = runoff_poll.choices[results[0][0] - 1]
@@ -138,8 +148,9 @@ class Wigs_mod(Mod):
 
     @SubCommand(wig, "reset", permission="admin")
     async def wig_reset(self, msg: Message, *args):
-        self.used_wigs = list()
-        await msg.reply(f"{bot.msg_prefix} Used wigs have been cleared.")
+        if len(self.used_wigs) > 0:
+            self.used_wigs = list()
+            await msg.reply(f"{bot.msg_prefix} Used wigs have been cleared.")
 
     @SubCommand(wig, "poll", permission="admin")
     async def wig_poll(self, msg: Message, *args):

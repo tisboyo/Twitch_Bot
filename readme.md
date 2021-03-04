@@ -240,8 +240,15 @@ Example with curl:
 ### `GET` - Show table of ignored users
 
 # MQTT
-- `dispense-treat-toggle` Sending 1 triggers the treat bot. Bot should reset to 0 when done.
-- `twitch-attn-indi`  Sending 1 triggers the Attention bot. Bot should reset to 0 when done.
-- `channel-raid` Bot sends username of raider
-- `channel-subscription` Bot sends username of subscriber
-- `channel-cheer` Bot sends json of {"username": username, "bits": bits_used, "total_bits": total_bits_used}
+All Stream related MQTT topics are prefixed with `stream/`
+- `treat-in-queue` TwitchBot sends 1 when a treat is in the queue
+- `dispense-treat-toggle` TwitchBot sends 1, TreatBot should listen for 1. TreatBot should reset to 0 when done.
+- `twitch-attn-indi` TwitchBot sends 1, AttentionBot should listen for 1. AttentionBot should reset to 0 when done.
+- `channel-raid` TwitchBot sends username of raider
+- `channel-subscription` TwitchBot sends username of subscriber
+- `channel-cheer` TwitchBot sends json of {"username": username, "bits": bits_used, "total_bits": total_bits_used}
+- `yay-toggle` TwitchBot sends 1, OBSBot should listen for 1 to activate Yay scene.
+- `poll/setup` TwitchBot sends json of poll setup data
+- `poll/data` TwitchBot sends json of poll data
+- `verify1k` TwitchBot sends 1
+- `mqtttest` TwitchBot sends string of args given

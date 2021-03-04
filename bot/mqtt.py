@@ -14,6 +14,7 @@ from models import Settings
 @dataclass
 class MqttTopics:
     _prefix = "stream/"
+    treat_in_queue = _prefix + "treat-in-queue"
     dispense_treat_toggle = _prefix + "dispense-treat-toggle"
     twitch_attention_indicator = _prefix + "twitch-attn-indi"
     channel_raid = _prefix + "channel-raid"

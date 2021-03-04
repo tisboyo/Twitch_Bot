@@ -21,7 +21,7 @@ from routes import poll_display
 from routes import send_command
 from routes import send_message
 from routes import topic
-from routes import twitch_webhook_follow
+from routes import twitch_webhook
 from routes import ignore
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -35,7 +35,7 @@ app.add_middleware(DBSessionMiddleware, db_url=db_url)
 
 # Include the routes
 app.include_router(announcements.router)
-app.include_router(twitch_webhook_follow.router)
+app.include_router(twitch_webhook.router)
 app.include_router(send_message.router)
 app.include_router(docs.router)
 app.include_router(commands.router)
