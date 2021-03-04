@@ -37,3 +37,8 @@ async def get_poll_css(request: Request):
 @router.get("/mqtt-source.js", response_class=FileResponse)
 async def get_mqtt_source_js(request: Request):
     return FileResponse("static_files/mqtt-source.js")
+
+
+@router.get("/mononoki-Regular.woff2", response_class=FileResponse)
+async def get_mononoki(request: Request):
+    return FileResponse("static_files/mononoki-Regular.woff2")
