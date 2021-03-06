@@ -129,6 +129,12 @@
                         let poll = document.getElementById("poll");
                         poll.appendChild(title);
 
+                        let howtovote = document.createElement('div');
+                        howtovote.setAttribute('class', 'footer-div');
+                        howtovote.innerHTML = "Vote with !vote &ltx&gt";
+                        poll.appendChild(howtovote);
+
+
                         for (let i in data.choices) {
                             let container = document.createElement('div');
                             container.setAttribute('class', 'outer-div');
@@ -139,7 +145,8 @@
                             elem.setAttribute('id', 'pollElement-' + i);
                             container.appendChild(elem);
                             let choiceelem = document.createElement('div');
-                            choiceelem.innerHTML = data.choices[i];
+                            let votenum = parseInt(i) + 1
+                            choiceelem.innerHTML = votenum + ") " + data.choices[i];
                             choiceelem.setAttribute('class', 'choice');
                             choiceelem.setAttribute('id', 'choice-' + i);
                             elem.appendChild(choiceelem);
