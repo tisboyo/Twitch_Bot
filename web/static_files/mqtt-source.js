@@ -156,7 +156,14 @@
                             container.appendChild(progress);                         
                         }
 
-                       root.style.setProperty('--fade',1);
+                        let timeremaining = document.createElement('div');
+                        timeremaining.innerHTML = '';
+                        timeremaining.setAttribute('class', 'footer-div');
+                        timeremaining.setAttribute('id', 'timeremaining');
+                        poll.appendChild(timeremaining);
+
+
+                        root.style.setProperty('--fade', 1);
                         break;
                     }
                 case "stream/poll/data":
@@ -182,8 +189,22 @@
                             //TODO Figureout "better looking" scaling. 
                             let vote = document.getElementById('votes-'+(i-1));
                             vote.innerHTML = data.votes[i];
-                            let choiceline = document.getElementById('bar-div-'+(i-1));    
-                            choiceline.style.setProperty('width', Math.round((data.votes[i]/total)*100) + '%');
+                                let choiceline = document.getElementById('bar-div-' + (i - 1));
+                                choiceline.style.setProperty('width', Math.round((data.votes[i] / total) * 100) + '%');
+                            }
+
+                            let timeremaining = document.getElementById('timeremaining');
+                            if (data.seconds_left < 1) {
+                                timeremaining.innerHTML = "Voting Closed."
+                            } else if (data.seconds_left < 10) {
+                                timeremaining.innerHTML = "Closing Vote."
+                            } else if (data.seconds_left < 30) {
+                                timeremaining.innerHTML = "Hurry and Vote!"
+                            } else if (data.seconds_left < 60) {
+                                timeremaining.innerHTML = "Less than a minute remaining";
+                            } else if (data.seconds_left > 60) {
+                                var mins = Math.floor(data.seconds_left / 60) + 1
+                                timeremaining.innerHTML = "Less than " + mins + " minutes remaining";
                         }
 
                     }
