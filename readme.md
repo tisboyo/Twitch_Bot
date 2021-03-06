@@ -42,11 +42,12 @@
     - [`lab` - Sets the location to In the Lab](#lab---sets-the-location-to-in-the-lab)
     - [`office` - Sets the location to In the Office](#office---sets-the-location-to-in-the-office)
   - [`mqtttest` - Tests the connection to MQTT](#mqtttest---tests-the-connection-to-mqtt)
-- [`ignore` - Ignore users based on a pattern](#ignore---ignore-users-based-on-a-pattern)
-  - [`add` - Adds a user to the ignore list](#add---adds-a-user-to-the-ignore-list)
-  - [`del` - Removes a pattern from the ignore list](#del---removes-a-pattern-from-the-ignore-list)
-  - [`enable` - Enable pattern by ID](#enable---enable-pattern-by-id)
-  - [`disable` - Disable pattern by ID](#disable---disable-pattern-by-id)
+  - [`ignore` - Ignore users based on a pattern](#ignore---ignore-users-based-on-a-pattern)
+    - [`add` - Adds a user to the ignore list](#add---adds-a-user-to-the-ignore-list)
+    - [`del` - Removes a pattern from the ignore list](#del---removes-a-pattern-from-the-ignore-list)
+    - [`enable` - Enable pattern by ID](#enable---enable-pattern-by-id)
+    - [`disable` - Disable pattern by ID](#disable---disable-pattern-by-id)
+  - [`clear_poll` - Clears the setup data in MQTT for the poll display.](#clear_poll---clears-the-setup-data-in-mqtt-for-the-poll-display)
 - [Web](#web)
   - [`/send_command`](#send_command)
     - [`POST` - Send a command to the bot](#post---send-a-command-to-the-bot)
@@ -192,21 +193,24 @@ Permission: Admin
 
 Sends the arguments as the value to `stream/mqtttest` topic.
 
-# `ignore` - Ignore users based on a pattern
-## `add` - Adds a user to the ignore list
+## `ignore` - Ignore users based on a pattern
+### `add` - Adds a user to the ignore list
 Permission: Admin
 
 Parameters: Regex pattern for desired username to be ignored.
 
-## `del` - Removes a pattern from the ignore list
+### `del` - Removes a pattern from the ignore list
 Permission: Admin
 
 Paramaters: ID of pattern to remove.
 
-## `enable` - Enable pattern by ID
+### `enable` - Enable pattern by ID
 Permission: Admin
 
-## `disable` - Disable pattern by ID
+### `disable` - Disable pattern by ID
+Permission: Admin
+
+## `clear_poll` - Clears the setup data in MQTT for the poll display.
 Permission: Admin
 
 # Web
