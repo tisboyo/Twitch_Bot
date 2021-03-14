@@ -41,6 +41,10 @@ class UserMessageCount(Mod):
         if not rows_affected:
             user_object = Users(user_id=user_id, channel=server_id, user=msg.author, message_count=1)
             session.add(user_object)
+
+            # Added for #155
+            # If we have had a raid in the last 60 seconds, don't send anything for the new users,
+            # even thought they got inserted into the database.
             if (self.last_raid + timedelta(seconds=60)) < datetime.now():
                 await bot.MQTT.send(new_chatter_topic, dumps({"author": msg.author, "timestamp": str(datetime.now())}))
                 print(f"New user {msg.author} sent to MQTT.")
