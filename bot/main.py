@@ -28,6 +28,7 @@ class AddOhmsBot(BaseBot):
     ATTN_ENABLE = True
     live = False
     location = "Lab"
+    treats_enabled = True
 
     def __init__(self):
         super().__init__()

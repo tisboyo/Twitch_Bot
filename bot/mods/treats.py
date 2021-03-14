@@ -24,7 +24,7 @@ class Treats(Mod):
         )
         self.reminder_enable = True
         self.ready_for_trigger = True
-        self.last_lab_check = datetime.datetime.min
+        self.treat_disabled_check = datetime.datetime.min
 
     async def on_raw_message(self, msg: Message):
         # If the message is a system message, we're done here
@@ -33,12 +33,11 @@ class Treats(Mod):
 
         emoji_count = msg.content.count(trigger_emoji)
         if emoji_count > 0:
-            if bot.location != "Lab":
-                # If we aren't in the Lab and we haven't said something in the last 5 minutes, let the user know
-                if (self.last_lab_check + datetime.timedelta(minutes=5)) < datetime.datetime.now():
-                    await msg.reply(f"{bot.msg_prefix} Sorry, no treats today. We are in the {bot.location}.")
-                    self.last_lab_check = datetime.datetime.now()
-                    print(self.last_lab_check)
+            if not bot.treats_enabled:
+                # If treatbot is disabled and we haven't said something in the last 5 minutes, let the user know
+                if (self.treat_disabled_check + datetime.timedelta(minutes=5)) < datetime.datetime.now():
+                    await msg.reply(f"{bot.msg_prefix} Sorry, no treats today.")
+                    self.treat_disabled_check = datetime.datetime.now()
 
             elif self.points.check(msg, emojis=emoji_count):
                 await self.send_treat(msg)
@@ -47,7 +46,7 @@ class Treats(Mod):
                 status = self.points.status()
 
                 if status.emojis_required >= status.emojis and self.reminder_enable:
-                    await msg.reply(f"{bot.msg_prefix}{self.build_required_message(status)}")
+                    await msg.reply(self.build_required_message(status))
                     self.reminder_enable = False
                 elif status.emojis >= status.emojis_required:
                     await self.send_treat_in_queue(msg)
@@ -83,6 +82,16 @@ class Treats(Mod):
             await msg.reply(
                 f"{bot.msg_prefix} NEW! Send balden3TreatMe to trigger the Treat Bot!"
             )  # TODO #136 Change phrasing eventually
+
+    @SubCommand(push_treat, "enable", permission="admin")
+    async def treatbot_enable(self, msg, *args):
+        bot.treats_enabled = True
+        await msg.reply(f"{bot.msg_prefix} Treats are enabled. balden3Yay balden3Yay balden3TreatMe balden3TreatMe")
+
+    @SubCommand(push_treat, "disable", permission="admin")
+    async def treatbot_disable(self, msg, *args):
+        bot.treats_enabled = False
+        await msg.reply(f"{bot.msg_prefix} Treats are disabled. 😔")
 
     @SubCommand(push_treat, "cooldown", permission="admin")
     async def treatme_cooldown(self, msg, *args):
