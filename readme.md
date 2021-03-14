@@ -24,6 +24,7 @@
   - [`!disable_attn` - Disable Attention](#disable_attn---disable-attention)
   - [`!ignorelinks` - Ignore links from a user to be sent to discord](#ignorelinks---ignore-links-from-a-user-to-be-sent-to-discord)
   - [`!treatme` - Sends a Treat](#treatme---sends-a-treat)
+  - [`!treatmenow` - Force sends a treat](#treatmenow---force-sends-a-treat)
   - [`!topic` - Chat Topic](#topic---chat-topic)
     - [`set` - Sets a topic](#set---sets-a-topic)
   - [`wig` - Base command](#wig---base-command)
@@ -125,8 +126,15 @@ Disables sending the MQTT publish to twitch-attn-indi
 Permission: Admin
 Send username to ignore links from as the parameter
 ## `!treatme` - Sends a Treat
-Permission: Everyone
-Sends a MQTT publish of 1 to dispense-treat-toggle
+Permission: Everyone / Admin
+Sends a MQTT publish of 1 to dispense-treat-toggle if an Admin user and emoji requirements have been met.
+Sends a message to the channel reminding users to use the ![balden3TreatMe](https://static-cdn.jtvnw.net/emoticons/v1/305895623/1.0) emoji
+
+## `!treatmenow` - Force sends a treat
+Permission: Admin
+Immediately sends a treat, for testing purposes
+
+
 ## `!topic` - Chat Topic
 Permission: Everyone
 Posts to chat the currently set topic

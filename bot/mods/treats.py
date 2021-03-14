@@ -57,6 +57,11 @@ class Treats(Mod):
             self.reminder_enable = True  # Allow the reminder to be sent again
             return
 
+    @ModCommand(name, "treatmenow", permission="admin")
+    async def treatme_now(self, msg: Message, *args):
+        print("Force sending a treat.")
+        await self.send_treat(msg)
+
     @ModCommand(name, "treatme")
     async def push_treat(self, msg: Message, *args):
         if perms.has_permission(msg.channel.name, str(msg.author), "admin"):
