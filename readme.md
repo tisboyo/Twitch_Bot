@@ -24,6 +24,8 @@
   - [`!disable_attn` - Disable Attention](#disable_attn---disable-attention)
   - [`!ignorelinks` - Ignore links from a user to be sent to discord](#ignorelinks---ignore-links-from-a-user-to-be-sent-to-discord)
   - [`!treatme` - Sends a Treat](#treatme---sends-a-treat)
+    - [`enable` - Enables the treatbot](#enable---enables-the-treatbot)
+    - [`disable` - Disables the treatbot](#disable---disables-the-treatbot)
   - [`!treatmenow` - Force sends a treat](#treatmenow---force-sends-a-treat)
   - [`!topic` - Chat Topic](#topic---chat-topic)
     - [`set` - Sets a topic](#set---sets-a-topic)
@@ -130,6 +132,13 @@ Permission: Everyone / Admin
 Sends a MQTT publish of 1 to dispense-treat-toggle if an Admin user and emoji requirements have been met.
 Sends a message to the channel reminding users to use the ![balden3TreatMe](https://static-cdn.jtvnw.net/emoticons/v1/305895623/1.0) emoji
 
+### `enable` - Enables the treatbot
+Permission: Admin
+Note: Does not survive bot restart.
+
+### `disable` - Disables the treatbot
+Permission: Admin
+Note: Does not survive bot restart.
 ## `!treatmenow` - Force sends a treat
 Permission: Admin
 Immediately sends a treat, for testing purposes

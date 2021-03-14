@@ -83,6 +83,16 @@ class Treats(Mod):
                 f"{bot.msg_prefix} NEW! Send balden3TreatMe to trigger the Treat Bot!"
             )  # TODO #136 Change phrasing eventually
 
+    @SubCommand(push_treat, "enable", permission="admin")
+    async def treatbot_enable(self, msg, *args):
+        bot.treats_enabled = True
+        await msg.reply(f"{bot.msg_prefix} Treats are enabled. balden3Yay balden3Yay balden3TreatMe balden3TreatMe")
+
+    @SubCommand(push_treat, "disable", permission="admin")
+    async def treatbot_disable(self, msg, *args):
+        bot.treats_enabled = False
+        await msg.reply(f"{bot.msg_prefix} Treats are disabled. 😔")
+
     @SubCommand(push_treat, "cooldown", permission="admin")
     async def treatme_cooldown(self, msg, *args):
         try:
