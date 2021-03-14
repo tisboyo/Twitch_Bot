@@ -106,8 +106,8 @@ class WigsMod(Mod):
                         ) and int(runoff_poll.seconds_left) != 0:
                             await channel.send_message(
                                 (
-                                    f"POLL INFO #{poll.id} ~ {poll.title} ~ {poll.formatted_choices()} "
-                                    f"~ {int(poll.seconds_left)} seconds left"
+                                    f"POLL INFO #{runoff_poll.id} ~ {runoff_poll.title} ~ {runoff_poll.formatted_choices()} "
+                                    f"~ {int(runoff_poll.seconds_left)} seconds left"
                                 )
                             )
 
