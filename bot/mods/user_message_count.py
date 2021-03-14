@@ -1,9 +1,16 @@
 from datetime import datetime
+from datetime import timedelta
+from json import dumps
 
-from models import Users
+from main import bot
 from mods._database import session
+from mqtt import MqttTopics
 from twitchbot import Message
 from twitchbot import Mod
+
+from models import Users
+
+new_chatter_topic = MqttTopics.new_chatter
 
 
 class UserMessageCount(Mod):
@@ -12,6 +19,7 @@ class UserMessageCount(Mod):
     def __init__(self) -> None:
         super().__init__()
         print("UserMessageCount loaded")
+        self.last_raid = datetime.min
 
     async def on_raw_message(self, msg: Message) -> None:
         """Increment the user message counter"""
@@ -33,5 +41,8 @@ class UserMessageCount(Mod):
         if not rows_affected:
             user_object = Users(user_id=user_id, channel=server_id, user=msg.author, message_count=1)
             session.add(user_object)
+            if (self.last_raid + timedelta(seconds=60)) < datetime.now():
+                await bot.MQTT.send(new_chatter_topic, dumps({"author": msg.author, "timestamp": str(datetime.now())}))
+                print(f"New user {msg.author} sent to MQTT.")
 
         session.commit()
