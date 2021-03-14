@@ -46,7 +46,8 @@ class UserMessageCount(Mod):
             # If we have had a raid in the last 60 seconds, don't send anything for the new users,
             # even thought they got inserted into the database.
             if (self.last_raid + timedelta(seconds=60)) < datetime.now():
-                await bot.MQTT.send(new_chatter_topic, dumps({"author": msg.author, "timestamp": str(datetime.now())}))
-                print(f"New user {msg.author} sent to MQTT.")
+                if not bot.user_ignored(msg.author):
+                    await bot.MQTT.send(new_chatter_topic, dumps({"author": msg.author, "timestamp": str(datetime.now())}))
+                    print(f"New user {msg.author} sent to MQTT.")
 
         session.commit()
