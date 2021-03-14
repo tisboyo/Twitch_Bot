@@ -19,7 +19,9 @@ class StreamMod(Mod):
     async def stream_live(self, msg: Message, *args):
         if args[0] == "true":
             bot.live = True
-            await msg.reply(f"{bot.msg_prefix}Hey @baldengineer, put your razor down! You're live!")
+            await msg.reply(
+                f"{bot.msg_prefix}Hey @baldengineer, put your razor down and get to your {bot.location}! You're live!"
+            )
         else:
             bot.live = False
             await msg.reply(
