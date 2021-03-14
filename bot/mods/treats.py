@@ -47,7 +47,7 @@ class Treats(Mod):
                 status = self.points.status()
 
                 if status.emojis_required >= status.emojis and self.reminder_enable:
-                    await msg.reply(f"{bot.msg_prefix}{self.build_required_message(status)}")
+                    await msg.reply(self.build_required_message(status))
                     self.reminder_enable = False
                 elif status.emojis >= status.emojis_required:
                     await self.send_treat_in_queue(msg)
