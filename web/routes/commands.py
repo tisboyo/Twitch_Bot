@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.get("/commands", response_class=HTMLResponse)
-def get_commands(request: Request):
+async def get_commands(request: Request):
     try:
         result = db.session.query(CustomCommand).order_by(CustomCommand.id).all()
 

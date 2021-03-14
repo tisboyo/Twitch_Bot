@@ -106,7 +106,7 @@ class MQTT:
 
         session.commit()
 
-    async def send(self, feed, value: Union[str, int] = 1):
+    async def send(self, feed, value: Union[str, int] = 1, retain: bool = False):
         """Send to an MQTT topic"""
         last_sent = self.last_sent_time.get(feed, datetime.min)
         cooldown = self.get_cooldown(feed)
@@ -125,7 +125,7 @@ class MQTT:
                 return False
 
         try:
-            self.__client.publish(feed, value)
+            self.__client.publish(feed, value, retain=retain)
             self.last_sent_time[feed] = now
             return True
         except Exception as e:

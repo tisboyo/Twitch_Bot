@@ -3,6 +3,9 @@ import json
 
 from main import bot
 from twitchbot.channel import Channel
+from twitchbot.command import ModCommand
+from twitchbot.enums import CommandContext
+from twitchbot.message import Message
 from twitchbot.modloader import Mod
 from twitchbot.poll.polldata import PollData
 
@@ -41,7 +44,7 @@ class PollsToMQTT(Mod):
 
         # Send the setup data to MQTT
         setup_json = self.get_poll_setup(poll)
-        await self.mqtt.send(self.mqtt.Topics.poll_setup, setup_json)
+        await self.mqtt.send(self.mqtt.Topics.poll_setup, setup_json, retain=True)
 
         # While the poll is running, send continuous updates
         while not poll.done:
@@ -60,4 +63,9 @@ class PollsToMQTT(Mod):
 
         # Send the setup data to MQTT
         setup_json = self.get_poll_setup(poll, active=False)
-        await self.mqtt.send(self.mqtt.Topics.poll_setup, setup_json)
+        await self.mqtt.send(self.mqtt.Topics.poll_setup, setup_json, retain=True)
+
+    @ModCommand(name, "clear_poll", context=CommandContext.BOTH, permission="admin")
+    async def clear_poll(self, msg: Message):
+        active = json.dumps({"active": False})
+        await self.mqtt.send(self.mqtt.Topics.poll_setup, active, retain=True)
