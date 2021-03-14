@@ -7,21 +7,21 @@ from starlette.responses import RedirectResponse
 
 router = APIRouter()
 
+# TODO: Disabled until authorization is setup
+# @router.get("/obs_poll")
+# async def get_obs_poll(request: Request):
+#     mqtt_user = getenv("MQTT_USER")
+#     mqtt_pass = getenv("MQTT_KEY")
 
-@router.get("/obs_poll")
-async def get_obs_poll(request: Request):
-    mqtt_user = getenv("MQTT_USER")
-    mqtt_pass = getenv("MQTT_KEY")
+#     url = (
+#         f"{request.base_url}poll-display?"
+#         f"url={request.base_url.hostname}&"
+#         "port=9883&"
+#         f"username={mqtt_user}&"
+#         f"password={mqtt_pass}"
+#     )
 
-    url = (
-        f"{request.base_url}poll-display?"
-        f"url={request.base_url.hostname}&"
-        "port=9883&"
-        f"username={mqtt_user}&"
-        f"password={mqtt_pass}"
-    )
-
-    return RedirectResponse(url)
+#     return RedirectResponse(url)
 
 
 @router.get("/poll-display", response_class=FileResponse)
