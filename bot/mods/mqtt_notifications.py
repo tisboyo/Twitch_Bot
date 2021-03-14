@@ -36,7 +36,7 @@ class MqttNotifications(Mod):
     async def on_channel_subscription(self, subscriber: str, channel: Channel, msg: Message) -> None:
         """Send MQTT push when a new follower subscribes"""
         # TODO How many months? Is this data accessible
-        if await bot.MQTT.send(bot.MQTT.Topics.channel_raid):
+        if await bot.MQTT.send(bot.MQTT.Topics.channel_sub):
             print(f"Publishing {subscriber} has Subscribed to the channel to MQTT")
         else:
             print(f"Unable to publish {subscriber} has subsbribed to the channel to MQTT")
