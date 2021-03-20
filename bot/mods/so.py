@@ -15,7 +15,7 @@ class ShoutoutMod(Mod):
         super().__init__()
         self.last_raid = None
 
-    @ModCommand(name, "so", permission="admin")
+    @ModCommand(name, "so", permission="so")
     async def shoutout(self, msg: Message, *args):
         if len(args) == 0:
             # Shotout to last raided user

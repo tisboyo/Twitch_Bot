@@ -233,7 +233,7 @@ Permission: Admin
 Permission: Admin
 
 ## `so` - Shoutouts
-Permission: Admin
+Permission: Admin, Groups with the "so" permission.
 Paramaters: Username to shoutout to
 Responds with the shoutout message for the username specified, or with the last raided user.
 
