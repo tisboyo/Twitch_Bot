@@ -10,7 +10,7 @@ from twitchbot import Mod
 
 from models import Users
 
-new_chatter_topic = MqttTopics.new_chatter
+first_time_chatter_topic = MqttTopics.first_time_chatter
 
 
 class UserMessageCount(Mod):
@@ -47,7 +47,9 @@ class UserMessageCount(Mod):
             # even thought they got inserted into the database.
             if (self.last_raid + timedelta(seconds=60)) < datetime.now():
                 if not bot.user_ignored(msg.author):
-                    await bot.MQTT.send(new_chatter_topic, dumps({"author": msg.author, "timestamp": str(datetime.now())}))
+                    await bot.MQTT.send(
+                        first_time_chatter_topic, dumps({"author": msg.author, "timestamp": str(datetime.now())})
+                    )
                     print(f"New user {msg.author} sent to MQTT.")
 
         session.commit()

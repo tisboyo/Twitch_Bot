@@ -25,7 +25,7 @@ class MqttTopics:
     poll_data = _prefix + "poll/data"
     verify_1k = _prefix + "verify1k"
     test = _prefix + "mqtttest"
-    new_chatter = _prefix + "new_chatter"
+    first_time_chatter = _prefix + "first_time_chatter"
 
 
 class MQTT:
