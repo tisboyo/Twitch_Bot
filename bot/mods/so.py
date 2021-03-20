@@ -47,4 +47,11 @@ class ShoutoutMod(Mod):
         for word in args:
             message += f"{word} "
 
-        print(message)
+        successful = session.query(Settings.value).filter(Settings.key == "shoutout_msg").update({"value": message})
+        if not successful:
+            insert = Settings(key="shoutout_msg", value=message)
+            session.add(insert)
+
+        session.commit()
+
+        await msg.reply(f"{bot.msg_prefix} Message updated.")
