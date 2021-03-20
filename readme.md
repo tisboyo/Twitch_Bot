@@ -51,6 +51,8 @@
     - [`enable` - Enable pattern by ID](#enable---enable-pattern-by-id)
     - [`disable` - Disable pattern by ID](#disable---disable-pattern-by-id)
   - [`clear_poll` - Clears the setup data in MQTT for the poll display.](#clear_poll---clears-the-setup-data-in-mqtt-for-the-poll-display)
+  - [`so` - Shoutouts](#so---shoutouts)
+    - [`msg` - Set the shoutout message](#msg---set-the-shoutout-message)
 - [Web](#web)
   - [`/send_command`](#send_command)
     - [`POST` - Send a command to the bot](#post---send-a-command-to-the-bot)
@@ -229,6 +231,18 @@ Permission: Admin
 
 ## `clear_poll` - Clears the setup data in MQTT for the poll display.
 Permission: Admin
+
+## `so` - Shoutouts
+Permission: Admin, Groups with the "so" permission.
+Paramaters: Username to shoutout to
+Responds with the shoutout message for the username specified, or with the last raided user.
+
+### `msg` - Set the shoutout message
+Permission: Admin
+Parameters: Message
+Adding `{channel}` to the message will be replaced by the username being highlighted.
+
+
 
 # Web
 ## `/send_command`
