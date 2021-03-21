@@ -6,6 +6,7 @@ from main import bot
 from mqtt import MqttTopics
 from twitchbot import Message
 from twitchbot import Mod
+from twitchbot.channel import Channel
 
 
 new_chatter_topic = MqttTopics.new_chatter
@@ -20,7 +21,7 @@ class NewChatter(Mod):
         print("newchatter loaded")
         self.seen_users = set()
 
-    async def on_connected(self):
+    async def on_channel_joined(self, channel: Channel):
         # This will reset the seen users once the stream goes offline
         while True:
             if not bot.live:
