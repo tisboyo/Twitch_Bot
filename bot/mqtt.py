@@ -26,6 +26,7 @@ class MqttTopics:
     verify_1k = _prefix + "verify1k"
     test = _prefix + "mqtttest"
     first_time_chatter = _prefix + "first_time_chatter"
+    new_chatter = _prefix + "new_chatter"
 
 
 class MQTT:
