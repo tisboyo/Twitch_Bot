@@ -287,4 +287,5 @@ All Stream related MQTT topics are prefixed with `stream/`
 - `poll/data` TwitchBot sends json of poll data
 - `verify1k` TwitchBot sends 1
 - `mqtttest` TwitchBot sends string of args given
-- `new_chatter` TwitchBot sends json `{"author":"author name", "timestamp"=str(datetime.now())}` when a new chatter is seen.
+- `first_time_chatter` TwitchBot sends json `{"author":"author name", "timestamp"=str(datetime.now())}` when a new chatter is seen ever.
+- `new_chatter_topic` TwitchBot sends json `{"author":"author name", "timestamp"=str(datetime.now())}` when a new chatter is seen for the first time this stream.
