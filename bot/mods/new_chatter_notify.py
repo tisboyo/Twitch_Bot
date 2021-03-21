@@ -39,7 +39,7 @@ class NewChatter(Mod):
         if msg.author not in self.seen_users:
             if not bot.user_ignored(msg.author):
                 await bot.MQTT.send(new_chatter_topic, dumps({"author": msg.author, "timestamp": str(datetime.now())}))
-                print(f"New user {msg.author} sent to MQTT.")
+                print(f"New chatter {msg.author} sent to MQTT.")
 
                 # Track that we've seen the user
                 self.seen_users.add(msg.author)
