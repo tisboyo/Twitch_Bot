@@ -6,7 +6,7 @@ from mods._database import session
 from models import Trivia
 
 
-with open("trivia/questions.txt") as file:
+with open("questions.txt") as file:
     questions = json.loads(file.read())
     questions = questions["quiz"]
 
@@ -34,3 +34,5 @@ for key, values in questions.items():
 
     elif query_result.text != values["text"]:
         print(f"Question #{key} question text does not match database.")
+
+print("Trivia update complete...")
