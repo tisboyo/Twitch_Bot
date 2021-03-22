@@ -177,3 +177,5 @@ mosquitto/data/persist
 mosquitto/log/mosquitto.log
 web/configs/*.json
 bot/mods/test.py
+
+questions.txt

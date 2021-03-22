@@ -13,6 +13,7 @@ services:
       - ./bot/jsons:/workspace/bot/jsons/
       - ./models.py:/workspace/bot/models.py
       - ./mysql/db_backup:/db_backup
+      - ./questions.txt:/workspace/bot/questions.txt
       # - ./bot:/workspace/bot/
     environment:
       client_id: ${TWITCH_CLIENT_ID} #Lower cased because a framework issue

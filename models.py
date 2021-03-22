@@ -92,3 +92,18 @@ class IgnoreList(Base):
     id = Column(Integer(), primary_key=True)
     pattern = Column(String(128), nullable=False, unique=True)
     enabled = Column(Boolean(), default=True)
+
+
+class TriviaQuestions(Base):
+    """Table for Trivia"""
+
+    __tablename__ = "trivia_questions"
+    id = Column(Integer(), primary_key=True)
+    text = Column(String(1024), nullable=False)
+    answers = Column(String(2048), nullable=False, default={})
+    explain = Column(String(1024))
+    last_used_date = Column(DateTime(), default=datetime.now)
+    last_update_date = Column(DateTime(), default=datetime.now)
+    created_date = Column(DateTime(), default=datetime.now)
+    created_by = Column(String(128))
+    reference = Column(String(1024))
