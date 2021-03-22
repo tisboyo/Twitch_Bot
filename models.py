@@ -103,6 +103,7 @@ class Trivia(Base):
     answers = Column(String(2048), nullable=False, default={})
     explain = Column(String(1024))
     last_used_date = Column(DateTime(), default=datetime.now)
+    last_update_date = Column(DateTime(), default=datetime.now)
     created_date = Column(DateTime(), default=datetime.now)
     created_by = Column(String(128))
     reference = Column(String(1024))
