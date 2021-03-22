@@ -5,7 +5,7 @@ from typing import Union
 
 from mods._database import session
 
-from models import Trivia
+from models import TriviaQuestions
 
 
 with open("questions.txt") as file:
@@ -33,11 +33,11 @@ for id_num, values in questions.items():
         continue
 
     # Read the current database for this id
-    query_result: Union[Trivia, None] = session.query(Trivia).filter_by(id=int(id_num)).one_or_none()
+    query_result: Union[TriviaQuestions, None] = session.query(TriviaQuestions).filter_by(id=int(id_num)).one_or_none()
 
     if query_result is None:
         # Insert the question into the database
-        insert = Trivia(id=int(id_num), **question_data)
+        insert = TriviaQuestions(id=int(id_num), **question_data)
         session.add(insert)
         session.commit()
         print(f"Trivia question #{id_num} inserted.")
@@ -58,7 +58,7 @@ for id_num, values in questions.items():
             or query_result.reference != question_data["reference"]
             or query_result.explain != question_data["explain"]
         ):
-            results = session.query(Trivia).filter_by(id=id_num).update(question_data)
+            results = session.query(TriviaQuestions).filter_by(id=id_num).update(question_data)
             session.commit()
             print(f"Question #{id_num} updated.")
 

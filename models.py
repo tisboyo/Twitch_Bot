@@ -94,10 +94,10 @@ class IgnoreList(Base):
     enabled = Column(Boolean(), default=True)
 
 
-class Trivia(Base):
+class TriviaQuestions(Base):
     """Table for Trivia"""
 
-    __tablename__ = "trivia"
+    __tablename__ = "trivia_questions"
     id = Column(Integer(), primary_key=True)
     text = Column(String(1024), nullable=False)
     answers = Column(String(2048), nullable=False, default={})
