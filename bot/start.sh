@@ -4,7 +4,7 @@ python alembic_update.py
 
 #Added in #151
 echo "Updating Trivia..."
-python import_trivia.py
+python trivia_import.py
 
 echo "Starting Bot..."
 python main.py
