@@ -1,24 +1,17 @@
-from alembic import config as alembic_config
-
-# Update database models
-alembicArgs = ["--raiseerr", "upgrade", "head"]
-alembic_config.main(argv=alembicArgs)
-
 import asyncio
-import requests
-from os import _exit
 import re
-
-import version_check  # noqa: F401
-
 from json import loads
+from os import _exit
+
+import requests
+import version_check  # noqa: F401
+from mods._database import session
 from mqtt import MQTT
 from twitchbot.bots import BaseBot
+from twitchbot.config import cfg
 from twitchbot.config import get_client_id
 from twitchbot.config import get_oauth
-from twitchbot.config import cfg
 
-from mods._database import session
 from models import IgnoreList
 
 
