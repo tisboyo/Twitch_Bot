@@ -28,7 +28,11 @@
 		"ms-azuretools.vscode-docker",
 		"github.vscode-pull-request-github",
 		"njpwerner.autodocstring",
-		"yzhang.markdown-all-in-one"
+		"yzhang.markdown-all-in-one",
+		"codezombiech.gitignore",
+		"ms-vsliveshare.vsliveshare",
+		"gruntfuggly.todo-tree",
+		"coenraads.bracket-pair-colorizer-2"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
