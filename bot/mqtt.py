@@ -17,6 +17,7 @@ class MqttTopics:
     treat_in_queue = _prefix + "treat-in-queue"
     dispense_treat_toggle = _prefix + "dispense-treat-toggle"
     twitch_attention_indicator = _prefix + "twitch-attn-indi"
+    treat_status = _prefix + "treat_status"
     channel_raid = _prefix + "channel-raid"
     channel_sub = _prefix + "channel-subscription"
     channel_cheer = _prefix + "channel-cheer"
