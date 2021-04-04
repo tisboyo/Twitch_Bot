@@ -12,6 +12,9 @@ uri = "ws://bot:13337"
 async def send_command_to_bot(cmd, args: list):
 
     try:
+        # The command console doesn't like when integers are sent, so convert everything to a string
+        clean_args = [str(x) for x in args]
+
         async with websockets.connect(uri) as s:
             # We don't actually need this, but we have to read it before the bot will accept commands
             await s.recv()
@@ -23,7 +26,7 @@ async def send_command_to_bot(cmd, args: list):
                 type="run_command",
                 command=cmd,
                 channel=getenv("TWITCH_CHANNEL"),
-                args=args,
+                args=clean_args,
             )
 
             await s.send((json.dumps(msg) + "\n").encode("utf8"))
