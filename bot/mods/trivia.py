@@ -1,18 +1,12 @@
 # Added for #152
 from asyncio import sleep
 
-from main import bot
 from mods._database import session
-from twitchbot import cfg
-from twitchbot import Channel
-from twitchbot import channels
-from twitchbot import CommandContext
 from twitchbot import Mod
 from twitchbot import ModCommand
 from twitchbot import SubCommand
 from twitchbot.message import Message
 
-from models import Settings
 from models import TriviaQuestions
 
 
