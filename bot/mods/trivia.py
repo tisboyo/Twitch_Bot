@@ -1,5 +1,6 @@
 # Added for #152
 from asyncio import sleep
+from string import ascii_uppercase
 
 from mods._database import session
 from twitchbot import Mod
@@ -38,14 +39,16 @@ class TriviaMod(Mod):
 
         result = session.query(TriviaQuestions).filter_by(id=self.current_question).one_or_none()
 
+        answer_text = ascii_uppercase[answer_num - 1]
         if result is not None:
+            await sleep(10)  # Sleep early to let the watchers catch up to the stream
             await msg.reply(f"{self.msg_prefix}{result.text}")
             await sleep(10)
             await msg.reply(f"{self.msg_prefix}15 seconds remaining")
             await sleep(10)
             await msg.reply(f"{self.msg_prefix}Final answers...")
             await sleep(5)
-            await msg.reply(f"{self.msg_prefix}Answer: A")
+            await msg.reply(f"{self.msg_prefix}Answer: {answer_text}")
 
             self.reset_question()
 
