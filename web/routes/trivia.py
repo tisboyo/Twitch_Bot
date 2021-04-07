@@ -12,3 +12,8 @@ async def trivia(question: int = -1, answer: int = -1):
 
     ret = await send_command_to_bot("trivia", ["q", question, answer])
     return Response(status_code=ret.status_code)
+
+
+@router.post("/endtrivia")
+async def end_trivia():
+    print("end trivia")
