@@ -19,6 +19,8 @@ class TriviaMod(Mod):
         super().__init__()
         self.reset_question()
         self.msg_prefix: str = "❔"
+        # Create session for participant tracking
+        self.session = dict()
 
     def reset_question(self):
         self.current_question: int = -1
@@ -68,12 +70,36 @@ class TriviaMod(Mod):
             await sleep(10)
             await msg.reply(f"{self.msg_prefix}Final answers...")
             await sleep(5)
-            await msg.reply(f"{self.msg_prefix}Answer: {self.answer_text.upper()}")
+            # await msg.reply(f"{self.msg_prefix}Answer: {self.answer_text.upper()}")
+            correctly_answered = list()
+            for participant in self.session:
+                if self.session[participant]["q"].get(self.current_question, False):
+                    correctly_answered.append(participant)
+
+            if len(correctly_answered) > 0:
+                correctly_answered = ", ".join(correctly_answered)
+                await msg.reply(f"{self.msg_prefix} Congrats to {correctly_answered} for the correct answer.")
 
             self.reset_question()
 
     @SubCommand(trivia, "end")
     async def trivia_end(self, msg: Message):
+
+        most_correct = 0
+        leaderboard = str()
+        for participant in self.session:
+            if self.session[participant]["correct"] > most_correct:
+                leaderboard = participant
+                most_correct = self.session[participant]["correct"]
+
+            elif self.session[participant]["correct"] == most_correct:
+                # Tie between multiple participants
+                leaderboard += f", {participant}"
+
+        await msg.reply(f"{self.msg_prefix} Congrats to {leaderboard} for the most correct answers with {most_correct}")
+        # Clear the session data
+        self.session = dict()
+
         await msg.reply(f"{bot.msg_prefix} Thanks for playing BaldEngineer Trivia!")
 
     async def on_raw_message(self, msg: Message):
@@ -84,5 +110,20 @@ class TriviaMod(Mod):
             normalized = msg.normalized_parts
             if len(normalized) == 1 and len(normalized[0]) == 1 and normalized[0] in ascii_lowercase:
                 answer = normalized[0]
-                if answer == self.answer_text:
-                    await msg.reply("Correct!")
+
+                # Create user dictionary if this is their first answer.
+                author = msg.author
+                if not self.session.get(author, False):
+                    self.session[author] = dict()
+                    self.session[author]["correct"] = 0
+                    self.session[author]["incorrect"] = 0
+                    self.session[author]["q"] = dict()
+
+                # Check if user has already provided an answer, only first answer accepted
+                if not self.session[author].get(self.current_question, False):
+                    if answer == self.answer_text:  # Correct answer
+                        self.session[author]["q"][self.current_question] = True
+                        self.session[author]["correct"] += 1
+                    else:  # Incorrect
+                        self.session[author]["q"][self.current_question] = False
+                        self.session[author]["incorrect"] += 1
