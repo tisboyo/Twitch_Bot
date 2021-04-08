@@ -22,6 +22,7 @@ class AddOhmsBot(BaseBot):
     live = False
     location = "Lab"
     treats_enabled = True
+    poll_display_active = False
 
     def __init__(self):
         super().__init__()
