@@ -21,6 +21,7 @@ class TriviaMod(Mod):
         self.msg_prefix: str = "❔"
         # Create session for participant tracking
         self.session = dict()
+        self.score_board = dict()
 
     def reset_question(self):
         self.current_question: int = -1
@@ -37,7 +38,7 @@ class TriviaMod(Mod):
     # This command will almost always be sent by the webserver,
     # setting the CommandContext to Whisper will allow it in whispers
     # only, but when sent over the command console, context is ignored.
-    @SubCommand(trivia, "q")  # , context=CommandContext.WHISPER) #TODO
+    @SubCommand(trivia, "q", permission="bot")  # , context=CommandContext.WHISPER) #TODO
     async def trivia_q(self, msg: Message, question_num: int, answer_num: int):
         question_num, answer_num = int(question_num), int(answer_num)  # Framework only passes strings, convert it.
 
@@ -82,7 +83,13 @@ class TriviaMod(Mod):
 
             self.reset_question()
 
-    @SubCommand(trivia, "end")
+    @SubCommand(trivia, "winner", permission="admin")
+    async def trivia_winner(self, msg: Message):
+        winners = self.score_board["winners"]
+        most_correct = self.score_board["most_correct"]
+        await msg.reply(f"{self.msg_prefix} Congrats to {winners} for the most correct answers with {most_correct}")
+
+    @SubCommand(trivia, "end", permission="bot")
     async def trivia_end(self, msg: Message):
 
         most_correct = 0
@@ -96,7 +103,9 @@ class TriviaMod(Mod):
                 # Tie between multiple participants
                 leaderboard += f", {participant}"
 
-        await msg.reply(f"{self.msg_prefix} Congrats to {leaderboard} for the most correct answers with {most_correct}")
+        self.score_board["winners"] = leaderboard
+        self.score_board["most_correct"] = most_correct
+
         # Clear the session data
         self.session = dict()
 

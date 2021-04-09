@@ -53,6 +53,8 @@
   - [`clear_poll` - Clears the setup data in MQTT for the poll display.](#clear_poll---clears-the-setup-data-in-mqtt-for-the-poll-display)
   - [`so` - Shoutouts](#so---shoutouts)
     - [`msg` - Set the shoutout message](#msg---set-the-shoutout-message)
+  - [`trivia` - Trivia base command](#trivia---trivia-base-command)
+    - [`winner` - Announce the winner of the most recent trivia](#winner---announce-the-winner-of-the-most-recent-trivia)
 - [Web](#web)
   - [`/send_command`](#send_command)
     - [`POST` - Send a command to the bot](#post---send-a-command-to-the-bot)
@@ -242,6 +244,11 @@ Permission: Admin
 Parameters: Message
 Adding `{channel}` to the message will be replaced by the username being highlighted.
 
+## `trivia` - Trivia base command
+Permission: Admin
+
+### `winner` - Announce the winner of the most recent trivia
+Permission: Admin
 
 
 # Web
