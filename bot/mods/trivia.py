@@ -107,7 +107,7 @@ class TriviaMod(Mod):
             self.current_question > 0 and msg.is_privmsg and self.active
         ):  # Check if trivia is active and not a server message
 
-            normalized = msg.normalized_parts
+            normalized: tuple = msg.normalized_parts
             if len(normalized) == 1 and len(normalized[0]) == 1 and normalized[0] in ascii_lowercase:
                 answer = normalized[0]
 
