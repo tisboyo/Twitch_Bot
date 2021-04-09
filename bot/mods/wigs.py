@@ -83,6 +83,10 @@ class WigsMod(Mod):
             results = poll.votes.most_common()
 
             winner_count = 0
+            # Used to track if no votes were done for the runoff and handle it.
+            runoff_votes = False
+            no_votes_at_all = False
+
             # Check for a tie
             if len(results) > 1:  # More than one thing voted for
                 if results[0][1] == results[1][1]:  # The top two have the same number of votes
@@ -94,7 +98,12 @@ class WigsMod(Mod):
                             new_choices.append(poll.choices[r[0] - 1])
 
                     # Run runoff poll
-                    await asyncio.sleep(3)  # Let the previous results get posted
+                    await channel.send_message(f"{bot.msg_prefix}Tie poll...")
+
+                    # Wait until the previous poll has been hidden
+                    while bot.poll_display_active:
+                        await asyncio.sleep(0.5)
+
                     runoff_poll = PollData(channel, get_nick(), f"{bot.msg_prefix}RUNOFF:{title}", time, *new_choices)
                     await runoff_poll.start()
                     while runoff_poll.seconds_left > 0:
@@ -112,23 +121,27 @@ class WigsMod(Mod):
                             )
 
                     results = runoff_poll.votes.most_common()
-                    winner = runoff_poll.choices[results[0][0] - 1]
+                    if len(results) > 0:
+                        runoff_votes = True
+                        winner = runoff_poll.choices[results[0][0] - 1]
 
-                    # Check to see if there is a tie AGAIN
-                    key = results[0][1]
+                        # Check to see if there is a tie AGAIN
+                        key = results[0][1]
 
-                    for r in results:  # Build the new list of choices
-                        if r[1] == key:
-                            winner_count += 1
+                        for r in results:  # Build the new list of choices
+                            if r[1] == key:
+                                winner_count += 1
 
                 else:  # The top two were not the same, so the top wins
                     winner_count += 1
                     winner = poll.choices[results[0][0] - 1]
-            else:  # Only one thing was voted for
+            elif len(results) == 1:  # Only one thing was voted for
                 winner_count += 1
                 winner = poll.choices[results[0][0] - 1]
+            else:  # No votes at all
+                no_votes_at_all = True
 
-            if winner_count > 1:
+            if winner_count > 1 or not runoff_votes or no_votes_at_all:
                 await asyncio.sleep(2)  # Sleep two seconds so the results are sent before the determination message
                 await channel.send_message(f"{bot.msg_prefix}Chat can't decide, it's @baldengineer choice!")
             else:

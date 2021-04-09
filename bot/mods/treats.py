@@ -1,5 +1,6 @@
 import datetime
 from asyncio import sleep
+from json import dumps
 
 from helpers.points import Points
 from helpers.points import Status
@@ -12,6 +13,7 @@ from twitchbot.permission import perms
 
 mqtt_topic_dispense = bot.MQTT.Topics.dispense_treat_toggle
 mqtt_topic_treat_in_queue = bot.MQTT.Topics.treat_in_queue
+mqtt_topic_treat_status = bot.MQTT.Topics.treat_status
 trigger_emoji = "balden3TreatMe"
 
 
@@ -40,15 +42,18 @@ class Treats(Mod):
                     self.treat_disabled_check = datetime.datetime.now()
 
             elif self.points.check(msg, emojis=emoji_count):
+                await self.send_treat_status(self.points.status())
                 await self.send_treat(msg)
 
             else:  # Check how many more we need
+                # Make sure to refresh the status here because it was modified with self.points.check
                 status = self.points.status()
-
-                if status.emojis_required >= status.emojis and self.reminder_enable:
+                if status.emojis_required > status.emojis and self.reminder_enable:
+                    await self.send_treat_status(status)
                     await msg.reply(self.build_required_message(status))
                     self.reminder_enable = False
                 elif status.emojis >= status.emojis_required:
+                    await self.send_treat_status(status)
                     await self.send_treat_in_queue(msg)
 
         else:
@@ -141,4 +146,14 @@ class Treats(Mod):
             return True
         else:
             await msg.reply(f"{bot.msg_prefix}A treat is in the queue!! (But there's an MQTT problem too)")
+            return False
+
+    async def send_treat_status(self, status: Status) -> bool:
+        status_d = dict(current=status.emojis, needed=status.emojis_required)
+        status_d["complete"] = True if status.emojis >= status.emojis_required else False
+        status_json = dumps(status_d)
+        if await bot.MQTT.send(mqtt_topic_treat_status, status_json):
+            return True
+        else:
+            print("MQTT Error sending treat status.")
             return False

@@ -285,6 +285,7 @@ Example with curl:
 All Stream related MQTT topics are prefixed with `stream/`
 - `treat-in-queue` TwitchBot sends 1 when a treat is in the queue
 - `dispense-treat-toggle` TwitchBot sends 1, TreatBot should listen for 1. TreatBot should reset to 0 when done.
+- `treat_status` TwitchBot sends json object of TreatBot status. `{"current": int(current count), "needed":int(needed count), "complete": bool(True if treat is being dispensed.)}`
 - `twitch-attn-indi` TwitchBot sends 1, AttentionBot should listen for 1. AttentionBot should reset to 0 when done.
 - `channel-raid` TwitchBot sends username of raider
 - `channel-subscription` TwitchBot sends username of subscriber

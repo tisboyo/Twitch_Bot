@@ -44,6 +44,7 @@ class PollsToMQTT(Mod):
 
         # Send the setup data to MQTT
         setup_json = self.get_poll_setup(poll)
+        bot.poll_display_active = True
         await self.mqtt.send(self.mqtt.Topics.poll_setup, setup_json, retain=True)
 
         # While the poll is running, send continuous updates
@@ -64,6 +65,10 @@ class PollsToMQTT(Mod):
         # Send the setup data to MQTT
         setup_json = self.get_poll_setup(poll, active=False)
         await self.mqtt.send(self.mqtt.Topics.poll_setup, setup_json, retain=True)
+
+        # Give the MQTT message a chance to get to the client before letting the next poll appear
+        await asyncio.sleep(2)
+        bot.poll_display_active = False
 
     @ModCommand(name, "clear_poll", context=CommandContext.BOTH, permission="admin")
     async def clear_poll(self, msg: Message):
