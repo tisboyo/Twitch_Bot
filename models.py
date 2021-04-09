@@ -7,6 +7,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.sqltypes import JSON
 
 Base = declarative_base()
 
@@ -107,3 +108,14 @@ class TriviaQuestions(Base):
     created_date = Column(DateTime(), default=datetime.now)
     created_by = Column(String(128))
     reference = Column(String(1024))
+
+
+class TriviaResults(Base):
+    """Table for storing user data for trivia"""
+
+    __tablename__ = "trivia_results"
+    user_id = Column(Integer(), ForeignKey("users.user_id"), primary_key=True, nullable=False, index=True)
+    channel = Column(Integer(), ForeignKey("users.channel"), primary_key=True, nullable=False, index=True)
+    total_wins = Column(Integer(), nullable=False, default=0)
+    trivia_points = Column(Integer(), nullable=False, default=0)
+    questions_answered_correctly = Column(JSON)
