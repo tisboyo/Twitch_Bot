@@ -59,7 +59,7 @@ class TriviaMod(Mod):
 
         self.answer_text = ascii_lowercase[answer_num - 1]
         if result is not None:
-            await sleep(10)  # Sleep early to let the watchers catch up to the stream
+            await sleep(5)  # Sleep early to let the watchers catch up to the stream
 
             # Mark question as active
             self.active = True  # Resets in reset_question
