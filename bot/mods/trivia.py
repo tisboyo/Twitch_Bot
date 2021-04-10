@@ -43,7 +43,7 @@ class TriviaMod(Mod):
     async def trivia_q(self, msg: Message, question_num: int, answer_num: int):
         question_num, answer_num = int(question_num), int(answer_num)  # Framework only passes strings, convert it.
 
-        print(f"Trivia question #{question_num}, A:{answer_num}")
+        print(f"Trivia question #{question_num}, Answer: {ascii_lowercase[answer_num-1].upper()}")
 
         # Don't send a question while another is active, queuing the next one.
         while self.active or self.almost_active:
