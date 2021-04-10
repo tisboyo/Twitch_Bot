@@ -79,12 +79,11 @@ class WigsMod(Mod):
                     )
                 )
 
-        else:
+        else:  # Poll has finished
             results = poll.votes.most_common()
 
             winner_count = 0
             # Used to track if no votes were done for the runoff and handle it.
-            runoff_votes = False
             no_votes_at_all = False
 
             # Check for a tie
@@ -122,7 +121,6 @@ class WigsMod(Mod):
 
                     results = runoff_poll.votes.most_common()
                     if len(results) > 0:
-                        runoff_votes = True
                         winner = runoff_poll.choices[results[0][0] - 1]
 
                         # Check to see if there is a tie AGAIN
@@ -131,6 +129,8 @@ class WigsMod(Mod):
                         for r in results:  # Build the new list of choices
                             if r[1] == key:
                                 winner_count += 1
+                    else:
+                        no_votes_at_all = True
 
                 else:  # The top two were not the same, so the top wins
                     winner_count += 1
@@ -141,7 +141,7 @@ class WigsMod(Mod):
             else:  # No votes at all
                 no_votes_at_all = True
 
-            if winner_count > 1 or not runoff_votes or no_votes_at_all:
+            if winner_count > 1 or no_votes_at_all:
                 await asyncio.sleep(2)  # Sleep two seconds so the results are sent before the determination message
                 await channel.send_message(f"{bot.msg_prefix}Chat can't decide, it's @baldengineer choice!")
             else:
