@@ -40,7 +40,7 @@ async def send_command_to_bot(cmd, args: list):
             return Response(status_code=HTTP_204_NO_CONTENT)
 
     except ConnectionRefusedError:
-        print("Unable to connect to bot for stream status change")
+        print("Unable to connect to bot to run command.")
         raise HTTPException(status_code=503)
 
     except Exception as e:
