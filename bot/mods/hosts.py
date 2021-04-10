@@ -100,7 +100,8 @@ class HostsMod(Mod):
         if task_exist(self.task_name):
             stop_task(self.task_name)
 
-        add_task(self.task_name, self.timer_loop())
+        # Temporarily disable until a new endpoint can be found. TODO
+        # add_task(self.task_name, self.timer_loop())
 
     async def on_connected(self):
         self.restart_task()
