@@ -1,14 +1,20 @@
+import json
+from datetime import date
 from os import getenv
+from random import shuffle
 
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
+from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
+from sqlalchemy import func
 from starlette.requests import Request
 from starlette.responses import FileResponse
 from starlette.responses import JSONResponse
 
+from models import TriviaQuestions
 
 router = APIRouter()
 
@@ -21,26 +27,52 @@ async def trivia_q(request: Request, key: str = None):
     if key != web_api_key:
         return Response(status_code=403)
 
+    question = (
+        db.session.query(TriviaQuestions)
+        .filter(TriviaQuestions.last_used_date < date.today())
+        .order_by(func.random())
+        .limit(1)
+        .one_or_none()
+    )
+
+    if not question:  # The query returned None
+        print("We have used all of the trivia questions today!")
+        return JSONResponse(
+            {
+                "text": "We've used ALL of the trivia questions today.",
+            }
+        )
+
+    # Randomize answers, generate a new number order of indexes
+    ans = json.loads(question.answers)
+    ln = len(ans)
+    new_order = [idx for idx in range(1, ln + 1)]
+    shuffle(new_order)
+
+    # Assign the new random indexes to the question text
+    randomized_answers = dict()
+    temp_counter = 0
+    for k in ans:
+        randomized_answers[str(new_order[temp_counter])] = ans[k]
+        temp_counter += 1
+
+    # Grab the correct answer from the new order
+    answer_id = -1
+    for a in randomized_answers:
+        if bool(randomized_answers[a]["is_answer"]):
+            answer_id = int(a)
+            break
+
+    # Build the json to return to the browser.
     jsonret = {
-        "text": "What fictional device enables time travel?",
-        "answers": {
-            "4": {"text": "Warp Core", "is_answer": 0},
-            "1": {"text": "Flux Capacitor", "is_answer": 1},
-            "3": {"text": "Reluctance Inductor", "is_answer": 0},
-            "2": {"text": "A Key", "is_answer": 0},
-        },
-        "explain": "Back to the Future established that with 1.21 GW the Flux Capacitor is what makes time travel possible.",
-        "last_used_date": "",
-        "created_date": "2019-11-24",
-        "created_by": "baldengineer",
-        "reference": "",
+        "text": question.text,
+        "answers": randomized_answers,
+        "explain": question.explain,
     }
 
-    question = 16
-    answer = 2
-
     try:
-        await send_command_to_bot("trivia", ["q", question, answer])
+        # Send the question to TwitchBot
+        await send_command_to_bot("trivia", ["q", question.id, answer_id])
     except HTTPException:
         return JSONResponse(
             {

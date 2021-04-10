@@ -72,7 +72,7 @@ class TriviaMod(Mod):
             await sleep(10)
             await msg.reply(f"{self.msg_prefix}Final answers...")
             await sleep(5)
-            # await msg.reply(f"{self.msg_prefix}Answer: {self.answer_text.upper()}")
+
             correctly_answered = list()
             for participant in self.session:
                 if self.session[participant]["q"].get(self.current_question, False):
