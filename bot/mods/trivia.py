@@ -8,6 +8,7 @@ from twitchbot import Mod
 from twitchbot import ModCommand
 from twitchbot import SubCommand
 from twitchbot.message import Message
+from twitchbot.util import run_command
 
 from models import TriviaQuestions
 
@@ -85,9 +86,15 @@ class TriviaMod(Mod):
 
     @SubCommand(trivia, "winner", permission="admin")
     async def trivia_winner(self, msg: Message):
-        winners = self.score_board["winners"]
-        most_correct = self.score_board["most_correct"]
-        await msg.reply(f"{self.msg_prefix} Congrats to {winners} for the most correct answers with {most_correct}")
+        try:
+            winners = self.score_board["winners"]
+            most_correct = self.score_board["most_correct"]
+            await msg.reply(f"{bot.msg_prefix} Congrats to {winners} for the most correct answers with {most_correct}")
+            self.score_board = dict()  # Wipe the scoreboard
+
+        except KeyError:
+            await run_command("trivia", msg, ["end"], blocking=True)
+            await run_command("trivia", msg, ["winner"], blocking=True)
 
     @SubCommand(trivia, "end", permission="bot")
     async def trivia_end(self, msg: Message):
