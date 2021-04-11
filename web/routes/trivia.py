@@ -87,6 +87,10 @@ async def trivia_q(request: Request, key: str = None):
             }
         )
 
+    db.session.query(TriviaQuestions).filter(TriviaQuestions.id == question.id).update(
+        {TriviaQuestions.last_used_date: date.today()}
+    )
+    db.session.commit()
     return JSONResponse(jsonret)
 
 
@@ -95,7 +99,9 @@ async def trivia_end(key: str = None):
     if key != web_api_key:
         return Response(status_code=403)
 
-    print("end trivia")
+    print("Trivia ended")
+    await send_command_to_bot("trivia", ["end"])
+    return Response(status_code=204)
 
 
 # Static file returns
