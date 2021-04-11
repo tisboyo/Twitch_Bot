@@ -58,6 +58,9 @@ class LinksToDiscord(Mod):
             .one_or_none()
         ):
             return
+        elif msg[0] == cfg.prefix:
+            # Ignore all commands that have links in them
+            return
 
         urls = self.find_url(msg.content)
 
