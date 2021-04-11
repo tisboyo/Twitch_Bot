@@ -9,8 +9,10 @@ from twitchbot import ModCommand
 from twitchbot import SubCommand
 from twitchbot.message import Message
 from twitchbot.util import run_command
+from twitchbot.util.twitch_api_util import get_user_id
 
 from models import TriviaQuestions
+from models import TriviaResults
 
 
 class TriviaMod(Mod):
@@ -49,12 +51,13 @@ class TriviaMod(Mod):
     async def trivia(self, msg, *args):
         print("trivia")
 
-    # This command will almost always be sent by the webserver,
+    # This commanbd will almost always be sent by the webserver,
     # setting the CommandContext to Whisper will allow it in whispers
     # only, but when sent over the command console, context is ignored.
     @SubCommand(trivia, "q", permission="bot")  # , context=CommandContext.WHISPER) #TODO
     async def trivia_q(self, msg: Message, question_num: int, answer_num: int):
         question_num, answer_num = int(question_num), int(answer_num)  # Framework only passes strings, convert it.
+        channel_id = await get_user_id(msg.channel.name)
 
         print(f"Trivia question #{question_num}, Answer: {ascii_lowercase[answer_num-1].upper()}")
 
@@ -115,6 +118,28 @@ class TriviaMod(Mod):
                     and participant in self.current_question_participant  # See note in reset_session
                 ):
                     correctly_answered.append(participant)
+                    user_id = await get_user_id(participant)
+
+                    query = (
+                        session.query(TriviaResults)
+                        .filter(TriviaResults.user_id == user_id, TriviaResults.channel == channel_id)
+                        .one_or_none()
+                    )  # Grab the current row
+                    if query:  # Update it
+                        query.trivia_points += 1  # type: ignore
+                        query.questions_answered_correctly[self.current_question] = True
+
+                    else:
+                        # Insert if the row didn't exist.
+                        query = TriviaResults(
+                            user_id=user_id,
+                            channel=channel_id,
+                            questions_answered_correctly={self.current_question: True},
+                            trivia_points=1,
+                        )
+                    # Update the query
+                    session.add(query)
+                    session.commit()
 
             if len(correctly_answered) > 0:
                 correctly_answered = ", ".join(correctly_answered)
@@ -153,6 +178,18 @@ class TriviaMod(Mod):
             elif self.session[participant]["correct"] == most_correct:
                 # Tie between multiple participants
                 leaderboard += f", {participant}"
+
+        # Update the winners in the database
+        channel_id = await get_user_id(msg.channel.name)
+        for participant in leaderboard.split(", "):
+            user_id = await get_user_id(participant)
+            # User should have already been in the database from answering the question
+            if (
+                session.query(TriviaResults)
+                .filter(TriviaResults.user_id == user_id, TriviaResults.channel == channel_id)
+                .update({TriviaResults.total_wins: TriviaResults.total_wins + 1})
+            ):
+                session.commit()
 
         self.score_board["winners"] = leaderboard
         self.score_board["most_correct"] = most_correct
