@@ -8,3 +8,4 @@ alembic==1.4.3
 mysql-connector-python==8.0.22
 gmqtt==0.6.9
 dropbox
+sqlalchemy-json==0.4.0
