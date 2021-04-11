@@ -32,6 +32,14 @@ class TriviaMod(Mod):
         self.active = False
         self.answer_text = None
 
+        # This was needed when doing dev work and manually resetting the date on questions without
+        # restarting the bot or ending the session. In general it is un-needed because when the
+        # session ends it wipes out self.session, but I don't see any harm in leaving it.
+        # When this wasn't checked, it would congratulate the user who answered the same question
+        # the last time it came around. This may be needed if we ever allow questions to repeat in
+        # calendar day.
+        self.current_question_participant = set()
+
     @ModCommand(name, "trivia", permission="admin")
     async def trivia(self, msg, *args):
         print("trivia")
@@ -75,7 +83,10 @@ class TriviaMod(Mod):
 
             correctly_answered = list()
             for participant in self.session:
-                if self.session[participant]["q"].get(self.current_question, False):
+                if (
+                    self.session[participant]["q"].get(self.current_question, False)
+                    and participant in self.current_question_participant  # See note in reset_session
+                ):
                     correctly_answered.append(participant)
 
             if len(correctly_answered) > 0:
@@ -134,6 +145,9 @@ class TriviaMod(Mod):
                     self.session[author]["correct"] = 0
                     self.session[author]["incorrect"] = 0
                     self.session[author]["q"] = dict()
+
+                # Track the participants for this question
+                self.current_question_participant.add(author)  # See note in reset_session
 
                 # Check if user has already provided an answer, only first answer accepted
                 if not self.session[author].get(self.current_question, False):
