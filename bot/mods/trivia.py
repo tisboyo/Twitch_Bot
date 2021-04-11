@@ -187,7 +187,14 @@ class TriviaMod(Mod):
 
         # Update the winners in the database
         channel_id = await get_user_id(msg.channel.name)
-        for participant in leaderboard.split(", "):
+
+        participants = leaderboard.split(", ")
+
+        # Handles if nobody participates and trivia is ended.
+        if participants[0] == "":
+            participants = list()
+
+        for participant in participants:
             user_id = await get_user_id(participant)
             # User should have already been in the database from answering the question
             if (
