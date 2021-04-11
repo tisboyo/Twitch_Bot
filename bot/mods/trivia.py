@@ -143,7 +143,13 @@ class TriviaMod(Mod):
 
             if len(correctly_answered) > 0:
                 correctly_answered = ", ".join(correctly_answered)
-                await msg.reply(f"{self.msg_prefix} Congrats to {correctly_answered} for the correct answer.")
+                # Check the total length, if over 500 characters shorten it.
+                message = f"{self.msg_prefix} Congrats to {correctly_answered} for the correct answer."
+                if len(message) > 500:
+                    count = len(correctly_answered.split(", "))
+                    message = f"{self.msg_prefix} Wow! {count} of you got it right! Congrats"
+
+                await msg.reply(message)
 
             self.reset_question()
 
