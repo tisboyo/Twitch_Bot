@@ -1,14 +1,12 @@
-import json
-from os import getenv
 from re import match
 
-import websockets
 from fastapi import APIRouter
 from fastapi import Request
-from fastapi.exceptions import HTTPException
 from fastapi.responses import PlainTextResponse
 from fastapi.responses import Response
 from fastapi_sqlalchemy import db
+from send_to_bot import send_command_to_bot
+from send_to_bot import send_message_to_bot
 from signing import is_request_valid
 from starlette.status import HTTP_204_NO_CONTENT
 
@@ -44,36 +42,9 @@ async def twitch_webhook_follow_post(data: dict, request: Request):
                 # Ignore the user, still return 204 so twitch doesn't keep resending.
                 return Response(status_code=HTTP_204_NO_CONTENT)
 
-        uri = "ws://bot:13337"
-        try:
-            async with websockets.connect(uri) as s:
-                # We don't actually need this, but we have to read it before the bot will accept commands
-                await s.recv()
-                # There are two entries returned, and we need to return both
-                await s.recv()
-
-                msg = dict(
-                    type="send_privmsg",
-                    channel=getenv("TWITCH_CHANNEL"),
-                    message=f"🤖 Thanks for the follow {data['from_name']}",
-                )
-                await s.send((json.dumps(msg) + "\n").encode("utf8"))
-
-                # Check if the message was successful
-                resp = json.loads(await s.recv())
-                if resp.get("type", "fail") != "success":
-                    raise HTTPException(status_code=503)
-
-                # 204 is a No Content status code
-                return Response(status_code=HTTP_204_NO_CONTENT)
-
-        except ConnectionRefusedError:
-            print("Unable to connect to bot for new follow.")
-            raise HTTPException(status_code=503)
-
-        except Exception as e:
-            print(f"Unknown exception trying to send message to bot. {e}")
-            raise HTTPException(status_code=503)
+        # Send data to the twitchbot
+        ret = await send_message_to_bot(data, f"🤖 Thanks for the follow {data['from_name']}")
+        return ret
 
 
 @router.get("/twitch-webhook/stream")
@@ -112,54 +83,12 @@ async def twitch_webhook_stream_post(data: dict, request: Request):
         else:
             live = "false"
 
-        uri = "ws://bot:13337"
-        try:
-            async with websockets.connect(uri) as s:
-                # We don't actually need this, but we have to read it before the bot will accept commands
-                await s.recv()
-                # There are two entries returned, and we need to return both
-                await s.recv()
+        if live == "true":
+            # Commands sent when going live
+            ret = await send_command_to_bot("stream", ["live", live])
+        else:
+            # Commands sent when going offline
+            ret = await send_command_to_bot("stream", ["live", live])
+            await send_command_to_bot("wig", ["reset"])
 
-                # Define the messages to send
-                going_live_msg = dict(
-                    type="run_command",
-                    command="stream",
-                    channel=getenv("TWITCH_CHANNEL"),
-                    args=["live", live],
-                )
-
-                reset_wigs_msg = dict(
-                    type="run_command",
-                    command="wig",
-                    channel=getenv("TWITCH_CHANNEL"),
-                    args=["reset"],
-                )
-
-                # Combine to an interable and loop over them
-                messages = list()
-                if live == "true":
-                    # Commands sent when going live
-                    messages.append(going_live_msg)
-                else:
-                    # Commands sent when going offline
-                    messages.append(going_live_msg)
-                    messages.append(reset_wigs_msg)
-
-                for msg in messages:
-                    await s.send((json.dumps(msg) + "\n").encode("utf8"))
-
-                    # Check if the message was successful
-                    resp = json.loads(await s.recv())
-                    if resp.get("type", "fail") != "success":
-                        raise HTTPException(status_code=503)
-
-                # 204 is a No Content status code
-                return Response(status_code=HTTP_204_NO_CONTENT)
-
-        except ConnectionRefusedError:
-            print("Unable to connect to bot for stream status change")
-            raise HTTPException(status_code=503)
-
-        except Exception as e:
-            print(f"Unknown exception trying to send message to bot. {e}")
-            raise HTTPException(status_code=503)
+        return ret

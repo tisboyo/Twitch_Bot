@@ -1,6 +1,6 @@
 SQLAlchemy==1.3.22
 aiohttp==3.7.4
-PythonTwitchBotFramework==2.2.1
+PythonTwitchBotFramework==2.2.5
 pytz==2020.4
 aiofile==3.3.3
 Adafruit_IO==2.4.0
@@ -8,3 +8,4 @@ alembic==1.4.3
 mysql-connector-python==8.0.22
 gmqtt==0.6.9
 dropbox
+sqlalchemy_json==0.4.0

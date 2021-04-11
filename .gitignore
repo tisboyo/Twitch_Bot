@@ -179,3 +179,4 @@ web/configs/*.json
 bot/mods/test.py
 
 questions.txt
+web/static_files/trivia/laptop-background-transparent.png

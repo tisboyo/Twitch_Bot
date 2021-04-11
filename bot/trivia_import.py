@@ -60,7 +60,7 @@ for id_num, values in questions.items():
         ):
             results = session.query(TriviaQuestions).filter_by(id=id_num).update(question_data)
             session.commit()
-            print(f"Question #{id_num} updated.")
+            print(f"Trivia question #{id_num} updated.")
 
 
 print("Trivia update complete...")
