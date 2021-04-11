@@ -24,12 +24,17 @@ class TriviaMod(Mod):
         self.session = dict()
         self.score_board = dict()
 
+        # Flag for sending instructions message when first question is sent.
+        # Also used for interupting mid-question when trivia ends
+        # Needs to survive question reset
+        self.trivia_active = False
+
     def reset_question(self):
         self.current_question: int = -1
         self.current_answer: int = -1
         self.current_participants: dict = dict()  # {username:(correct, incorrect)}
+        self.question_active = False
         self.almost_active = False
-        self.active = False
         self.answer_text = None
 
         # This was needed when doing dev work and manually resetting the date on questions without
@@ -54,7 +59,7 @@ class TriviaMod(Mod):
         print(f"Trivia question #{question_num}, Answer: {ascii_lowercase[answer_num-1].upper()}")
 
         # Don't send a question while another is active, queuing the next one.
-        while self.active or self.almost_active:
+        while self.question_active or self.almost_active:
             await sleep(0.5)
 
         self.almost_active = True  # Resets in reset_question
@@ -67,19 +72,41 @@ class TriviaMod(Mod):
 
         self.answer_text = ascii_lowercase[answer_num - 1]
         if result is not None:
-            await sleep(5)  # Sleep early to let the watchers catch up to the stream
+            # Send a welcome message and instructions if this is the first question of the session
+            if not self.trivia_active:
+                await msg.reply(f"{bot.msg_prefix}Trivia incoming...")
+                await msg.reply(
+                    f"{self.msg_prefix}To play trivia, answer with a single letter message of your answer(case insensitive)."
+                )
+                self.trivia_active = True
+
+            async def sleep_if_active(time: int) -> bool:
+                """Sleeps if trivia is active, returns True if trivia is still active at the end of the sleep"""
+                # If trivia is not active, we will speed past sending the messages to chat and finalize answers
+                for _ in range(time * 2):
+                    if self.trivia_active:
+                        await sleep(0.5)
+                    else:
+                        return False
+
+                return True
 
             # Mark question as active
-            self.active = True  # Resets in reset_question
+            self.question_active = True  # Resets in reset_question
 
-            # Send the question to chat
-            await msg.reply(f"{self.msg_prefix}{result.text}")
-            await sleep(10)
+            # Sleep early to let the watchers catch up to the stream
+            if await sleep_if_active(5):
+                # Send the question to chat
+                await msg.reply(f"{self.msg_prefix}{result.text}")
 
-            await msg.reply(f"{self.msg_prefix}15 seconds remaining")
-            await sleep(10)
-            await msg.reply(f"{self.msg_prefix}Final answers...")
-            await sleep(5)
+            if await sleep_if_active(10):
+                await msg.reply(f"{self.msg_prefix}15 seconds remaining")
+
+            if await sleep_if_active(10):
+                await msg.reply(f"{self.msg_prefix}Final answers...")
+
+            # One last sleep to let people get final answers in.
+            await sleep_if_active(5)
 
             correctly_answered = list()
             for participant in self.session:
@@ -110,6 +137,12 @@ class TriviaMod(Mod):
     @SubCommand(trivia, "end", permission="bot")
     async def trivia_end(self, msg: Message):
 
+        # Will trigger interupting the current question.
+        self.trivia_active = False
+
+        # Give the bot just enough time to send the last message for the current question.
+        await sleep(1)
+
         most_correct = 0
         leaderboard = str()
         for participant in self.session:
@@ -131,7 +164,7 @@ class TriviaMod(Mod):
 
     async def on_raw_message(self, msg: Message):
         if (
-            self.current_question > 0 and msg.is_privmsg and self.active
+            self.current_question > 0 and msg.is_privmsg and self.question_active
         ):  # Check if trivia is active and not a server message
 
             normalized: tuple = msg.normalized_parts  # type: ignore
