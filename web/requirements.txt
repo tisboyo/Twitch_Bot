@@ -12,3 +12,4 @@ mysql-connector-python==8.0.22
 aiofiles==0.6.0
 pythontwitchbotframework==2.1.5
 fastapi-sqlalchemy==0.2.1
+Jinja2==2.11.3
