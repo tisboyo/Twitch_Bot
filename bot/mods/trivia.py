@@ -210,7 +210,9 @@ class TriviaMod(Mod):
         # Clear the session data
         self.session = dict()
 
-        await msg.reply(f"{bot.msg_prefix} Thanks for playing BaldEngineer Trivia!")
+        await msg.reply(
+            f"{bot.msg_prefix}Thank you for playing trivia! Stick around, @baldengineer will share the winners soon!"
+        )
 
     async def on_raw_message(self, msg: Message):
         if (
