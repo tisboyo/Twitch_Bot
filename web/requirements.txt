@@ -10,7 +10,7 @@ PyJWT==1.7.1
 python-multipart==0.0.5
 mysql-connector-python==8.0.22
 aiofiles==0.6.0
-pythontwitchbotframework==2.1.5
+pythontwitchbotframework==2.2.5
 fastapi-sqlalchemy==0.2.1
 Jinja2==2.11.3
 sqlalchemy_json==0.4.0
