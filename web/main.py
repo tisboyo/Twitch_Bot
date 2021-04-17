@@ -10,22 +10,22 @@ from uvicorn.main import logger
 
 from models import Settings
 
-
 # noreorder
 # Routes
-import routes.announcements
-import routes.commands
-import routes.docs
-import routes.dropbox
-import routes.poll_display
-import routes.send_command
-import routes.send_message
-import routes.topic
-import routes.twitch_webhook
-import routes.ignore
-import routes.trivia
+from routes.announcements import router as announcements_router
+from routes.commands import router as commands_router
+from routes.docs import router as docs_router
+from routes.dropbox import router as dropbox_router
+from routes.poll_display import router as poll_router
+from routes.send_command import router as send_command_router
+from routes.send_message import router as send_message_router
+from routes.topic import router as topic_router
+from routes.twitch_webhook import router as twitch_webhook_router
+from routes.ignore import router as ignore_router
+from routes.trivia import router as trivia_router
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+
 
 # Add Database handler
 mysql_database = getenv("MYSQL_DATABASE")
@@ -35,17 +35,17 @@ db_url = f"mysql+mysqlconnector://{mysql_user}:{mysql_pass}@mysql:3306/{mysql_da
 app.add_middleware(DBSessionMiddleware, db_url=db_url)
 
 # Include the routes
-app.include_router(routes.announcements.router)
-app.include_router(routes.twitch_webhook.router)
-app.include_router(routes.send_message.router)
-app.include_router(routes.docs.router)
-app.include_router(routes.commands.router)
-app.include_router(routes.poll_display.router)
-app.include_router(routes.dropbox.router)
-app.include_router(routes.topic.router)
-app.include_router(routes.send_command.router)
-app.include_router(routes.ignore.router)
-app.include_router(routes.trivia.router)
+app.include_router(announcements_router)
+app.include_router(commands_router)
+app.include_router(docs_router)
+app.include_router(dropbox_router)
+app.include_router(poll_router)
+app.include_router(send_command_router)
+app.include_router(send_message_router)
+app.include_router(topic_router)
+app.include_router(twitch_webhook_router)
+app.include_router(ignore_router)
+app.include_router(trivia_router)
 
 
 @app.on_event("startup")
