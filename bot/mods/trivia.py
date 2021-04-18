@@ -24,7 +24,7 @@ class TriviaMod(Mod):
         self.msg_prefix: str = "❔"
         # Create session for participant tracking
         self.session = dict()
-        self.score_board = dict()
+        self.leaderboard = dict()
         self.manual_delay: int = 0
 
         # Flag for sending instructions message when first question is sent.
@@ -161,15 +161,28 @@ class TriviaMod(Mod):
 
     @SubCommand(trivia, "winner", permission="admin")
     async def trivia_winner(self, msg: Message):
-        try:
-            winners = self.score_board["winners"]
-            most_correct = self.score_board["most_correct"]
-            await msg.reply(f"{bot.msg_prefix} Congrats to {winners} for the most correct answers with {most_correct}")
-            self.score_board = dict()  # Wipe the scoreboard
-
-        except KeyError:
+        if len(self.leaderboard) == 0:
+            # Trivia hasn't ended yet, force end it.
             await run_command("trivia", msg, ["end"], blocking=True)
-            await run_command("trivia", msg, ["winner"], blocking=True)
+
+        first = self.leaderboard.popitem() if len(self.leaderboard) > 0 else None
+        second = self.leaderboard.popitem() if len(self.leaderboard) > 0 else None
+        third = self.leaderboard.popitem() if len(self.leaderboard) > 0 else None
+
+        if third is not None:
+            await msg.reply(f"{self.msg_prefix}In third place is {', '.join(third[1])} with {third[0]}")
+            await sleep(5)
+
+        if second is not None:
+            await msg.reply(f"{self.msg_prefix}In second place is {', '.join(second[1])} with {second[0]}")
+            await sleep(5)
+
+        if first is not None:
+            await msg.reply(f"{self.msg_prefix}In first place is {', '.join(first[1])} with {first[0]}")
+            await msg.reply(f"{bot.msg_prefix}Congratulations to all of the trivia winners.")
+
+        # Reset the leaderboard
+        self.leaderboard = dict()
 
     @SubCommand(trivia, "end", permission="bot")
     async def trivia_end(self, msg: Message):
@@ -180,38 +193,38 @@ class TriviaMod(Mod):
         # Give the bot just enough time to send the last message for the current question.
         await sleep(1)
 
-        most_correct = 0
-        leaderboard = str()
-        for participant in self.session:
-            if self.session[participant]["correct"] > most_correct:
-                leaderboard = participant
-                most_correct = self.session[participant]["correct"]
+        leaderboard = dict()
 
-            elif self.session[participant]["correct"] == most_correct:
-                # Tie between multiple participants
-                leaderboard += f", {participant}"
+        # Assign the participant to how many they got correct on the leaderboard
+        for participant in self.session:
+            correct = self.session[participant]["correct"]
+            if not leaderboard.get(correct, False):
+                leaderboard[correct] = list()
+            leaderboard[correct].append(participant)
+
+        # Sort the leaderboard by score, lowest to highest so popitem can pull the bottom item
+        leaderboard_order = sorted(leaderboard.keys(), key=lambda x: x)
 
         # Update the winners in the database
-        channel_id = await get_user_id(msg.channel.name)
+        if len(leaderboard_order) > 0:  # We have participants, update them
+            # Grab channel ID for database insertion
+            channel_id = await get_user_id(msg.channel.name)
 
-        participants = leaderboard.split(", ")
+            # Loop through the highest score as a winner
+            for participant in leaderboard[leaderboard_order[0]]:
+                user_id = await get_user_id(participant)
+                # User should have already been in the database from answering the question
+                if (
+                    session.query(TriviaResults)
+                    .filter(TriviaResults.user_id == user_id, TriviaResults.channel == channel_id)
+                    .update({TriviaResults.total_wins: TriviaResults.total_wins + 1})
+                ):
+                    session.commit()
 
-        # Handles if nobody participates and trivia is ended.
-        if participants[0] == "":
-            participants = list()
-
-        for participant in participants:
-            user_id = await get_user_id(participant)
-            # User should have already been in the database from answering the question
-            if (
-                session.query(TriviaResults)
-                .filter(TriviaResults.user_id == user_id, TriviaResults.channel == channel_id)
-                .update({TriviaResults.total_wins: TriviaResults.total_wins + 1})
-            ):
-                session.commit()
-
-        self.score_board["winners"] = leaderboard
-        self.score_board["most_correct"] = most_correct
+        # Sort the leaderboard and save it
+        self.leaderboard = dict()
+        for order_id in leaderboard_order:
+            self.leaderboard[order_id] = leaderboard[order_id]
 
         # Clear the session data
         self.session = dict()
