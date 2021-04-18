@@ -29,7 +29,7 @@ async def trivia_q(request: Request, key: str = None):
 
     question = (
         db.session.query(TriviaQuestions)
-        .filter(TriviaQuestions.last_used_date < date.today())
+        .filter(TriviaQuestions.last_used_date < date.today(), TriviaQuestions.enabled == True)  # noqa:E712
         .order_by(func.random())
         .limit(1)
         .one_or_none()
