@@ -1,6 +1,7 @@
 //Global Variables
 setting_QuestionCountDown = 60;
 setting_AnswerCountDown = 15;
+setting_DelayBetweenQuestions = 10;
 countDownSeconds = setting_QuestionCountDown;
 
 var questionOBJ;
@@ -33,9 +34,7 @@ function displayAnswer() {
         console.log("time for the next question");
         document.getElementById("explain").style.visibility = "hidden";
         //document.getElementById("timer").style.visibility = "visible";
-        if (document.visibilityState === 'visible') {
-            location.reload();
-        }
+        delay_between_questions();
 
         //getAQuestion();
     }
@@ -168,4 +167,34 @@ function getAQuestion() {
 
     processResponse(questionOBJ);
     questionTimerStart();
+}
+
+function delay_between_questions() {
+    // the question
+    document.getElementById("question").innerHTML = "<h2>Next question coming up..</h2>";
+
+    // clear the questions
+    document.getElementById("answers").innerHTML = '<div id="answer">To participate in trivia, respond in chat with A, B, C, D, etc..</div>';
+
+    // the explanation
+    document.getElementById("explain").innerHTML = "";
+    document.getElementById("explain").style.visibility = "hidden";
+
+    //the timer
+    countDownSeconds = setting_DelayBetweenQuestions;
+    myTimer = setInterval(next_question_timer, 1000);
+
+}
+function next_question_timer() {
+    countDownSeconds--;
+    //    console.log(countDownSeconds);
+    document.getElementById("timer").innerHTML = "<h1>" + countDownSeconds + "</h1>";
+    if (countDownSeconds <= 0) {
+        console.log("Next question timer expired");
+        clearInterval(myTimer);
+        if (document.visibilityState === 'visible') {
+            location.reload();
+        }
+    }
+
 }
