@@ -14,3 +14,6 @@ pythontwitchbotframework==2.2.5
 fastapi-sqlalchemy==0.2.1
 Jinja2==2.11.3
 sqlalchemy_json==0.4.0
+python-jose==3.2.0
+cryptography==3.4.7
+bcrypt==3.2.0
