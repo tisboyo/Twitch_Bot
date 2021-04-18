@@ -51,7 +51,7 @@ class TriviaMod(Mod):
     async def trivia(self, msg, *args):
         print("trivia")
 
-    # This commanbd will almost always be sent by the webserver,
+    # This command will almost always be sent by the webserver,
     # setting the CommandContext to Whisper will allow it in whispers
     # only, but when sent over the command console, context is ignored.
     @SubCommand(trivia, "q", permission="bot")  # , context=CommandContext.WHISPER) #TODO
