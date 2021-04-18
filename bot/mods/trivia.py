@@ -25,6 +25,7 @@ class TriviaMod(Mod):
         # Create session for participant tracking
         self.session = dict()
         self.score_board = dict()
+        self.manual_delay: int = 0
 
         # Flag for sending instructions message when first question is sent.
         # Also used for interupting mid-question when trivia ends
@@ -50,6 +51,11 @@ class TriviaMod(Mod):
     @ModCommand(name, "trivia", permission="admin")
     async def trivia(self, msg, *args):
         print("trivia")
+
+    @SubCommand(trivia, "delay", permission="admin")
+    async def delay(self, msg: Message, new_delay: int):
+        """Adds a delay at the start of the next question"""
+        self.manual_delay = int(new_delay)  # framework doesn't typecast
 
     # This command will almost always be sent by the webserver,
     # setting the CommandContext to Whisper will allow it in whispers
@@ -98,11 +104,11 @@ class TriviaMod(Mod):
             self.question_active = True  # Resets in reset_question
 
             # Sleep early to let the watchers catch up to the stream
-            if await sleep_if_active(5):
+            if await sleep_if_active(7 + self.manual_delay):
                 # Send the question to chat
                 await msg.reply(f"{self.msg_prefix}{result.text}")
 
-            if await sleep_if_active(10):
+            if await sleep_if_active(40):
                 await msg.reply(f"{self.msg_prefix}15 seconds remaining")
 
             if await sleep_if_active(10):
