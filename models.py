@@ -108,6 +108,7 @@ class TriviaQuestions(Base):
     created_date = Column(DateTime(), default=datetime.now)
     created_by = Column(String(128))
     reference = Column(String(1024))
+    enabled = Column(Boolean(), default=True)
 
 
 class TriviaResults(Base):
