@@ -1,6 +1,6 @@
 //Global Variables
-setting_QuestionCountDown = 30;
-setting_AnswerCountDown = 10;
+setting_QuestionCountDown = 60;
+setting_AnswerCountDown = 15;
 countDownSeconds = setting_QuestionCountDown;
 
 var questionOBJ;
