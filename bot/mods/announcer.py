@@ -60,6 +60,10 @@ class AutoMessageStarterMod(Mod):
         self.announcements_sleeping = True
         self.sleep_override = False
         self.current_category_setting = "announcement_category"
+        self.announcement_count = 0
+
+        query = session.query(Settings.value).filter_by(key="announce_topic_frequency").one_or_none()
+        self.announce_topic_frequency = int(query.value) if query is not None else 0
 
         self.enable = session.query(Settings.value).filter(Settings.key == "announcement_enabled").one_or_none()
         if self.enable is None:
@@ -89,13 +93,28 @@ class AutoMessageStarterMod(Mod):
                     cat = session.query(Settings).filter(Settings.key == self.current_category_setting).first()
                     category = self.get_announcements_category(cat.value) if not None else 1
 
-                    result = (  # Read the next announcement from the database
-                        session.query(Announcements)
-                        .filter(Announcements.enabled == True)  # noqa E712 SQLAlchemy doesn't work with `is True`
-                        .filter(Announcements.category == category.id)
-                        .order_by(Announcements.last_sent)
-                        .first()
-                    )
+                    if self.announcement_count >= self.announce_topic_frequency:
+                        # Send the topic instead of the announcement
+                        result = session.query(Settings).filter_by(key="topic").one_or_none()
+                        message_text = "Topic!" + result.value
+                        self.announcement_count = 0
+                    else:
+                        result = (  # Read the next announcement from the database
+                            session.query(Announcements)
+                            .filter(Announcements.enabled == True)  # noqa E712 SQLAlchemy doesn't work with `is True`
+                            .filter(Announcements.category == category.id)
+                            .order_by(Announcements.last_sent)
+                            .first()
+                        )
+                        message_text = result.text
+                        self.announcement_count += 1
+
+                        # Update the last time sent of the message
+                        session.query(Announcements).filter(Announcements.id == result.id).update(
+                            {"last_sent": datetime.now(), "times_sent": result.times_sent + 1}
+                        )
+
+                        session.commit()
 
                     # Make sure there are entries in the dictioary
                     if result is None:
@@ -103,14 +122,7 @@ class AutoMessageStarterMod(Mod):
                         continue
 
                     # Send the message
-                    await channels[self.chan].send_message(bot.msg_prefix + result.text)
-
-                    # Update the last time sent of the message
-                    session.query(Announcements).filter(Announcements.id == result.id).update(
-                        {"last_sent": datetime.now(), "times_sent": result.times_sent + 1}
-                    )
-
-                    session.commit()
+                    await channels[self.chan].send_message(bot.msg_prefix + message_text)
 
                     # Since we sent a message, going to clear the announcements_sleeping flag
                     self.announcements_sleeping = False
@@ -354,6 +366,23 @@ class AutoMessageStarterMod(Mod):
     async def announce_category(self, msg, *args):
         """Base command for category management"""
         pass
+
+    @SubCommand(announce, "topic_frequency", permission="admin")
+    async def announce_topic(self, msg, frequency: int = 0):
+        frequency = int(frequency)
+        settings_key = "announce_topic_frequency"
+
+        if old_frequency := session.query(Settings).filter_by(key=settings_key).one_or_none():
+            old_frequency.value = frequency
+
+        else:
+            insert = Settings(key=settings_key, value=frequency)
+            session.add(insert)
+
+        session.commit()
+
+        self.announce_topic_frequency = frequency
+        await msg.reply(f"{bot.msg_prefix}Topic will be sent every {frequency} announcements.")
 
     @SubCommand(announce_category, "add", permission="admin")
     async def announce_category_add(self, msg, *args):
