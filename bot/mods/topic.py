@@ -89,12 +89,12 @@ class TopicMod(Mod):
 
     @SubCommand(topic, "link", permission="admin")
     async def set_topic_link(self, msg, *args):
-        note = ""
+        link = ""
         for arg in args:
-            note += f"{arg} "
+            link += f"{arg} "
 
         topic = get_topic(raw=True)
-        topic["note"] = note
+        topic["link"] = link
 
         if save_topic(topic):
             await msg.reply(f"{bot.msg_prefix}Link set.")
@@ -125,7 +125,7 @@ def get_topic(raw=False):
             topic_text = topic["topic"]
             topic_text = f"{topic_text}Goal: {topic['goal']} " if topic.get("goal", False) else topic_text
             topic_text = f"{topic_text}Currently: {topic['step']} " if topic.get("step", False) else topic_text
-            topic_text = f"{topic_text}Notes/Info: {topic['notes']}" if topic.get("notes", False) else topic_text
+            topic_text = f"{topic_text}Notes/Info: {topic['link']}" if topic.get("link", False) else topic_text
             return topic_text
         else:
             return None
