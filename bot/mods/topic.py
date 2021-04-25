@@ -7,6 +7,7 @@ from twitchbot import CommandContext
 from twitchbot import Mod
 from twitchbot import ModCommand
 from twitchbot import SubCommand
+from twitchbot.util.command_util import run_command
 
 from models import Settings
 
@@ -16,6 +17,10 @@ class TopicMod(Mod):
 
     def __init__(self):
         pass
+
+    @ModCommand(name, "project", context=CommandContext.CHANNEL)
+    async def project(self, msg, *args):
+        await run_command("topic", msg)
 
     @ModCommand(name, "topic", context=CommandContext.BOTH)
     async def topic(self, msg, *args):
