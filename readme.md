@@ -27,8 +27,11 @@
     - [`enable` - Enables the treatbot](#enable---enables-the-treatbot)
     - [`disable` - Disables the treatbot](#disable---disables-the-treatbot)
   - [`!treatmenow` - Force sends a treat](#treatmenow---force-sends-a-treat)
-  - [`!topic` - Chat Topic](#topic---chat-topic)
+  - [`!topic` - Chat Topic (Alias: `!project`)](#topic---chat-topic-alias-project)
     - [`set` - Sets a topic](#set---sets-a-topic)
+    - [`goal` - Sets the goal for the topic](#goal---sets-the-goal-for-the-topic)
+    - [`step` - Sets the current step for the topic (Alias: !step)](#step---sets-the-current-step-for-the-topic-alias-step)
+    - [`link` - Sets the link for the topic](#link---sets-the-link-for-the-topic)
   - [`wig` - Base command](#wig---base-command)
     - [`poll` - Start a wig poll](#poll---start-a-wig-poll)
     - [`time` - Set duration of wig poll](#time---set-duration-of-wig-poll)
@@ -148,12 +151,24 @@ Permission: Admin
 Immediately sends a treat, for testing purposes
 
 
-## `!topic` - Chat Topic
+## `!topic` - Chat Topic (Alias: `!project`)
 Permission: Everyone
 Posts to chat the currently set topic
 ### `set` - Sets a topic
 Permission: Admin
 - `!topic set New topic text`
+
+### `goal` - Sets the goal for the topic
+Permission: Admin
+- `!topic goal New goal text`
+
+### `step` - Sets the current step for the topic (Alias: !step)
+Permission: Admin
+- `!topic step New text for the current step`
+
+### `link` - Sets the link for the topic
+Permission: Admin
+- `!topic link New note or link for project`
 
 ## `wig` - Base command
 ### `poll` - Start a wig poll
