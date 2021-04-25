@@ -1,28 +1,13 @@
-import asyncio
 from os import getenv
 
 import uvicorn
+from easyauth.client import EasyAuthClient
+from easyauth.server import EasyAuthServer
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from fastapi_sqlalchemy import db
 from fastapi_sqlalchemy import DBSessionMiddleware
 from uvicorn.main import logger
 
-from models import Settings
-
-# noreorder
-# Routes
-from routes.announcements import router as announcements_router
-from routes.commands import router as commands_router
-from routes.docs import router as docs_router
-from routes.dropbox import router as dropbox_router
-from routes.poll_display import router as poll_router
-from routes.send_command import router as send_command_router
-from routes.send_message import router as send_message_router
-from routes.topic import router as topic_router
-from routes.twitch_webhook import router as twitch_webhook_router
-from routes.ignore import router as ignore_router
-from routes.trivia import router as trivia_router
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -34,40 +19,55 @@ mysql_pass = getenv("MYSQL_PASSWORD")
 db_url = f"mysql+mysqlconnector://{mysql_user}:{mysql_pass}@mysql:3306/{mysql_database}"
 app.add_middleware(DBSessionMiddleware, db_url=db_url)
 
-# Include the routes
-app.include_router(announcements_router)
-app.include_router(commands_router)
-app.include_router(docs_router)
-app.include_router(dropbox_router)
-app.include_router(poll_router)
-app.include_router(send_command_router)
-app.include_router(send_message_router)
-app.include_router(topic_router)
-app.include_router(twitch_webhook_router)
-app.include_router(ignore_router)
-app.include_router(trivia_router)
-
 
 @app.on_event("startup")
 async def startup_event():
-    loop = asyncio.get_running_loop()
+    # loop = asyncio.get_running_loop()
     logger.info("Adding MOAR OHMS! ΩΩΩ")
+    # Start the authorization server
+    await EasyAuthServer.create(app, "/auth/token", logger=logger)
 
-    async def keep_database_alive():
-        while True:
-            with db():
-                logger.info("Database keep alive running.")
-                q = db.session.query(Settings).filter(Settings.key == "topic").one_or_none()
-                logger.info(f"Current twitch topic: {q.value}")
+    # Handle for the authorization client
+    auth_client = await EasyAuthClient.create(app, "/auth/token", logger=logger)
 
-                await asyncio.sleep(3600)
+    # Include the routes
+    # app.include_router(docs_router)
+    # app.include_router(send_command_router)
+    # app.include_router(send_message_router)
+    # app.include_router(topic_router)
 
-    loop.create_task(keep_database_alive())
+    # Routers for authenticated
+    announcements_router = auth_client.create_api_router(prefix="/announcements")
+    commands_router = auth_client.create_api_router(prefix="/commands")
+    dropbox_router = auth_client.create_api_router(prefix="/dropbox")
+    ignore_router = auth_client.create_api_router(prefix="/ignore")
+    poll_router = auth_client.create_api_router(prefix="/poll")
 
+    # Authenticated routes
+    from routes.announcements import setup as announcements_setup
+    from routes.commands import setup as commands_setup
+    from routes.dropbox import setup as dropbox_setup
+    from routes.ignore import setup as ignore_setup
+    from routes.poll_display import setup as poll_setup
 
-# @app.get("/")
-# def root():
-#     return {"Hello": "World"}
+    # Run setups for each authenticated route
+    await announcements_setup(announcements_router)
+    await commands_setup(commands_router)
+    await dropbox_setup(dropbox_router)
+    await ignore_setup(ignore_router)
+    await poll_setup(poll_router)
+
+    # Public Routes
+    from routes.dropbox import router as dropbox_router
+    from routes.poll_display import router as poll_router
+    from routes.trivia import router as trivia_router
+    from routes.twitch_webhook import router as twitch_router
+
+    # Include public routes
+    app.include_router(dropbox_router)
+    app.include_router(poll_router)
+    app.include_router(trivia_router)
+    app.include_router(twitch_router)
 
 
 @app.get("/favicon.ico")

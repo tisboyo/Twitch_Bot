@@ -13,23 +13,26 @@ from models import Settings
 
 router = APIRouter()
 
-return_uri = f"https://{getenv('WEB_HOSTNAME')}/dropbox-response"
+return_uri = f"https://{getenv('WEB_HOSTNAME')}/dropbox/response"
 
 
-@router.get("/dropbox")  # , response_class=RedirectResponse)
-async def get_dropbox(request: Request):
-    try:
-        client_id = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none().value
-    except AttributeError:
-        print("Dropbox Client ID not set")
-        return
+async def setup(router):
+    @router.get("/")  # , response_class=RedirectResponse)
+    async def get_dropbox(request: Request):
+        try:
+            query = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none()
+            client_id = query.value
+        except AttributeError:
+            print("Dropbox Client ID not set")
+            return
 
-    if client_id is not None:
-        redir_uri = f"https://www.dropbox.com/oauth2/authorize?client_id={client_id}&token_access_type=offline&redirect_uri={return_uri}&response_type=code"  # noqa E501
-        return RedirectResponse(redir_uri)
+        if client_id is not None:
+            redir_uri = f"https://www.dropbox.com/oauth2/authorize?client_id={client_id}&token_access_type=offline&redirect_uri={return_uri}&response_type=code"  # noqa E501
+            return RedirectResponse(redir_uri)
 
 
-@router.get("/dropbox-response")
+# Unauthenticated rates need to use the full path.
+@router.get("/dropbox/response")
 async def post_dropbox(request: Request):
     try:
         client_id = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none().value

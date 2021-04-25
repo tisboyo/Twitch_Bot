@@ -6,7 +6,7 @@ uvicorn==0.13.4
 SQLAlchemy==1.4.9
 passlib==1.7.4
 fastapi==0.63.0
-PyJWT==2.0.1
+PyJWT==2.0.0
 python-multipart==0.0.5
 mysql-connector-python==8.0.23
 aiofiles==0.6.0
@@ -17,3 +17,6 @@ sqlalchemy_json==0.4.0
 python-jose==3.2.0
 cryptography==3.4.7
 bcrypt==3.2.0
+easy-auth==0.133
+pip==21.1
+aiopyql==0.356

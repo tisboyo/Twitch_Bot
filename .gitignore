@@ -180,3 +180,5 @@ bot/mods/test.py
 
 questions.txt
 web/static_files/trivia/laptop-background-transparent.png
+web/keys.key
+web/keys.pub

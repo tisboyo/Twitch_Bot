@@ -71,6 +71,18 @@ services:
       WEB_COOKIE_KEY: ${WEB_COOKIE_KEY}
       MQTT_USER: ${MQTT_USER}
       MQTT_KEY: ${MQTT_KEY}
+      #Used for easy-auth library
+      DB_TYPE: "mysql"
+      DB_NAME: "web_auth"
+      DB_HOST: "mysql"
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      ISSUER: "AddOhms"
+      SUBJECT: "AddOhmsAuth"
+      AUDIENCE: "AddOhmsAPI"
+      KEY_PATH: "/workspace/web"
+      KEY_NAME: "keys"
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
