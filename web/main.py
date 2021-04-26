@@ -28,7 +28,7 @@ async def startup_event():
     await EasyAuthServer.create(app, "/auth/token", logger=logger)
 
     # Handle for the authorization client
-    auth_client = await EasyAuthClient.create(app, "/auth/token", logger=logger)
+    app.auth_client = await EasyAuthClient.create(app, "/auth/token", logger=logger, debug=True)
 
     # Include the routes
     # app.include_router(docs_router)
@@ -37,14 +37,16 @@ async def startup_event():
     # app.include_router(topic_router)
 
     # Routers for authenticated
-    announcements_router = auth_client.create_api_router(prefix="/announcements")
-    commands_router = auth_client.create_api_router(prefix="/commands")
-    dropbox_router = auth_client.create_api_router(prefix="/dropbox")
-    ignore_router = auth_client.create_api_router(prefix="/ignore")
-    poll_router = auth_client.create_api_router(prefix="/poll")
+    announcements_router = app.auth_client.create_api_router(prefix="/announcements")
+    apikey_router = app.auth_client.create_api_router(prefix="/keys")
+    commands_router = app.auth_client.create_api_router(prefix="/commands")
+    dropbox_router = app.auth_client.create_api_router(prefix="/dropbox")
+    ignore_router = app.auth_client.create_api_router(prefix="/ignore")
+    poll_router = app.auth_client.create_api_router(prefix="/poll")
 
     # Authenticated routes
     from routes.announcements import setup as announcements_setup
+    from routes.apikeys import setup as apikeys_setup
     from routes.commands import setup as commands_setup
     from routes.dropbox import setup as dropbox_setup
     from routes.ignore import setup as ignore_setup
@@ -52,6 +54,7 @@ async def startup_event():
 
     # Run setups for each authenticated route
     await announcements_setup(announcements_router)
+    await apikeys_setup(apikey_router)
     await commands_setup(commands_router)
     await dropbox_setup(dropbox_router)
     await ignore_setup(ignore_router)
