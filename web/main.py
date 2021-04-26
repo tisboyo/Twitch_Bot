@@ -23,6 +23,7 @@ from routes.topic import router as topic_router
 from routes.twitch_webhook import router as twitch_webhook_router
 from routes.ignore import router as ignore_router
 from routes.trivia import router as trivia_router
+from routes.trivia_display import router as trivia_display_router
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -46,6 +47,7 @@ app.include_router(topic_router)
 app.include_router(twitch_webhook_router)
 app.include_router(ignore_router)
 app.include_router(trivia_router)
+app.include_router(trivia_display_router)
 
 
 @app.on_event("startup")
