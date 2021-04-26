@@ -47,6 +47,7 @@ services:
     volumes:
       - ./web/web_user_db.json:/workspace/web/web_user_db.json
       - ./models.py:/workspace/web/models.py
+      - ./web/.keys:/workspace/web/.keys/
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`${WEB_HOSTNAME}`)"
@@ -81,7 +82,7 @@ services:
       ISSUER: "AddOhms"
       SUBJECT: "AddOhmsAuth"
       AUDIENCE: "AddOhmsAPI"
-      KEY_PATH: "/workspace/web"
+      KEY_PATH: "/workspace/web/.keys"
       KEY_NAME: "keys"
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.

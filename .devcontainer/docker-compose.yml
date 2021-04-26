@@ -46,7 +46,7 @@ services:
       ISSUER: "AddOhms"
       SUBJECT: "AddOhmsAuth"
       AUDIENCE: "AddOhmsAPI"
-      KEY_PATH: "/workspace/web"
+      KEY_PATH: "/workspace/web/.keys"
       KEY_NAME: "keys"
     # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
     # cap_add:
