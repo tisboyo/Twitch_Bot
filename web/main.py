@@ -1,7 +1,6 @@
 from os import getenv
 
 import uvicorn
-from easyauth.client import EasyAuthClient
 from easyauth.server import EasyAuthServer
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
@@ -25,10 +24,12 @@ async def startup_event():
     # loop = asyncio.get_running_loop()
     logger.info("Adding MOAR OHMS! ΩΩΩ")
     # Start the authorization server
-    await EasyAuthServer.create(app, "/auth/token", logger=logger)
+    app.auth = await EasyAuthServer.create(
+        app, "/auth/token", admin_prefix="/admin", admin_title="Add moar Ohms!", logger=logger
+    )
 
     # Handle for the authorization client
-    app.auth_client = await EasyAuthClient.create(app, "/auth/token", logger=logger, debug=True)
+    # app.auth_client = await EasyAuthClient.create(app, "/auth/token", logger=logger, debug=True)
 
     # Include the routes
     # app.include_router(docs_router)
@@ -37,12 +38,12 @@ async def startup_event():
     # app.include_router(topic_router)
 
     # Routers for authenticated
-    announcements_router = app.auth_client.create_api_router(prefix="/announcements")
-    apikey_router = app.auth_client.create_api_router(prefix="/keys")
-    commands_router = app.auth_client.create_api_router(prefix="/commands")
-    dropbox_router = app.auth_client.create_api_router(prefix="/dropbox")
-    ignore_router = app.auth_client.create_api_router(prefix="/ignore")
-    poll_router = app.auth_client.create_api_router(prefix="/poll")
+    announcements_router = app.auth.create_api_router(prefix="/announcements")
+    apikey_router = app.auth.create_api_router(prefix="/keys")
+    commands_router = app.auth.create_api_router(prefix="/commands")
+    dropbox_router = app.auth.create_api_router(prefix="/dropbox")
+    ignore_router = app.auth.create_api_router(prefix="/ignore")
+    poll_router = app.auth.create_api_router(prefix="/poll")
 
     # Authenticated routes
     from routes.announcements import setup as announcements_setup

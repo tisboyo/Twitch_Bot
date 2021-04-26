@@ -17,6 +17,6 @@ sqlalchemy_json==0.4.0
 python-jose==3.2.0
 cryptography==3.4.7
 bcrypt==3.2.0
-easy-auth==0.133
+easy-auth==0.134
 pip==21.1
 aiopyql==0.356
