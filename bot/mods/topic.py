@@ -38,11 +38,7 @@ class TopicMod(Mod):
         topic = get_topic()
 
         if not msg.is_whisper:
-            if topic:
-                await msg.reply(f"{bot.msg_prefix}{topic}")
-            else:
-                # No topic was set
-                await msg.reply(f"{bot.msg_prefix}No current topic.")
+            await msg.reply(f"{bot.msg_prefix}{topic}")
         else:
             try:
                 # Send message directly to channel 0
@@ -53,13 +49,14 @@ class TopicMod(Mod):
     @SubCommand(topic, "set", permission="admin")
     async def set_topic(self, msg, *args):
 
-        topic = ""
+        new_topic = ""
         for arg in args:
-            topic += f"{arg} "
+            new_topic += f"{arg} "
 
-        topic_dict = {"topic": topic}
+        topic = get_topic(raw=True)
+        topic["topic"] = new_topic
 
-        if save_topic(topic_dict):
+        if save_topic(topic):
             await msg.reply(f"{bot.msg_prefix}Topic set.")
 
     @SubCommand(topic, "goal", permission="admin")
@@ -85,7 +82,7 @@ class TopicMod(Mod):
         topic["step"] = step
 
         if save_topic(topic):
-            await msg.reply(f"{bot.msg_prefix}Step set.")
+            await msg.reply(f"{bot.msg_prefix}On to step number next.")
 
     @SubCommand(topic, "link", permission="admin")
     async def set_topic_link(self, msg, *args):
@@ -99,6 +96,14 @@ class TopicMod(Mod):
         if save_topic(topic):
             await msg.reply(f"{bot.msg_prefix}Link set.")
 
+    @SubCommand(topic, "reset", permission="admin")
+    async def reset_topic(self, msg, *args):
+        """Reset the current topic to nothing."""
+
+        topic = dict()
+        if save_topic(topic):
+            await msg.reply(f"{bot.msg_prefix} Topic reset.")
+
     async def on_channel_raided(self, channel: Channel, raider: str, viewer_count: int) -> None:
         topic = get_topic()
 
@@ -111,11 +116,14 @@ class TopicMod(Mod):
 
 def get_topic(raw=False):
     result = session.query(Settings).filter(Settings.key == "topic").one_or_none()
-    topic = result.value if result is not None else None
+    topic = result.value if result is not None else '""'
 
     if raw:
-        return json.loads(topic)
+        # Returns a dictionary
+        val = json.loads(topic)
+        return val
 
+    # Beyond this point returns a string
     try:
         topic = json.loads(topic)
 
@@ -126,13 +134,15 @@ def get_topic(raw=False):
             topic_text = f"{topic_text}Goal: {topic['goal']} " if topic.get("goal", False) else topic_text
             topic_text = f"{topic_text}Currently: {topic['step']} " if topic.get("step", False) else topic_text
             topic_text = f"{topic_text}Notes/Info: {topic['link']}" if topic.get("link", False) else topic_text
+            # Return the topic in string format.
             return topic_text
         else:
-            return None
+            return "No current topic."
 
     except json.decoder.JSONDecodeError:
         # Stored value was not a json string
-        return topic
+        # Return an empty dictionary to indicate no topic currently set.
+        return "No current topic."
 
 
 def save_topic(topic: dict):
