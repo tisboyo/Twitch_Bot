@@ -6,6 +6,7 @@ from os import getenv
 import pytz
 from main import bot
 from mods._database import session
+from mods.topic import get_topic
 from twitchbot import add_task
 from twitchbot import cfg
 from twitchbot import channels
@@ -95,8 +96,8 @@ class AutoMessageStarterMod(Mod):
 
                     if self.announcement_count >= self.announce_topic_frequency:
                         # Send the topic instead of the announcement
-                        result = session.query(Settings).filter_by(key="topic").one_or_none()
-                        message_text = "Topic!" + result.value
+                        topic = get_topic()
+                        message_text = "Topic! " + topic
                         self.announcement_count = 0
                     else:
                         result = (  # Read the next announcement from the database

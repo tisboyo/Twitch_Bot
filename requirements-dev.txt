@@ -1,9 +1,3 @@
-black
-flake8
+pipreqs
 pre-commit
 python-dotenv
-uvicorn
-fastapi
-aiofiles
-pipreqs
-paho-mqtt

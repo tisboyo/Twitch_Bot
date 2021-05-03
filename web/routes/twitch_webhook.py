@@ -6,7 +6,6 @@ from fastapi.responses import PlainTextResponse
 from fastapi.responses import Response
 from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
-from send_to_bot import send_message_to_bot
 from signing import is_request_valid
 from starlette.status import HTTP_204_NO_CONTENT
 
@@ -43,7 +42,7 @@ async def twitch_webhook_follow_post(data: dict, request: Request):
                 return Response(status_code=HTTP_204_NO_CONTENT)
 
         # Send data to the twitchbot
-        ret = await send_message_to_bot(data, f"🤖 Thanks for the follow {data['from_name']}")
+        ret = await send_command_to_bot("follow", [data["from_name"]])
         return ret
 
 

@@ -151,22 +151,25 @@ function questionTimerStart() {
 }
 
 function getAQuestion() {
-    console.log("Getting a question");
-    //are we on the pi or are we local?
-    if (yourUrl == "") {
-        console.log("Looks like we are local...");
-        //var exampleJSON = '{"text":"Who invented the transistor?", "answers": {"1": {"text": "William Shockley", "is_answer": 1}, "2": {"text": "Alexander Bell", "is_answer": 0}, "3": {"text": "Daniel Bernoulli", "is_answer": 0}, "4": {"text": "Michael Jacob", "is_answer": 0}}, "explain": "Shockley, Bardeen, and Brattain were scientists who discovered the transistor effect at Bell Labs.", "last_used_date": "", "created_date": "2019-11-24", "created_by": "baldengineer", "reference": "https://en.wikipedia.org/wiki/William_Shockley"}';
-        var exampleJSON = '{"text": "Radio Direction Ranging is also known as:", "answers": {"1": {"text": "LiDAR", "is_answer": 0}, "2": {"text": "RADAR", "is_answer": 1}, "3": {"text": "Foxing", "is_answer": 0}, "4": {"text": "Futzing", "is_answer": 0}}, "explain": "The first range finding experiment occured in 1924.", "last_used_date": "", "created_date": "2019-11-24", "created_by": "baldengineer", "reference": "http://www.ob-ultrasound.net/radar.html"}';
-        questionOBJ = JSON.parse(exampleJSON);
-    } else {
-        console.log("Looks like we are on the Pi... Mmmmm Pie...");
-        var response = Get(yourUrl);
-        console.log(response);
-        questionOBJ = JSON.parse(response);
+    if (document.visibilityState === 'visible') {
+        console.log("Getting a question");
+        //are we on the pi or are we local?
+        if (yourUrl == "") {
+            console.log("Looks like we are local...");
+            //var exampleJSON = '{"text":"Who invented the transistor?", "answers": {"1": {"text": "William Shockley", "is_answer": 1}, "2": {"text": "Alexander Bell", "is_answer": 0}, "3": {"text": "Daniel Bernoulli", "is_answer": 0}, "4": {"text": "Michael Jacob", "is_answer": 0}}, "explain": "Shockley, Bardeen, and Brattain were scientists who discovered the transistor effect at Bell Labs.", "last_used_date": "", "created_date": "2019-11-24", "created_by": "baldengineer", "reference": "https://en.wikipedia.org/wiki/William_Shockley"}';
+            var exampleJSON = '{"text": "Radio Direction Ranging is also known as:", "answers": {"1": {"text": "LiDAR", "is_answer": 0}, "2": {"text": "RADAR", "is_answer": 1}, "3": {"text": "Foxing", "is_answer": 0}, "4": {"text": "Futzing", "is_answer": 0}}, "explain": "The first range finding experiment occured in 1924.", "last_used_date": "", "created_date": "2019-11-24", "created_by": "baldengineer", "reference": "http://www.ob-ultrasound.net/radar.html"}';
+            questionOBJ = JSON.parse(exampleJSON);
+        } else {
+            console.log("Looks like we are on the Pi... Mmmmm Pie...");
+            var response = Get(yourUrl);
+            console.log(response);
+            questionOBJ = JSON.parse(response);
+        }
+
+        processResponse(questionOBJ);
+        questionTimerStart();
     }
 
-    processResponse(questionOBJ);
-    questionTimerStart();
 }
 
 function delay_between_questions() {

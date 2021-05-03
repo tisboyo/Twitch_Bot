@@ -21,6 +21,7 @@ class MqttTopics:
     channel_raid = _prefix + "channel-raid"
     channel_sub = _prefix + "channel-subscription"
     channel_cheer = _prefix + "channel-cheer"
+    channel_follow = _prefix + "channel-follow"
     yay_toggle = _prefix + "yay-toggle"
     poll_setup = _prefix + "poll/setup"
     poll_data = _prefix + "poll/data"
