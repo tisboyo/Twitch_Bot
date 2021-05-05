@@ -25,7 +25,12 @@ async def startup_event():
     logger.info("Adding MOAR OHMS! ΩΩΩ")
     # Start the authorization server
     app.auth = await EasyAuthServer.create(
-        app, "/auth/token", admin_prefix="/admin", admin_title="Add moar Ohms!", logger=logger
+        app,
+        "/auth/token",
+        auth_secret="abcd1234",
+        admin_prefix="/admin",
+        admin_title="Add moar Ohms!",
+        logger=logger,
     )
 
     # Handle for the authorization client
