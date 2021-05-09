@@ -97,7 +97,7 @@ class AutoMessageStarterMod(Mod):
                     if self.announcement_count >= self.announce_topic_frequency:
                         # Send the topic instead of the announcement
                         topic = get_topic()
-                        message_text = "Topic! " + topic
+                        message_text = "Topic: " + topic
                         self.announcement_count = 0
                     else:
                         result = (  # Read the next announcement from the database
