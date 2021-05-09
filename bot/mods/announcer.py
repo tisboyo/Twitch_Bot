@@ -348,8 +348,8 @@ class AutoMessageStarterMod(Mod):
         next_run_seconds = self.next_run - datetime.now(self.timezone)
         enabled = session.query(Announcements).filter(Announcements.enabled == True).count()  # noqa E712
         total_count = session.query(Announcements).count()
-        # Scalar returns the first element of the first result or None
-        cat_id = int(session.query(Settings.value).filter(Settings.key == self.current_category_setting).scalar())
+        # Scalar returns the first element of the first result or None, doing or 1 defaults to category 1
+        cat_id = int(session.query(Settings.value).filter(Settings.key == self.current_category_setting).scalar() or 1)
         category_name = session.query(AnnouncementCategories.name).filter(AnnouncementCategories.id == cat_id).scalar()
         announcements_in_cat = session.query(Announcements).filter(Announcements.category == cat_id).count()
 
