@@ -2,8 +2,8 @@ from asyncio import sleep
 from datetime import datetime
 from datetime import timedelta
 from os import getenv
+from zoneinfo import ZoneInfo
 
-import pytz
 from main import bot
 from mods._database import session
 from mods.topic import get_topic
@@ -56,7 +56,7 @@ class AutoMessageStarterMod(Mod):
         self.delay = int(query[0]) if query is not None else 900
         self.chan = cfg.channels[0]
         self.next_run = datetime.min
-        self.timezone = pytz.timezone("America/Chicago")
+        self.timezone = ZoneInfo("America/Chicago")
         self.channel_active = False
         self.announcements_sleeping = True
         self.sleep_override = False
@@ -107,6 +107,12 @@ class AutoMessageStarterMod(Mod):
                             .order_by(Announcements.last_sent)
                             .first()
                         )
+
+                        # Make sure there are entries in the dictioary
+                        if result is None:
+                            # Use continue instead of return so more can be added once the bot is run
+                            continue
+
                         message_text = result.text
                         self.announcement_count += 1
 
@@ -116,11 +122,6 @@ class AutoMessageStarterMod(Mod):
                         )
 
                         session.commit()
-
-                    # Make sure there are entries in the dictioary
-                    if result is None:
-                        # Use continue instead of return so more can be added once the bot is run
-                        continue
 
                     # Send the message
                     await channels[self.chan].send_message(bot.msg_prefix + message_text)
@@ -347,8 +348,8 @@ class AutoMessageStarterMod(Mod):
         next_run_seconds = self.next_run - datetime.now(self.timezone)
         enabled = session.query(Announcements).filter(Announcements.enabled == True).count()  # noqa E712
         total_count = session.query(Announcements).count()
-        # Scalar returns the first element of the first result or None
-        cat_id = int(session.query(Settings.value).filter(Settings.key == self.current_category_setting).scalar())
+        # Scalar returns the first element of the first result or None, doing or 1 defaults to category 1
+        cat_id = int(session.query(Settings.value).filter(Settings.key == self.current_category_setting).scalar() or 1)
         category_name = session.query(AnnouncementCategories.name).filter(AnnouncementCategories.id == cat_id).scalar()
         announcements_in_cat = session.query(Announcements).filter(Announcements.category == cat_id).count()
 

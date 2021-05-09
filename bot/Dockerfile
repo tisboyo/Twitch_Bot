@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.9
 
 # Any environment variables that are stored in
 # the .env file must be loaded in docker-compose.yml
