@@ -79,7 +79,7 @@ class Wigs(Base):
 
 
 class LinksToDiscordIgnoreList(Base):
-    """ List of twitch users to ignore for sending links to discord."""
+    """List of twitch users to ignore for sending links to discord."""
 
     __tablename__ = "linkstodiscordignorelist"
     id = Column(Integer(), primary_key=True)
@@ -87,7 +87,7 @@ class LinksToDiscordIgnoreList(Base):
 
 
 class IgnoreList(Base):
-    """ Table of regex patterns to ignore all commands from."""
+    """Table of regex patterns to ignore all commands from."""
 
     __tablename__ = "ignorelist"
     id = Column(Integer(), primary_key=True)
