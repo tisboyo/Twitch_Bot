@@ -10,6 +10,9 @@ from twitchbot.command import SubCommand
 from twitchbot.message import Message
 from twitchbot.modloader import Mod
 from twitchbot.permission import perms
+from twitchbot.util.task_util import add_task
+from twitchbot.util.task_util import stop_task
+from twitchbot.util.task_util import task_exist
 
 mqtt_topic_dispense = bot.MQTT.Topics.dispense_treat_toggle
 mqtt_topic_treat_in_queue = bot.MQTT.Topics.treat_in_queue
@@ -19,14 +22,43 @@ trigger_emoji = "balden3TreatMe"
 
 class Treats(Mod):
     name = "treats"
+    task_name = "treats_task"
 
     def __init__(self):
         self.points = Points(
-            emojis=6, unique_users=4, mod_commands=1, require_all=True, emoji_cap=2, timeout_seconds=60 * 10
+            emojis=6, unique_users=3, mod_commands=1, require_all=True, emoji_cap=2, timeout_seconds=60 * 10
         )
         self.reminder_enable = True
         self.ready_for_trigger = True
         self.treat_disabled_check = datetime.datetime.min
+        self.treat_in_queue = False
+        self.last_treat_reminder = datetime.datetime.min
+
+    async def timer_loop(self):
+        print("Timer loop started")
+        while True:
+            now = datetime.datetime.now()
+
+            # Check if the last use has expired, and reset it if so.
+            if self.points.timeout_expire > now:
+                self.treat_in_queue = False
+                await bot.MQTT.send(mqtt_topic_treat_in_queue, 0)
+
+            if self.treat_in_queue:
+                if now > (self.last_treat_reminder + datetime.timedelta(seconds=5)):
+                    if await bot.MQTT.send(mqtt_topic_treat_in_queue, 1):
+                        print("A treat is still in the queue, reminder sent.")
+                    else:
+                        print("A treat is still in the queue, MQTT problem.")
+
+                    self.last_treat_reminder = now
+
+            else:
+                # Stop the loop since there isn't a treat in the queue.
+                stop_task(self.task_name)
+                print("Stopping treat reminder loop")
+
+            await sleep(1)
 
     async def on_raw_message(self, msg: Message):
         # If the message is a system message, we're done here
@@ -42,6 +74,8 @@ class Treats(Mod):
                     self.treat_disabled_check = datetime.datetime.now()
 
             elif self.points.check(msg, emojis=emoji_count):
+                # This can ONLY run when the mod_command has also been run
+                # So sending the actual treat is the appropriate action.
                 await self.send_treat_status(self.points.status())
                 await self.send_treat(msg)
 
@@ -133,14 +167,22 @@ class Treats(Mod):
         return required
 
     async def send_treat(self, msg: Message) -> bool:
+        self.treat_in_queue = False
         if await bot.MQTT.send(mqtt_topic_dispense, 1):
             await msg.reply(f"{bot.msg_prefix}Treats!! balden3Yay balden3Yay balden3Yay")
+
+            # Reset the treat in queue, if the first MQTT message failed, this one will too, so no use checking.
+            await bot.MQTT.send(mqtt_topic_treat_in_queue, 0)
+
             return True
         else:
             await msg.reply(f"{bot.msg_prefix}I ran into a problem with MQTT. Sorry ☹️")
             return False
 
     async def send_treat_in_queue(self, msg: Message) -> bool:
+        self.treat_in_queue = True
+        self.last_treat_reminder = datetime.datetime.now()  # Remember when we sent the initial reminder
+        add_task(self.task_name, self.timer_loop())  # Start the loop for reminders
         if await bot.MQTT.send(mqtt_topic_treat_in_queue, 1):
             await msg.reply(f"{bot.msg_prefix}A treat is in the queue!!")
             return True
@@ -157,3 +199,12 @@ class Treats(Mod):
         else:
             print("MQTT Error sending treat status.")
             return False
+
+    def restart_task(self):
+        if task_exist(self.task_name):
+            stop_task(self.task_name)
+
+        add_task(self.task_name, self.timer_loop())
+
+    # async def on_connected(self):
+    #     self.restart_task()
