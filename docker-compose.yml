@@ -71,6 +71,7 @@ services:
       WEB_COOKIE_KEY: ${WEB_COOKIE_KEY}
       MQTT_USER: ${MQTT_USER}
       MQTT_KEY: ${MQTT_KEY}
+      FORWARDED_ALLOW_IPS: '*'
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
