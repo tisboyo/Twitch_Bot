@@ -7,7 +7,7 @@ Jinja2==2.11.3
 mysql-connector-python==8.0.24
 passlib==1.7.4
 pip>=21.0.0
-pydantic==1.8.1
+pydantic==1.8.2
 PyJWT==2.1.0
 python-jose==3.2.0
 python-multipart==0.0.5
