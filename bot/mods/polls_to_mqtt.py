@@ -70,6 +70,9 @@ class PollsToMQTT(Mod):
         await asyncio.sleep(2)
         bot.poll_display_active = False
 
+        # Clears the setup data that has been retained, so old data doesn't get sent to a client #208
+        await self.mqtt.send(self.mqtt.Topics.poll_setup, "", retain=True)
+
     @ModCommand(name, "clear_poll", context=CommandContext.BOTH, permission="admin")
     async def clear_poll(self, msg: Message):
         active = json.dumps({"active": False})
