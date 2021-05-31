@@ -13,6 +13,7 @@ from twitchbot.util.twitch_api_util import get_user_id
 
 from models import TriviaQuestions
 from models import TriviaResults
+from models import Users
 
 
 class TriviaMod(Mod):
@@ -25,7 +26,7 @@ class TriviaMod(Mod):
         # Create session for participant tracking
         self.session = dict()
         self.leaderboard = dict()
-        self.manual_delay: int = 0
+        self.manual_delay: int = -7
 
         # Flag for sending instructions message when first question is sent.
         # Also used for interupting mid-question when trivia ends
@@ -117,6 +118,7 @@ class TriviaMod(Mod):
             # One last sleep to let people get final answers in.
             await sleep_if_active(5)
 
+            # Insert/Update the participants that got a correct answer
             correctly_answered = list()
             for participant in self.session:
                 if (
@@ -124,7 +126,16 @@ class TriviaMod(Mod):
                     and participant in self.current_question_participant  # See note in reset_session
                 ):
                     correctly_answered.append(participant)
-                    user_id = await get_user_id(participant)
+                    # Get the user id, but sometimes this fails and returns a -1, if it's -1 try again up to 3 times.
+                    # If it still fails, send a message to the console and do not insert into the database.
+                    user_id = -1
+                    get_user_id_count = 0
+                    while user_id == -1:
+                        user_id = await get_user_id(participant)
+                        get_user_id_count += 1
+                        if get_user_id_count >= 3:
+                            print(f"Unable to fetch user id for {participant} after 3 attempts.")
+                            break
 
                     query = (
                         session.query(TriviaResults)
@@ -165,6 +176,9 @@ class TriviaMod(Mod):
             # Trivia hasn't ended yet, force end it.
             await run_command("trivia", msg, ["end"], blocking=True)
 
+        # Grab the channel ID, we'll need it later.
+        channel_id = await get_user_id(msg.channel.name)
+
         first = self.leaderboard.popitem() if len(self.leaderboard) > 0 else None
         second = self.leaderboard.popitem() if len(self.leaderboard) > 0 else None
         third = self.leaderboard.popitem() if len(self.leaderboard) > 0 else None
@@ -179,7 +193,60 @@ class TriviaMod(Mod):
 
         if first is not None:
             await msg.reply(f"{self.msg_prefix}In first place is {', '.join(first[1])} with {first[0]}")
-            await msg.reply(f"{bot.msg_prefix}Congratulations to all of the trivia winners.")
+            # await msg.reply(f"{bot.msg_prefix}Congratulations to all of the trivia winners.")
+
+        # 203
+        # Special announcements for first place winners
+        if first is not None:  # No participants with correct answers
+            winner_list = first[1]
+
+            # Grab the ID numbers of all winners
+            winner_ids = list()
+            for winner in winner_list:
+                # Grab winners stats
+                winner_id = -1
+                while winner_id == -1:
+                    winner_id = await get_user_id(winner)
+
+                winner_ids.append(winner_id)
+
+            winner_db = (
+                session.query(TriviaResults, Users)
+                .filter(
+                    TriviaResults.user_id.in_(winner_ids),
+                    TriviaResults.channel == channel_id,
+                    Users.user_id == TriviaResults.user_id,
+                )
+                .all()
+            )
+
+            # First win
+            first_time_winner = list()
+            win_count = dict()
+            most_wins = 0
+            for trivia, user in winner_db:
+                # Used for first time winner
+                if trivia.total_wins == 1:
+                    first_time_winner.append(user.user)
+
+                # Used for most wins and when multiple tie for most
+                if trivia.total_wins > most_wins:
+                    most_wins = trivia.total_wins
+
+                # Create the list if it doesn't exist in the dictionary yet
+                if not win_count.get(trivia.total_wins, False):
+                    win_count[trivia.total_wins] = list()
+
+                # Used for tracking how many wins each person has
+                win_count[trivia.total_wins].append(user.user)
+
+            # Send a final congratulations message
+            if len(first_time_winner) > 0:  # First time winners
+                await msg.reply(f"{self.msg_prefix}CONGRATULATIONS {', '.join(first_time_winner)} on your first win!!")
+            elif len(win_count[most_wins]) > 1:  # Multiple top winners
+                await msg.reply(f"{self.msg_prefix}Congrats to {', '.join(win_count[most_wins])} for the most wins!")
+            elif len(win_count[most_wins]) == 1:  # Single top winner
+                await msg.reply(f"{self.msg_prefix}Congrats to {win_count[most_wins][0]}, you have won {most_wins} times!")
 
         # Reset the leaderboard
         self.leaderboard = dict()
@@ -212,7 +279,18 @@ class TriviaMod(Mod):
 
             # Loop through the highest score as a winner
             for participant in leaderboard[leaderboard_order[0]]:
-                user_id = await get_user_id(participant)
+
+                # Get the user id, but sometimes this fails and returns a -1, if it's -1 try again up to 3 times.
+                # If it still fails, send a message to the console and do not insert into the database.
+                user_id = -1
+                get_user_id_count = 0
+                while user_id == -1:
+                    user_id = await get_user_id(participant)
+                    get_user_id_count += 1
+                    if get_user_id_count >= 3:
+                        print(f"Unable to fetch user id for {participant} after 3 attempts.")
+                        break
+
                 # User should have already been in the database from answering the question
                 if (
                     session.query(TriviaResults)
