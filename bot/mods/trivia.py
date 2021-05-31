@@ -117,6 +117,7 @@ class TriviaMod(Mod):
             # One last sleep to let people get final answers in.
             await sleep_if_active(5)
 
+            # Insert/Update the participants that got a correct answer
             correctly_answered = list()
             for participant in self.session:
                 if (
@@ -124,7 +125,16 @@ class TriviaMod(Mod):
                     and participant in self.current_question_participant  # See note in reset_session
                 ):
                     correctly_answered.append(participant)
-                    user_id = await get_user_id(participant)
+                    # Get the user id, but sometimes this fails and returns a -1, if it's -1 try again up to 3 times.
+                    # If it still fails, send a message to the console and do not insert into the database.
+                    user_id = -1
+                    get_user_id_count = 0
+                    while user_id == -1:
+                        user_id = await get_user_id(participant)
+                        get_user_id_count += 1
+                        if get_user_id_count >= 3:
+                            print(f"Unable to fetch user id for {participant} after 3 attempts.")
+                            break
 
                     query = (
                         session.query(TriviaResults)
@@ -212,7 +222,18 @@ class TriviaMod(Mod):
 
             # Loop through the highest score as a winner
             for participant in leaderboard[leaderboard_order[0]]:
-                user_id = await get_user_id(participant)
+
+                # Get the user id, but sometimes this fails and returns a -1, if it's -1 try again up to 3 times.
+                # If it still fails, send a message to the console and do not insert into the database.
+                user_id = -1
+                get_user_id_count = 0
+                while user_id == -1:
+                    user_id = await get_user_id(participant)
+                    get_user_id_count += 1
+                    if get_user_id_count >= 3:
+                        print(f"Unable to fetch user id for {participant} after 3 attempts.")
+                        break
+
                 # User should have already been in the database from answering the question
                 if (
                     session.query(TriviaResults)
