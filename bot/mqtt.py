@@ -13,22 +13,26 @@ from models import Settings
 
 @dataclass
 class MqttTopics:
-    _prefix = "stream/"
-    treat_in_queue = _prefix + "treat-in-queue"
-    dispense_treat_toggle = _prefix + "dispense-treat-toggle"
-    twitch_attention_indicator = _prefix + "twitch-attn-indi"
-    treat_status = _prefix + "treat_status"
-    channel_raid = _prefix + "channel-raid"
-    channel_sub = _prefix + "channel-subscription"
-    channel_cheer = _prefix + "channel-cheer"
-    channel_follow = _prefix + "channel-follow"
-    yay_toggle = _prefix + "yay-toggle"
-    poll_setup = _prefix + "poll/setup"
-    poll_data = _prefix + "poll/data"
-    verify_1k = _prefix + "verify1k"
-    test = _prefix + "mqtttest"
-    first_time_chatter = _prefix + "first_time_chatter"
-    new_chatter = _prefix + "new_chatter"
+    stream_prefix = "stream/"
+    treat_in_queue = stream_prefix + "treat-in-queue"
+    dispense_treat_toggle = stream_prefix + "dispense-treat-toggle"
+    twitch_attention_indicator = stream_prefix + "twitch-attn-indi"
+    treat_status = stream_prefix + "treat_status"
+    channel_raid = stream_prefix + "channel-raid"
+    channel_sub = stream_prefix + "channel-subscription"
+    channel_cheer = stream_prefix + "channel-cheer"
+    channel_follow = stream_prefix + "channel-follow"
+    yay_toggle = stream_prefix + "yay-toggle"
+    poll_setup = stream_prefix + "poll/setup"
+    poll_data = stream_prefix + "poll/data"
+    verify_1k = stream_prefix + "verify1k"
+    test = stream_prefix + "mqtttest"
+    first_time_chatter = stream_prefix + "first_time_chatter"
+    new_chatter = stream_prefix + "new_chatter"
+
+    trivia_prefix = "trivia/"
+    trivia_setup = trivia_prefix + "setup"
+    trivia_data = trivia_prefix + "data"
 
 
 class MQTT:
