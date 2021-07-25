@@ -33,7 +33,7 @@ from routes.trivia import router as trivia_router
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
 CLIENT_ID = getenv("DISCORD_CLIENT_ID")
-CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")  # "DKCckoSj7qVQ7-lohpovrSgscuQceryW"
+CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
 REDIRECT_URI = "http://localhost:5000/callback"
 client = DiscordOAuthClient(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
@@ -106,7 +106,7 @@ def favicon():
     return FileResponse("static_files/favicon.ico")
 
 
-app.add_middleware(SessionMiddleware, secret_key=getenv("WEBAUTH_SECRET"))
+app.add_middleware(SessionMiddleware, secret_key=getenv("SESSION_KEY"))
 
 if __name__ == "__main__":
 
