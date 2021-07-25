@@ -3,6 +3,7 @@ bcrypt==3.2.0
 cryptography==3.4.7
 fastapi==0.66.0
 fastapi-sqlalchemy==0.2.1
+itsdangerous
 Jinja2==3.0.1
 mysql-connector-python==8.0.25
 passlib==1.7.4
@@ -15,5 +16,6 @@ pythontwitchbotframework==2.3.6
 requests==2.25.1
 SQLAlchemy==1.4.20
 sqlalchemy_json==0.4.0
+starlette-discord
 uvicorn==0.14.0
 websockets==9.1

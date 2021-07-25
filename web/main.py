@@ -6,6 +6,11 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi_sqlalchemy import db
 from fastapi_sqlalchemy import DBSessionMiddleware
+from starlette.exceptions import HTTPException
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.requests import Request
+from starlette.responses import RedirectResponse
+from starlette_discord.client import DiscordOAuthClient
 from uvicorn.main import logger
 
 from models import Settings
@@ -14,7 +19,8 @@ from models import Settings
 # Routes
 from routes.announcements import router as announcements_router
 from routes.commands import router as commands_router
-from routes.docs import router as docs_router
+
+# from routes.docs import router as docs_router
 from routes.dropbox import router as dropbox_router
 from routes.poll_display import router as poll_router
 from routes.send_command import router as send_command_router
@@ -26,6 +32,10 @@ from routes.trivia import router as trivia_router
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
+CLIENT_ID = getenv("DISCORD_CLIENT_ID")
+CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")  # "DKCckoSj7qVQ7-lohpovrSgscuQceryW"
+REDIRECT_URI = "http://localhost:5000/callback"
+client = DiscordOAuthClient(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
 # Add Database handler
 mysql_database = getenv("MYSQL_DATABASE")
@@ -37,7 +47,7 @@ app.add_middleware(DBSessionMiddleware, db_url=db_url)
 # Include the routes
 app.include_router(announcements_router)
 app.include_router(commands_router)
-app.include_router(docs_router)
+# app.include_router(docs_router)
 app.include_router(dropbox_router)
 app.include_router(poll_router)
 app.include_router(send_command_router)
@@ -70,10 +80,34 @@ async def startup_event():
 #     return {"Hello": "World"}
 
 
+@app.get("/login")
+async def login_with_discord():
+    return client.redirect()
+
+
+# NOTE: REDIRECT_URI should be this path.
+@app.get("/callback")
+async def callback(request: Request, code: str):
+    user = await client.login(code)
+    request.session["discord_user"] = user
+    return RedirectResponse("/dash")
+
+
+@app.get("/dash")
+async def dash(request: Request):
+    user = request.session.get("discord_user")
+    if not user:
+        raise HTTPException(401)
+    return user
+
+
 @app.get("/favicon.ico")
 def favicon():
     return FileResponse("static_files/favicon.ico")
 
 
+app.add_middleware(SessionMiddleware, secret_key=getenv("WEBAUTH_SECRET"))
+
 if __name__ == "__main__":
+
     uvicorn.run("main:app", host="0.0.0.0", port=5000, ws="websockets", reload=True)
