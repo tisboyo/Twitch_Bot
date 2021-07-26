@@ -74,6 +74,7 @@ services:
       FORWARDED_ALLOW_IPS: '*'
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+      SESSION_KEY: ${SESSION_KEY}
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:

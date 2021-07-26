@@ -9,9 +9,10 @@ from fastapi_sqlalchemy import DBSessionMiddleware
 from starlette.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
-from starlette_discord.client import DiscordOAuthClient
 from uvicorn.main import logger
+from web_auth import check_user_valid
+from web_auth import get_user
+from web_auth import webauth_client
 
 from models import Settings
 
@@ -29,13 +30,10 @@ from routes.topic import router as topic_router
 from routes.twitch_webhook import router as twitch_webhook_router
 from routes.ignore import router as ignore_router
 from routes.trivia import router as trivia_router
+from web_auth import router as webauth_router
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
-CLIENT_ID = getenv("DISCORD_CLIENT_ID")
-CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
-REDIRECT_URI = "http://localhost:5000/callback"
-client = DiscordOAuthClient(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
 # Add Database handler
 mysql_database = getenv("MYSQL_DATABASE")
@@ -56,6 +54,7 @@ app.include_router(topic_router)
 app.include_router(twitch_webhook_router)
 app.include_router(ignore_router)
 app.include_router(trivia_router)
+app.include_router(webauth_router)
 
 
 @app.on_event("startup")
@@ -68,37 +67,26 @@ async def startup_event():
             with db():
                 logger.info("Database keep alive running.")
                 q = db.session.query(Settings).filter(Settings.key == "topic").one_or_none()
-                logger.info(f"Current twitch topic: {q.value}")
+                if q:
+                    logger.info(f"Current twitch topic: {q.value}")
 
                 await asyncio.sleep(3600)
 
     loop.create_task(keep_database_alive())
 
 
-# @app.get("/")
-# def root():
-#     return {"Hello": "World"}
+@app.get("/")
+def root(request: Request):
+    try:
+        check_user_valid(request)
+        user = get_user(request)
+    except HTTPException as e:
+        if e.status_code == 403:
+            raise HTTPException(403)
+        else:
+            return webauth_client.redirect()
 
-
-@app.get("/login")
-async def login_with_discord():
-    return client.redirect()
-
-
-# NOTE: REDIRECT_URI should be this path.
-@app.get("/callback")
-async def callback(request: Request, code: str):
-    user = await client.login(code)
-    request.session["discord_user"] = user
-    return RedirectResponse("/dash")
-
-
-@app.get("/dash")
-async def dash(request: Request):
-    user = request.session.get("discord_user")
-    if not user:
-        raise HTTPException(401)
-    return user
+    return {"Hello": user["username"]}
 
 
 @app.get("/favicon.ico")
@@ -106,7 +94,7 @@ def favicon():
     return FileResponse("static_files/favicon.ico")
 
 
-app.add_middleware(SessionMiddleware, secret_key=getenv("SESSION_KEY"))
+app.add_middleware(SessionMiddleware, secret_key=getenv("SESSION_KEY"), same_site="Strict")
 
 if __name__ == "__main__":
 

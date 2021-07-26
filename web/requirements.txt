@@ -16,6 +16,6 @@ pythontwitchbotframework==2.3.6
 requests==2.25.1
 SQLAlchemy==1.4.20
 sqlalchemy_json==0.4.0
-starlette-discord
+starlette-discord==0.1.1
 uvicorn==0.14.0
 websockets==9.1
