@@ -94,7 +94,7 @@ def favicon():
     return FileResponse("static_files/favicon.ico")
 
 
-app.add_middleware(SessionMiddleware, secret_key=getenv("SESSION_KEY"), same_site="Strict")
+app.add_middleware(SessionMiddleware, secret_key=getenv("SESSION_KEY"))
 
 if __name__ == "__main__":
 
