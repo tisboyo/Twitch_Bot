@@ -36,6 +36,10 @@ services:
       WEB_API_KEY: ${WEB_API_KEY}
       TWITCH_SIGNING_SECRET: ${TWITCH_SIGNING_SECRET}
       WEB_COOKIE_KEY: ${WEB_COOKIE_KEY}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+      SESSION_KEY: ${SESSION_KEY}
+
 
     # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
     # cap_add:
