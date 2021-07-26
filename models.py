@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from sqlalchemy import BigInteger
 from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -120,3 +121,12 @@ class TriviaResults(Base):
     total_wins = Column(Integer(), nullable=False, default=0)
     trivia_points = Column(Integer(), nullable=False, default=0)
     questions_answered_correctly = Column(NestedMutableJson)
+
+
+class WebAuth(Base):
+    """Table for storing discord user ids for web authentication"""
+
+    __tablename__ = "web_auth"
+    id = Column(BigInteger(), primary_key=True, nullable=False, index=True)
+    name = Column(String(128), nullable=False)
+    enabled = Column(Boolean(), default=True)
