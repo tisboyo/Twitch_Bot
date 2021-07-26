@@ -15,7 +15,7 @@ router = APIRouter()
 
 CLIENT_ID = getenv("DISCORD_CLIENT_ID")
 CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
-REDIRECT_URI = f"http://{getenv('WEB_HOSTNAME')}/callback"
+REDIRECT_URI = f"https://{getenv('WEB_HOSTNAME')}/callback"
 webauth_client = DiscordOAuthClient(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
 
