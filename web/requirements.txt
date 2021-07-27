@@ -5,6 +5,7 @@ fastapi==0.66.0
 fastapi-sqlalchemy==0.2.1
 itsdangerous
 Jinja2==3.0.1
+munch==2.5.0
 mysql-connector-python==8.0.25
 passlib==1.7.4
 pip>=21.1.3

@@ -3,6 +3,7 @@ from os import getenv
 import jwt
 from fastapi.routing import APIRouter
 from fastapi_sqlalchemy import db
+from munch import munchify
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
@@ -27,7 +28,15 @@ def get_user(request: Request) -> dict:
         print(e)
         raise HTTPException(401)
 
-    return user
+    query = db.session.query(WebAuth).filter(WebAuth.id == user["id"]).one_or_none()
+    if query:
+        user["enabled"] = query.enabled
+        user["admin"] = query.admin
+        user["mod"] = query.mod
+        user["user"] = query.user
+
+    new_user = munchify(user)
+    return new_user
 
 
 def check_user_valid(request: Request) -> dict:
@@ -74,6 +83,20 @@ async def callback(request: Request, code: str):
     encoded = jwt.encode(user, getenv("WEB_COOKIE_KEY"), algorithm="HS256")
     request.session["discord_user"] = encoded
     logger.info(f"{user['username']} logged into webserver")
+
+    # If the user doesn't exist in the database, insert them.
+    # Doing the query without checking if they are enabled allows for
+    # disabling users and them not being reinserted
+    query = db.session.query(WebAuth).filter(WebAuth.id == int(user["id"])).one_or_none()
+    if not query:
+        new_user = WebAuth(
+            id=user["id"],
+            name=f"{user['username']}#{user['discriminator']}",
+            enabled=True,
+            user=True,
+        )
+        db.session.add(new_user)
+        db.session.commit()
 
     return RedirectResponse("/")
 
