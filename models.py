@@ -130,3 +130,6 @@ class WebAuth(Base):
     id = Column(BigInteger(), primary_key=True, nullable=False, index=True)
     name = Column(String(128), nullable=False)
     enabled = Column(Boolean(), default=True)
+    admin = Column(Boolean(), default=False)
+    mod = Column(Boolean(), default=False)
+    user = Column(Boolean(), default=False)
