@@ -31,6 +31,7 @@ from routes.twitch_webhook import router as twitch_webhook_router
 from routes.ignore import router as ignore_router
 from routes.trivia import router as trivia_router
 from web_auth import router as webauth_router
+from routes.user_manage import router as user_manage_router
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -55,6 +56,7 @@ app.include_router(twitch_webhook_router)
 app.include_router(ignore_router)
 app.include_router(trivia_router)
 app.include_router(webauth_router)
+app.include_router(user_manage_router)
 
 
 @app.on_event("startup")
@@ -86,7 +88,7 @@ def root(request: Request):
         else:
             return webauth_client.redirect()
 
-    return {"Hello": user["username"]}
+    return {"Hello": user.username}
 
 
 @app.get("/favicon.ico")
