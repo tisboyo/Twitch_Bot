@@ -5,7 +5,6 @@ from fastapi.responses import HTMLResponse
 from fastapi_sqlalchemy import db
 from starlette.exceptions import HTTPException
 from starlette.responses import RedirectResponse
-from starlette.responses import Response
 from uvicorn.main import logger
 from web_auth import check_user_valid
 from web_auth import get_user
@@ -119,7 +118,7 @@ async def get_users(request: Request):
         </table>
     </body>
 </html>"""
-    return Response(out, headers=headers)
+    return HTMLResponse(out, headers=headers)
 
 
 @router.post("/users/level", response_class=HTMLResponse)
@@ -142,10 +141,10 @@ async def post_user_level(request: Request, user_id: int = Form(...), level: str
                 query.mod = False
                 query.admin = True
             else:
-                return Response(f"{level} is unknown.", headers=headers)
+                return HTMLResponse(f"{level} is unknown.", headers=headers)
 
             db.session.commit()
-            return Response(f"{query.name} updated to {level}", headers=headers)
+            return HTMLResponse(f"{query.name} updated to {level}", headers=headers)
         else:
             raise HTTPException(404)
     else:
@@ -163,7 +162,7 @@ async def post_user_enable(request: Request, user_id: int = Form(...), enabled: 
             if (me.mod and not (query.admin or query.mod)) or me.admin:
                 query.enabled = enabled
                 db.session.commit()
-                return Response(f'{query.name} {"enabled" if enabled else "disabled"}.', headers=headers)
+                return HTMLResponse(f'{query.name} {"enabled" if enabled else "disabled"}.', headers=headers)
             else:
                 # Mods can't modify mods/admins
                 raise HTTPException(403)
