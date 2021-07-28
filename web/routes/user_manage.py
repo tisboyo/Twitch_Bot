@@ -60,7 +60,7 @@ async def get_users(request: Request):
                     document.getElementById("status").innerHTML = this.responseText;
                     }
                 };
-                xhttp.open("POST", "/update_user_level", true);
+                xhttp.open("POST", "/users/level", true);
                 xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                 xhttp.send("user_id="+user+"&level="+level);
             }
@@ -72,7 +72,7 @@ async def get_users(request: Request):
                     document.getElementById("status").innerHTML = this.responseText;
                     }
                 };
-                xhttp.open("POST", "/update_user_enabled", true);
+                xhttp.open("POST", "/users/enable", true);
                 xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                 xhttp.send("user_id="+user+"&enabled="+enabled);
             }
@@ -122,8 +122,8 @@ async def get_users(request: Request):
     return Response(out, headers=headers)
 
 
-@router.post("/update_user_level", response_class=HTMLResponse)
-async def post_update_user_level(request: Request, user_id: int = Form(...), level: str = Form(...)):
+@router.post("/users/level", response_class=HTMLResponse)
+async def post_user_level(request: Request, user_id: int = Form(...), level: str = Form(...)):
     check_user_valid(request)
     user = get_user(request)
     if user.admin:
@@ -152,8 +152,8 @@ async def post_update_user_level(request: Request, user_id: int = Form(...), lev
         raise HTTPException(403)
 
 
-@router.post("/update_user_enabled", response_class=HTMLResponse)
-async def post_update_user_enabled(request: Request, user_id: int = Form(...), enabled: bool = Form(...)):
+@router.post("/users/enable", response_class=HTMLResponse)
+async def post_user_enable(request: Request, user_id: int = Form(...), enabled: bool = Form(...)):
     check_user_valid(request)
     me = get_user(request)
     if me.admin or me.mod:
