@@ -159,9 +159,11 @@ async def post_user_enable(request: Request, user_id: int = Form(...), enabled: 
     if me.admin or me.mod:
         query = db.session.query(WebAuth).filter(WebAuth.id == user_id).one_or_none()
         if query:
-            query.enabled = enabled
-            db.session.commit()
-            return Response(f'{query.name} {"enabled" if enabled else "disabled"}.', headers=headers)
+            # Mods can only enable/disable other mods and below, admins can modify anyone
+            if (me.mod and not query.admin) or me.admin:
+                query.enabled = enabled
+                db.session.commit()
+                return Response(f'{query.name} {"enabled" if enabled else "disabled"}.', headers=headers)
         else:
             raise HTTPException(404)
     else:
