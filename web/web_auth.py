@@ -35,6 +35,9 @@ def get_user(request: Request) -> dict:
         user["mod"] = query.mod
         user["user"] = query.user
 
+    # Convert the user id to an integer instead of a string
+    user["id"] = int(user["id"])
+
     new_user = munchify(user)
     return new_user
 
