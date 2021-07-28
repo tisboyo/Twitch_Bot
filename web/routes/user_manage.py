@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi_sqlalchemy import db
 from starlette.exceptions import HTTPException
 from starlette.responses import RedirectResponse
+from starlette.responses import Response
 from uvicorn.main import logger
 from web_auth import check_user_valid
 from web_auth import get_user
@@ -12,6 +13,8 @@ from web_auth import get_user
 from models import WebAuth
 
 router = APIRouter()
+
+headers = {"Cache-Control": "no-store"}
 
 
 @router.get("/users", response_class=HTMLResponse)
@@ -44,6 +47,9 @@ async def get_users(request: Request):
         return out
 
     out = """<html>
+    <head>
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    </head>
     <body>
         <script>
             function updateUserLevel(user, level) {
@@ -91,10 +97,10 @@ async def get_users(request: Request):
                         <!-- The 'n' after {user.id} is to signify a BigInt
                               because the user id is to long to be an integer. -->
                         <select name="level" onchange="updateUserLevel({user.id}n, this.value)"
-                        {"disabled" if not me.admin else ""}>
-                            <option value="User" {"selected" if user.user else ""}>User</option>
-                            <option value="Mod" {"selected" if user.mod else ""}>Mod</option>
-                            <option value="Admin" {"selected" if user.admin else ""}>Admin</option>
+                        {"disabled" if not me.admin or (user.id == me.id) else ""}>
+                            <option value="user" {"selected" if user.user else ""}>User</option>
+                            <option value="mod" {"selected" if user.mod else ""}>Mod</option>
+                            <option value="admin" {"selected" if user.admin else ""}>Admin</option>
                         </select>
                     </form>
                 </td>
@@ -102,7 +108,9 @@ async def get_users(request: Request):
                     <form action="">
                         <!-- The 'n' after {user.id} is to signify a BigInt
                               because the user id is to long to be an integer. -->
-                        <input type="checkbox" name="enabled" onchange="updateUserEnabled({user.id}n, this.checked)">
+                        <input type="checkbox" name="enabled" onchange="updateUserEnabled({user.id}n, this.checked)"
+                        {"disabled" if (me.mod and user.admin) or (user.id == me.id) else ""}
+                        {"checked" if user.enabled else ""}>
                     </form>
 
             </tr>"""
@@ -111,7 +119,7 @@ async def get_users(request: Request):
         </table>
     </body>
 </html>"""
-    return out
+    return Response(out, headers=headers)
 
 
 @router.post("/update_user_level", response_class=HTMLResponse)
@@ -121,8 +129,23 @@ async def post_update_user_level(request: Request, user_id: int = Form(...), lev
     if user.admin:
         query = db.session.query(WebAuth).filter(WebAuth.id == user_id).one_or_none()
         if query:
+            if level == "user":
+                query.user = True
+                query.mod = False
+                query.admin = False
+            elif level == "mod":
+                query.user = False
+                query.mod = True
+                query.admin = False
+            elif level == "admin":
+                query.user = False
+                query.mod = False
+                query.admin = True
+            else:
+                return Response(f"{level} is unknown.", headers=headers)
 
-            return f"{query.name} updated to {level}"
+            db.session.commit()
+            return Response(f"{query.name} updated to {level}", headers=headers)
         else:
             raise HTTPException(404)
     else:
@@ -136,8 +159,9 @@ async def post_update_user_enabled(request: Request, user_id: int = Form(...), e
     if me.admin or me.mod:
         query = db.session.query(WebAuth).filter(WebAuth.id == user_id).one_or_none()
         if query:
-
-            return f'{query.name} {"enabled" if enabled else "disabled"}.'
+            query.enabled = enabled
+            db.session.commit()
+            return Response(f'{query.name} {"enabled" if enabled else "disabled"}.', headers=headers)
         else:
             raise HTTPException(404)
     else:
