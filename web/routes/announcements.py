@@ -96,7 +96,7 @@ async def get_announcements(request: Request):
                 </td>
                 <td>
                 <form action="">
-                    <select name="level" onchange="updateAnnouncementCategory({announcement.id}n, this.value)"
+                    <select name="level" onchange="updateAnnouncementCategory({announcement.id}, this.value)"
                     {"disabled" if me.mod else ""}>"""
 
         for c in categories:
