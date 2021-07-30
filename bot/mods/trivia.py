@@ -26,7 +26,7 @@ class TriviaMod(Mod):
         # Create session for participant tracking
         self.session = dict()
         self.leaderboard = dict()
-        self.manual_delay: int = -7
+        self.manual_delay: int = 7
 
         # Flag for sending instructions message when first question is sent.
         # Also used for interupting mid-question when trivia ends
@@ -54,14 +54,15 @@ class TriviaMod(Mod):
         print("trivia")
 
     @SubCommand(trivia, "delay", permission="admin")
-    async def delay(self, msg: Message, new_delay: int):
+    async def delay(self, msg: Message, new_delay: int = None):
         """Adds a delay at the start of the next question"""
-        self.manual_delay = int(new_delay)  # framework doesn't typecast
+        if new_delay:
+            self.manual_delay = int(new_delay)  # framework doesn't typecast
+            await msg.reply(f"Flux Capacitor Trimmed to {self.manual_delay} seconds")
+        else:
+            await msg.reply(f"Flux capacitor currently calibrated to {self.manual_delay} seconds")
 
-    # This command will almost always be sent by the webserver,
-    # setting the CommandContext to Whisper will allow it in whispers
-    # only, but when sent over the command console, context is ignored.
-    @SubCommand(trivia, "q", permission="bot")  # , context=CommandContext.WHISPER) #TODO
+    @SubCommand(trivia, "q", permission="bot", hidden=True)  # , context=CommandContext.CONSOLE)
     async def trivia_q(self, msg: Message, question_num: int, answer_num: int):
         question_num, answer_num = int(question_num), int(answer_num)  # Framework only passes strings, convert it.
         channel_id = await get_user_id(msg.channel.name)
@@ -105,7 +106,7 @@ class TriviaMod(Mod):
             self.question_active = True  # Resets in reset_question
 
             # Sleep early to let the watchers catch up to the stream
-            if await sleep_if_active(7 + self.manual_delay):
+            if await sleep_if_active(self.manual_delay):
                 # Send the question to chat
                 await msg.reply(f"{self.msg_prefix}{result.text}")
 
