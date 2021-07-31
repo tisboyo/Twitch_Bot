@@ -87,9 +87,8 @@ async def trivia_q(request: Request, key: str = None):
             }
         )
 
-    db.session.query(TriviaQuestions).filter(TriviaQuestions.id == question.id).update(
-        {TriviaQuestions.last_used_date: date.today()}
-    )
+    # Update the last used date to today, so the question isn't repeated
+    question.last_used_date = date.today()
     db.session.commit()
     return JSONResponse(jsonret)
 
