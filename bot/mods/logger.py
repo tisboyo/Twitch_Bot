@@ -150,6 +150,7 @@ class TwitchLog(Mod):
             session.query(Users).filter(Users.user_id == gifter_id, Users.channel == channel_id).update(
                 {Users.subs_gifted: Users.subs_gifted + 1}
             )
+            session.commit()  # Fix for #222, changes weren't being commited to the database in time.
 
         else:  # A regular subscription
             user_id = raw.message_dict["user_id"]
