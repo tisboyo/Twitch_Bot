@@ -59,9 +59,9 @@ class TriviaMod(Mod):
         """Adds a delay at the start of the next question"""
         if new_delay:
             self.manual_delay = int(new_delay)  # framework doesn't typecast
-            await msg.reply(f"Flux Capacitor Trimmed to {self.manual_delay} seconds")
+            await msg.reply(f"{self.msg_prefix}Flux Capacitor Trimmed to {self.manual_delay} seconds")
         else:
-            await msg.reply(f"Flux capacitor currently calibrated to {self.manual_delay} seconds")
+            await msg.reply(f"{self.msg_prefix}Flux capacitor currently calibrated to {self.manual_delay} seconds")
 
     @SubCommand(trivia, "q", permission="bot", hidden=True)  # , context=CommandContext.CONSOLE)
     async def trivia_q(self, msg: Message, question_num: int, answer_num: int):
