@@ -1,4 +1,5 @@
 # Added for #152
+import random
 from asyncio import sleep
 from string import ascii_lowercase
 
@@ -111,7 +112,14 @@ class TriviaMod(Mod):
                 await msg.reply(f"{self.msg_prefix}{result.text}")
 
             if await sleep_if_active(45):
-                await msg.reply(f"{self.msg_prefix}Time is almost up")
+                message_text = [
+                    "Time is almost up",
+                    "15 seconds remaining",
+                    "0xF seconds remaining",
+                    "0x10 seconds remaining",
+                ]
+                selected_message_text = random.choice(message_text)
+                await msg.reply(f"{self.msg_prefix}{selected_message_text}")
 
             if await sleep_if_active(10):
                 await msg.reply(f"{self.msg_prefix}Final answers...")
