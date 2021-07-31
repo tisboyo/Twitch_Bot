@@ -110,7 +110,7 @@ class TriviaMod(Mod):
                 # Send the question to chat
                 await msg.reply(f"{self.msg_prefix}{result.text}")
 
-            if await sleep_if_active(40):
+            if await sleep_if_active(45):
                 await msg.reply(f"{self.msg_prefix}15 seconds remaining")
 
             if await sleep_if_active(10):
