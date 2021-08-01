@@ -49,6 +49,7 @@ to_backup.append((pathlib.Path("./irc_logs/").glob("**/*.log"), f"/twitchbotdb-{
 to_backup.append((pathlib.Path("./jsons/").glob("**/*.json"), f"/twitchbotdb-{webhost}/jsons/"))
 to_backup.append((pathlib.Path("/db_backup/").glob("**/*.sql"), f"/twitchbotdb-{webhost}/"))
 to_backup.append((pathlib.Path("./configs/").glob("**/*.json"), f"/twitchbotdb-{webhost}/configs/"))
+to_backup.append((pathlib.Path("./pubsub_logs/").glob("**/*.log)"), f"/twitchbotdb-{webhost}/pubsub_logs"))
 
 for paths, target in to_backup:
     for file in paths:

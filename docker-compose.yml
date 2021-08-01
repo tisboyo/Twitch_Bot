@@ -10,6 +10,7 @@ services:
     volumes:
       - ./bot/configs:/workspace/bot/configs/
       - ./bot/irc_logs:/workspace/bot/irc_logs/
+      - ./bot/pubsub_logs:/workspace/bot/pubsub_logs/
       - ./bot/jsons:/workspace/bot/jsons/
       - ./models.py:/workspace/bot/models.py
       - ./mysql/db_backup:/db_backup

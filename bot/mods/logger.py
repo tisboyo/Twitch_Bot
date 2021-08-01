@@ -57,7 +57,7 @@ class TwitchLog(Mod):
 
     async def on_pubsub_received(self, raw: PubSubData):
         # Dump to a log file
-        async with AIOFile("pubsub.log", "a") as afp:
+        async with AIOFile(f"pubsub_logs/{date.today().isoformat()}-{cfg.channels[0]}.log", "a") as afp:
             data = f"{datetime.now().isoformat()}:{raw.raw_data}"
             await afp.write(data + "\n")
             await afp.fsync()
