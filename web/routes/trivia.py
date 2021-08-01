@@ -4,7 +4,9 @@ from os import getenv
 from random import shuffle
 
 from fastapi import APIRouter
+from fastapi.datastructures import UploadFile
 from fastapi.exceptions import HTTPException
+from fastapi.params import File
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
@@ -13,7 +15,7 @@ from sqlalchemy import func
 from starlette.requests import Request
 from starlette.responses import FileResponse
 from starlette.responses import JSONResponse
-
+from fastapi.responses import HTMLResponse
 from models import TriviaQuestions
 
 router = APIRouter()
@@ -131,3 +133,22 @@ async def trivia_background(request: Request, key: str = None):
         return Response(status_code=403)
 
     return FileResponse("static_files/trivia/laptop-background-transparent.png")
+
+
+@router.get("/trivia/manage/upload")
+async def trivia_manage_upload(request: Request, file: UploadFile = File(...)):
+    return {"filename": file}
+
+
+@router.get("/trivia/manage/")
+async def trivia_manage(request: Request):
+    out = """
+<html>
+    <body>
+        <form action="/trivia/manage/upload">
+            <input type="file" id="trivia" name="questions.txt">
+            <input type="submit"
+        </form
+    </body
+</html>"""
+    return HTMLResponse(out)
