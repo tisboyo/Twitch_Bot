@@ -1,12 +1,12 @@
 from os import getenv
 
 import jwt
+from fastapi.exceptions import HTTPException
+from fastapi.requests import Request
+from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
 from fastapi_sqlalchemy import db
 from munch import munchify
-from starlette.exceptions import HTTPException
-from starlette.requests import Request
-from starlette.responses import RedirectResponse
 from starlette_discord.client import DiscordOAuthClient
 from uvicorn.main import logger
 
@@ -101,7 +101,10 @@ async def callback(request: Request, code: str):
         db.session.add(new_user)
         db.session.commit()
 
-    return RedirectResponse("/")
+    redirect_path = request.cookies.get("redirect", "/")
+    response = RedirectResponse(redirect_path)
+    response.delete_cookie("redirect")
+    return response
 
 
 @router.get("/user_data")
