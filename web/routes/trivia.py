@@ -7,16 +7,21 @@ from fastapi import APIRouter
 from fastapi.datastructures import UploadFile
 from fastapi.exceptions import HTTPException
 from fastapi.params import File
+from fastapi.requests import Request
+from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
+from fastapi.responses import JSONResponse
+from fastapi.responses import RedirectResponse
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
 from sqlalchemy import func
-from starlette.requests import Request
-from starlette.responses import FileResponse
-from starlette.responses import JSONResponse
-from fastapi.responses import HTMLResponse
+from web_auth import check_user_valid
+from web_auth import get_user
+
 from models import TriviaQuestions
+
 
 router = APIRouter()
 
@@ -135,20 +140,83 @@ async def trivia_background(request: Request, key: str = None):
     return FileResponse("static_files/trivia/laptop-background-transparent.png")
 
 
-@router.get("/trivia/manage/upload")
-async def trivia_manage_upload(request: Request, file: UploadFile = File(...)):
-    return {"filename": file}
+@router.post("/trivia/manage/upload")
+async def trivia_manage_upload(request: Request, questions: UploadFile = File(...)):
+    try:
+        # Ensure logged in user
+        check_user_valid(request)
+        me = get_user(request)
+        if not (me.admin):
+            raise HTTPException(403)
+
+    except HTTPException:
+        # Redirect to login if not
+        response = RedirectResponse("/login")
+        response.set_cookie(key="redirect", value=request.url.path)
+        return response
+
+    # Read the file and decode it to a dictionary
+    value = await questions.read()
+    value = value.decode("utf-8")
+    value = json.loads(value)
+
+    return JSONResponse(value)
+
+
+@router.get("/trivia/manage/download")
+async def trivia_manage_download(request: Request):
+    try:
+        # Ensure logged in user
+        check_user_valid(request)
+        me = get_user(request)
+        if not (me.admin):
+            raise HTTPException(403)
+
+    except HTTPException:
+        # Redirect to login if not
+        response = RedirectResponse("/login")
+        response.set_cookie(key="redirect", value=request.url.path)
+        return response
+
+    query = db.session.query(TriviaQuestions).order_by(TriviaQuestions.id).all()
+    return_dict = {"quiz": {}}
+    for u in query:
+        temp_dict = u.__dict__
+        question_id = temp_dict["id"]
+        # Manipulate the json into a dictionary for the answers, overwriting the string
+        temp_dict["answers"] = json.loads(temp_dict["answers"])
+        del temp_dict["_sa_instance_state"]  # Don't want to send this in the file
+        del temp_dict["id"]  # The ID doesn't belong in the question data
+        return_dict["quiz"][question_id] = temp_dict  # Append the current temp to the returned dictionary
+
+    questions_txt = json.dumps(return_dict, indent=4, sort_keys=True, default=str).encode("utf-8")
+    return Response(questions_txt, headers={"Content-Disposition": "attachment; filename=questions.txt"})
 
 
 @router.get("/trivia/manage/")
 async def trivia_manage(request: Request):
+    try:
+        # Ensure logged in user
+        check_user_valid(request)
+        me = get_user(request)
+        if not (me.admin):
+            raise HTTPException(403)
+
+    except HTTPException:
+        # Redirect to login if not
+        response = RedirectResponse("/login")
+        response.set_cookie(key="redirect", value=request.url.path)
+        return response
+
     out = """
 <html>
     <body>
-        <form action="/trivia/manage/upload">
-            <input type="file" id="trivia" name="questions.txt">
-            <input type="submit"
-        </form
-    </body
+        <form method="post" enctype="multipart/form-data" action="/trivia/manage/upload">
+            <input type="file" id="trivia" name="questions">
+            <input type="submit" value="Upload" name="submit">
+        </form>
+
+        Download current <a href="/trivia/manage/download">questions.txt</a>
+    </body>
 </html>"""
     return HTMLResponse(out)
