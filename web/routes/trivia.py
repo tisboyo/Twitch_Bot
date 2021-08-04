@@ -159,8 +159,70 @@ async def trivia_manage_upload(request: Request, questions: UploadFile = File(..
     value = await questions.read()
     value = value.decode("utf-8")
     value = json.loads(value)
+    questions = value["quiz"]
 
-    return JSONResponse(value)
+    update_log = list()
+
+    for id, question in questions.items():
+        query = db.session.query(TriviaQuestions).filter(TriviaQuestions.id == id).one_or_none()
+        if query:
+            # Update question if the question text is the same or force_update is set
+            if question["text"] == query.text or question.get("force_update", False):
+
+                if question["text"] != query.text and question.get("force_update", False):
+                    # Update question text if it is different and force_update is set
+                    query.text = question["text"]
+                    update_log.append(f"#{id} text updated. (force_update flag was set)")
+
+                if query.answers != json.dumps(question["answers"]):
+                    # Update answers
+                    query.answers = json.dumps(question["answers"])
+                    update_log.append(f"#{id} answers updated.")
+
+                if query.explain != question["explain"]:
+                    # Update explanation
+                    query.explain = question["explain"]
+                    update_log.append(f"#{id} explanation updated.")
+
+                if query.created_by != question["created_by"]:
+                    # Update created_by
+                    query.created_by = question["created_by"]
+                    update_log.append(f"#{id} created by updated.")
+
+                if query.reference != question["reference"]:
+                    # Update reference text
+                    query.reference = question["reference"]
+                    update_log.append(f"#{id} reference updated.")
+
+                if query.enabled != question["enabled"]:
+                    # Update enabled status
+                    query.enabled = question["enabled"]
+                    update_log.append(f"#{id} {'enabled' if question['enabled'] else 'disabled'}")
+
+                # Set the last update status to today
+                query.last_update_date = str(date.today())
+
+        else:  # New question
+            new_question = TriviaQuestions(
+                id=int(id),
+                text=question["text"],
+                answers=json.dumps(question["answers"]),
+                explain=question["explain"],
+                last_used_date=str(date.min),
+                last_update_date=str(date.today()),
+                created_date=str(date.today()),
+                created_by=question["created_by"],
+                reference=question["reference"],
+                enabled=question["enabled"],
+            )
+            db.session.add(new_question)
+            update_log.append(f"#{id} added.")
+
+        db.session.commit()
+
+    update_log.append("Finished.")
+
+    return JSONResponse(update_log)
 
 
 @router.get("/trivia/manage/download")
