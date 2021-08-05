@@ -1,6 +1,5 @@
 import json
 from datetime import date
-from os import getenv
 from random import shuffle
 
 from fastapi import APIRouter
@@ -17,7 +16,9 @@ from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
 from sqlalchemy import func
+from web_auth import AuthLevel
 from web_auth import check_user_valid
+from web_auth import check_valid_api_key
 from web_auth import get_user
 
 from models import TriviaQuestions
@@ -25,13 +26,12 @@ from models import TriviaQuestions
 
 router = APIRouter()
 
-web_api_key = getenv("WEB_API_KEY")
 templates = Jinja2Templates(directory="static_files/trivia")
 
 
 @router.get("/trivia/q")
 async def trivia_q(request: Request, key: str = None):
-    if key != web_api_key:
+    if not check_valid_api_key(key, AuthLevel.admin):
         return Response(status_code=403)
 
     question = (
@@ -102,7 +102,7 @@ async def trivia_q(request: Request, key: str = None):
 
 @router.post("/trivia/end")
 async def trivia_end(key: str = None):
-    if key != web_api_key:
+    if not check_valid_api_key(key, AuthLevel.admin):
         return Response(status_code=403)
 
     print("Trivia ended")
@@ -113,7 +113,7 @@ async def trivia_end(key: str = None):
 # Static file returns
 @router.get("/trivia")
 async def trivia_index(request: Request, key: str = None):
-    if key != web_api_key:
+    if not check_valid_api_key(key, AuthLevel.admin):
         return Response(status_code=403)
 
     return templates.TemplateResponse("index.html", {"request": request, "key": key})
@@ -121,7 +121,7 @@ async def trivia_index(request: Request, key: str = None):
 
 @router.get("/trivia/trivia.js")
 async def trivia_js(request: Request, key: str = None):
-    if key != web_api_key:
+    if not check_valid_api_key(key, AuthLevel.admin):
         return Response(status_code=403)
 
     return FileResponse("static_files/trivia/trivia.js")
@@ -134,7 +134,7 @@ async def trivia_css(request: Request):
 
 @router.get("/trivia/laptop-background-transparent.png")
 async def trivia_background(request: Request, key: str = None):
-    if key != web_api_key:
+    if not check_valid_api_key(key, AuthLevel.admin):
         return Response(status_code=403)
 
     return FileResponse("static_files/trivia/laptop-background-transparent.png")
