@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import orm
 from twitchbot import Mod
 from twitchbot.config import database_cfg
-from twitchbot.database.session import _try_get_env
+from twitchbot.database.session import _get_database_env_value
 from twitchbot.util import add_task
 from twitchbot.util import task_running  # Put all Table classes above here
 
@@ -18,12 +18,12 @@ class Database(Mod):
     def __init__(self) -> None:
         super().__init__()
 
-        username = _try_get_env(database_cfg.username)
-        passwd = _try_get_env(database_cfg.password)
-        address = _try_get_env(database_cfg.address)
-        port = _try_get_env(database_cfg.port)
-        database = _try_get_env(database_cfg.database)
-        driver = _try_get_env(database_cfg.database_format) + "+" + _try_get_env(database_cfg.driver)
+        username = _get_database_env_value(database_cfg.username)
+        passwd = _get_database_env_value(database_cfg.password)
+        address = _get_database_env_value(database_cfg.address)
+        port = _get_database_env_value(database_cfg.port)
+        database = _get_database_env_value(database_cfg.database)
+        driver = _get_database_env_value(database_cfg.database_format) + "+" + _get_database_env_value(database_cfg.driver)
 
         engine = create_engine(f"{driver}://{username}:{passwd}@{address}:{port}/{database}")
         Session = orm.sessionmaker(bind=engine, autoflush=True)

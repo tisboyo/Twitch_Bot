@@ -180,3 +180,7 @@ bot/mods/test.py
 
 questions.txt
 web/static_files/trivia/laptop-background-transparent.png
+easyauth/db
+easyauth/keys
+notes.md
+bot/pubsub_logs/*

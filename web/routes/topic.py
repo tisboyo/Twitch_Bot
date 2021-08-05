@@ -14,7 +14,9 @@ from fastapi.security.api_key import APIKeyHeader
 from fastapi.security.api_key import APIKeyQuery
 from fastapi_sqlalchemy import db
 from starlette.requests import Request
+from starlette.responses import RedirectResponse
 from starlette.status import HTTP_401_UNAUTHORIZED
+from web_auth import check_user_valid
 
 from models import Settings
 
@@ -46,6 +48,13 @@ async def get_api_key(
 
 @router.get("/topic")
 async def get_topic(request: Request):
+    try:
+        # Ensure logged in user
+        check_user_valid(request)
+    except HTTPException:
+        # Redirect to login if not
+        return RedirectResponse("/login")
+
     topic = db.session.query(Settings).filter(Settings.key == "topic").one_or_none()
     db.session.commit()  # Required so the object updates and gets new data on the next run.
     return JSONResponse({"topic": topic.value})

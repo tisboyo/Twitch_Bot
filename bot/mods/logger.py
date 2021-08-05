@@ -57,7 +57,7 @@ class TwitchLog(Mod):
 
     async def on_pubsub_received(self, raw: PubSubData):
         # Dump to a log file
-        async with AIOFile("pubsub.log", "a") as afp:
+        async with AIOFile(f"pubsub_logs/{date.today().isoformat()}-{cfg.channels[0]}.log", "a") as afp:
             data = f"{datetime.now().isoformat()}:{raw.raw_data}"
             await afp.write(data + "\n")
             await afp.fsync()
@@ -150,6 +150,7 @@ class TwitchLog(Mod):
             session.query(Users).filter(Users.user_id == gifter_id, Users.channel == channel_id).update(
                 {Users.subs_gifted: Users.subs_gifted + 1}
             )
+            session.commit()  # Fix for #222, changes weren't being commited to the database in time.
 
         else:  # A regular subscription
             user_id = raw.message_dict["user_id"]

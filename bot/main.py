@@ -15,6 +15,18 @@ from twitchbot.config import get_oauth
 from models import IgnoreList
 
 
+try:
+    # Icecream debugger, this try/except will create a fake ic builtin if the icecream library is not installed
+    from icecream import install
+
+    install()
+    ic.configureOutput(includeContext=True)  # noqa: F821
+except ImportError:
+    ic = lambda *a: None if not a else (a[0] if len(a) == 1 else a)  # noqa: E731
+    builtins = __import__("builtins")
+    setattr(builtins, "ic", ic)
+
+
 class AddOhmsBot(BaseBot):
     MQTT = MQTT()
     msg_prefix = "🤖 "

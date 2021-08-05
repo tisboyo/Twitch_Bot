@@ -10,6 +10,7 @@ services:
     volumes:
       - ./bot/configs:/workspace/bot/configs/
       - ./bot/irc_logs:/workspace/bot/irc_logs/
+      - ./bot/pubsub_logs:/workspace/bot/pubsub_logs/
       - ./bot/jsons:/workspace/bot/jsons/
       - ./models.py:/workspace/bot/models.py
       - ./mysql/db_backup:/db_backup
@@ -71,6 +72,10 @@ services:
       WEB_COOKIE_KEY: ${WEB_COOKIE_KEY}
       MQTT_USER: ${MQTT_USER}
       MQTT_KEY: ${MQTT_KEY}
+      FORWARDED_ALLOW_IPS: '*'
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+      SESSION_KEY: ${SESSION_KEY}
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:

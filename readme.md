@@ -304,7 +304,7 @@ All Stream related MQTT topics are prefixed with `stream/`
 - `twitch-attn-indi` TwitchBot sends 1, AttentionBot should listen for 1. AttentionBot should reset to 0 when done.
 - `channel-raid` TwitchBot sends username of raider
 - `channel-subscription` TwitchBot sends username of subscriber
-- `channel-cheer` TwitchBot sends json of {"username": username, "bits": bits_used, "total_bits": total_bits_used}
+- `channel-cheer` TwitchBot sends json of `{"username": username, "bits": bits_used, "total_bits": total_bits_used}`
 - `channel-follow` TwitchBot sends str of username that followed.
 - `yay-toggle` TwitchBot sends 1, OBSBot should listen for 1 to activate Yay scene.
 - `poll/setup` TwitchBot sends json of poll setup data
