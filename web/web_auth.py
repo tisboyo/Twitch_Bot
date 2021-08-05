@@ -1,3 +1,4 @@
+import enum
 from os import getenv
 
 import jwt
@@ -20,6 +21,12 @@ REDIRECT_URI = f"https://{getenv('WEB_HOSTNAME')}/callback"
 webauth_client = DiscordOAuthClient(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
 
+class AuthLevel(enum.Enum):
+    user = enum.auto()
+    mod = enum.auto()
+    admin = enum.auto()
+
+
 def get_user(request: Request) -> dict:
     try:
         encoded = request.session.get("discord_user")
@@ -40,6 +47,20 @@ def get_user(request: Request) -> dict:
 
     new_user = munchify(user)
     return new_user
+
+
+def check_valid_api_key(api_key: str, auth_level: AuthLevel) -> bool:
+    """Check the api_key passed and determine if it is valid for the user in the request"""
+    query = db.session.query(WebAuth).filter(WebAuth.api_key == api_key).one_or_none()
+    if query:
+        if auth_level == AuthLevel.admin and query.admin:
+            return True
+        elif auth_level == AuthLevel.mod and (query.admin or query.mod):
+            return True
+        elif auth_level == AuthLevel.user and (query.admin or query.mod or query.user):
+            return True
+    else:
+        return False
 
 
 def check_user_valid(request: Request) -> dict:
