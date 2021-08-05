@@ -40,7 +40,8 @@ services:
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
       SESSION_KEY: ${SESSION_KEY}
 
-
+    ports:
+      - 5000:5000 #Webserver testings
     # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
     # cap_add:
     #   - SYS_PTRACE

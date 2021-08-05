@@ -1,12 +1,13 @@
+import enum
 from os import getenv
 
 import jwt
+from fastapi.exceptions import HTTPException
+from fastapi.requests import Request
+from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
 from fastapi_sqlalchemy import db
 from munch import munchify
-from starlette.exceptions import HTTPException
-from starlette.requests import Request
-from starlette.responses import RedirectResponse
 from starlette_discord.client import DiscordOAuthClient
 from uvicorn.main import logger
 
@@ -18,6 +19,12 @@ CLIENT_ID = getenv("DISCORD_CLIENT_ID")
 CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
 REDIRECT_URI = f"https://{getenv('WEB_HOSTNAME')}/callback"
 webauth_client = DiscordOAuthClient(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
+
+
+class AuthLevel(enum.Enum):
+    user = enum.auto()
+    mod = enum.auto()
+    admin = enum.auto()
 
 
 def get_user(request: Request) -> dict:
@@ -40,6 +47,20 @@ def get_user(request: Request) -> dict:
 
     new_user = munchify(user)
     return new_user
+
+
+def check_valid_api_key(api_key: str, auth_level: AuthLevel) -> bool:
+    """Check the api_key passed and determine if it is valid for the user in the request"""
+    query = db.session.query(WebAuth).filter(WebAuth.api_key == api_key).one_or_none()
+    if query:
+        if auth_level == AuthLevel.admin and query.admin:
+            return True
+        elif auth_level == AuthLevel.mod and (query.admin or query.mod):
+            return True
+        elif auth_level == AuthLevel.user and (query.admin or query.mod or query.user):
+            return True
+    else:
+        return False
 
 
 def check_user_valid(request: Request) -> dict:
@@ -101,7 +122,10 @@ async def callback(request: Request, code: str):
         db.session.add(new_user)
         db.session.commit()
 
-    return RedirectResponse("/")
+    redirect_path = request.cookies.get("redirect", "/")
+    response = RedirectResponse(redirect_path)
+    response.delete_cookie("redirect")
+    return response
 
 
 @router.get("/user_data")
