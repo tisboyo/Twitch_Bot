@@ -275,14 +275,14 @@ async def trivia_manage(request: Request):
         return response
 
     out = """
-<html>
-    <body>
-        <form method="post" enctype="multipart/form-data" action="/trivia/manage/upload">
-            <input type="file" id="trivia" name="questions">
-            <input type="submit" value="Upload" name="submit">
-        </form>
+    <html>
+        <body>
+            <form method="post" enctype="multipart/form-data" action="/trivia/manage/upload">
+                <input type="file" id="trivia" name="questions">
+                <input type="submit" value="Upload" name="submit">
+            </form>
 
-        Download current <a href="/trivia/manage/download">questions.txt</a>
-    </body>
-</html>"""
+            Download current <a href="/trivia/manage/download">questions.txt</a>
+        </body>
+    </html>"""
     return HTMLResponse(out)
