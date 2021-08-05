@@ -74,7 +74,7 @@ async def get_announcements(request: Request):
             }
         </script>
         <table border=1>
-        <tr><td colspan=5 align=center><div id="status">Change user levels.</div></td></tr>
+        <tr><td colspan=5 align=center><div id="status">Change announcements</div></td></tr>
             <tr>
                 <td>ID</td>
                 <td>Times<br />Sent</td>
