@@ -1,3 +1,5 @@
+import random
+import string
 from datetime import datetime
 
 from sqlalchemy import BigInteger
@@ -11,6 +13,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_json import NestedMutableJson
 
 Base = declarative_base()
+
+
+def randomword():
+    return "".join(random.choice(string.ascii_letters + string.digits) for i in range(32))
 
 
 class Users(Base):
@@ -133,3 +139,4 @@ class WebAuth(Base):
     admin = Column(Boolean(), default=False)
     mod = Column(Boolean(), default=False)
     user = Column(Boolean(), default=False)
+    api_key = Column(String(32), default=randomword)
