@@ -26,7 +26,8 @@ class TriviaMod(Mod):
         self.msg_prefix: str = "❔"
         # Create session for participant tracking
         self.session = dict()
-        self.leaderboard = dict()
+        self.scoreboard = dict()
+        self.topscores = dict()
         self.manual_delay: int = 7
 
         # Flag for sending instructions message when first question is sent.
@@ -182,16 +183,16 @@ class TriviaMod(Mod):
 
     @SubCommand(trivia, "winner", permission="admin")
     async def trivia_winner(self, msg: Message):
-        if len(self.leaderboard) == 0:
+        if len(self.topscores) == 0:
             # Trivia hasn't ended yet, force end it.
             await run_command("trivia", msg, ["end"], blocking=True)
 
         # Grab the channel ID, we'll need it later.
         channel_id = await get_user_id(msg.channel.name)
 
-        first = self.leaderboard.popitem() if len(self.leaderboard) > 0 else None
-        second = self.leaderboard.popitem() if len(self.leaderboard) > 0 else None
-        third = self.leaderboard.popitem() if len(self.leaderboard) > 0 else None
+        first = self.topscores.popitem() if len(self.topscores) > 0 else None
+        second = self.topscores.popitem() if len(self.topscores) > 0 else None
+        third = self.topscores.popitem() if len(self.topscores) > 0 else None
 
         if third is not None:
             await msg.reply(f"{self.msg_prefix}In third place is {', '.join(third[1])} with {third[0]}")
@@ -258,8 +259,8 @@ class TriviaMod(Mod):
             elif len(win_count[most_wins]) == 1:  # Single top winner
                 await msg.reply(f"{self.msg_prefix}Congrats to {win_count[most_wins][0]}, you have won {most_wins} times!")
 
-        # Reset the leaderboard
-        self.leaderboard = dict()
+        # Reset the topscores
+        self.topscores = dict()
 
     @SubCommand(trivia, "end", permission="bot")
     async def trivia_end(self, msg: Message):
@@ -270,25 +271,25 @@ class TriviaMod(Mod):
         # Give the bot just enough time to send the last message for the current question.
         await sleep(1)
 
-        leaderboard = dict()
+        scoreboard = dict()
 
-        # Assign the participant to how many they got correct on the leaderboard
+        # Assign the participant to how many they got correct on the scoreboard
         for participant in self.session:
             correct = self.session[participant]["correct"]
-            if not leaderboard.get(correct, False):
-                leaderboard[correct] = list()
-            leaderboard[correct].append(participant)
+            if not scoreboard.get(correct, False):
+                scoreboard[correct] = list()
+            scoreboard[correct].append(participant)
 
-        # Sort the leaderboard by score, lowest to highest so popitem can pull the bottom item
-        leaderboard_order = sorted(leaderboard.keys(), key=lambda x: x)
+        # Sort the scoreboard by score, lowest to highest so popitem can pull the bottom item
+        scoreboard_order = sorted(scoreboard.keys(), key=lambda x: x)
 
         # Update the winners in the database
-        if len(leaderboard_order) > 0:  # We have participants, update them
+        if len(scoreboard_order) > 0:  # We have participants, update them
             # Grab channel ID for database insertion
             channel_id = await get_user_id(msg.channel.name)
 
             # Loop through the highest score as a winner
-            for participant in leaderboard[leaderboard_order[0]]:
+            for participant in scoreboard[scoreboard_order[0]]:
 
                 # Get the user id, but sometimes this fails and returns a -1, if it's -1 try again up to 3 times.
                 # If it still fails, send a message to the console and do not insert into the database.
@@ -309,10 +310,10 @@ class TriviaMod(Mod):
                 ):
                     session.commit()
 
-        # Sort the leaderboard and save it
-        self.leaderboard = dict()
-        for order_id in leaderboard_order:
-            self.leaderboard[order_id] = leaderboard[order_id]
+        # Sort the scoreboard and save it
+        self.topscores = dict()
+        for order_id in scoreboard_order:
+            self.topscores[order_id] = scoreboard[order_id]
 
         # Clear the session data
         self.session = dict()
@@ -350,7 +351,7 @@ class TriviaMod(Mod):
                         self.session[author]["q"][self.current_question] = False
                         self.session[author]["incorrect"] += 1
 
-    async def update_leaderboard_mqtt(self):
-        """Update the leaderboard mqtt topic"""
+    async def update_scoreboard_mqtt(self):
+        """Update the scoreboard mqtt topic"""
 
         pass
