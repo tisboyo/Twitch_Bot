@@ -52,7 +52,7 @@ class TriviaMod(Mod):
 
     @ModCommand(name, "trivia", permission="admin")
     async def trivia(self, msg, *args):
-        print("trivia")
+        pass
 
     @SubCommand(trivia, "delay", permission="admin")
     async def delay(self, msg: Message, new_delay: int = None):
@@ -132,7 +132,7 @@ class TriviaMod(Mod):
             for participant in self.session:
                 if (
                     self.session[participant]["q"].get(self.current_question, False)
-                    and participant in self.current_question_participant  # See note in reset_session
+                    and participant in self.current_question_participant  # See note in reset_question
                 ):
                     correctly_answered.append(participant)
                     # Get the user id, but sometimes this fails and returns a -1, if it's -1 try again up to 3 times.
@@ -152,7 +152,7 @@ class TriviaMod(Mod):
                         .one_or_none()
                     )  # Grab the current row
                     if query:  # Update it
-                        query.trivia_points += 1  # type: ignore
+                        query.trivia_points += 1
                         query.questions_answered_correctly[self.current_question] = True
 
                     else:
@@ -163,8 +163,9 @@ class TriviaMod(Mod):
                             questions_answered_correctly={self.current_question: True},
                             trivia_points=1,
                         )
-                    # Update the query
-                    session.add(query)
+                        session.add(query)
+
+                    # Update the database
                     session.commit()
 
             if len(correctly_answered) > 0:
@@ -325,7 +326,7 @@ class TriviaMod(Mod):
             self.current_question > 0 and msg.is_privmsg and self.question_active
         ):  # Check if trivia is active and not a server message
 
-            normalized: tuple = msg.normalized_parts  # type: ignore
+            normalized: tuple = msg.normalized_parts
             if len(normalized) == 1 and len(normalized[0]) == 1 and normalized[0] in ascii_lowercase:
                 answer = normalized[0]
 
@@ -338,7 +339,7 @@ class TriviaMod(Mod):
                     self.session[author]["q"] = dict()
 
                 # Track the participants for this question
-                self.current_question_participant.add(author)  # See note in reset_session
+                self.current_question_participant.add(author)  # See note in reset_question
 
                 # Check if user has already provided an answer, only first answer accepted
                 if not self.session[author].get(self.current_question, False):
@@ -348,3 +349,8 @@ class TriviaMod(Mod):
                     else:  # Incorrect
                         self.session[author]["q"][self.current_question] = False
                         self.session[author]["incorrect"] += 1
+
+    async def update_leaderboard_mqtt(self):
+        """Update the leaderboard mqtt topic"""
+
+        pass
