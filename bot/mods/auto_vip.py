@@ -1,3 +1,6 @@
+from asyncio import sleep
+
+from main import bot
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import Mod
@@ -16,13 +19,16 @@ class AutoVIPMod(Mod):
         print("AutoVIP loaded")
 
     @ModCommand(name, "vipupdate", permission="admin")
-    async def vip_update(self, msg: Message, channel: Channel, *args):
-        await channel.send_message("/vips")
+    async def vip_update(self, msg: Message, *args):
+        # Need to sleep just to make sure the the command isn't missed.
+        await sleep(1)
+        await msg.channel.send_message("/vips")
 
     async def on_channel_joined(self, channel: Channel):
         await channel.send_message("/vips")
 
     async def on_raw_message(self, msg: Message):
+
         if msg.type is MessageType.NOTICE and msg.msg_id == "vips_success":
             # Split the message on the colon which removes the preamble
             temp_parse = msg.normalized_content.split(":", maxsplit=1)
@@ -47,3 +53,5 @@ class AutoVIPMod(Mod):
                 if user not in vip_users:
                     perms.delete_member(channel, self.vip_group, user)
                     print(f"{user} was removed from the bot vip group.")
+
+            await msg.reply(f"{bot.msg_prefix} Shout out to the VIPs! You all rock. Thank You.")
