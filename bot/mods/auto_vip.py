@@ -9,6 +9,8 @@ from twitchbot.enums import MessageType
 from twitchbot.message import Message
 from twitchbot.permission import perms
 
+# Note requires affiliate account to test!
+
 
 class AutoVIPMod(Mod):
     name = "autovipmod"
