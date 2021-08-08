@@ -31,6 +31,7 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TO_DO_WEBHOOK: ${TO_DO_WEBHOOK}
 
     labels:
       - "deck-chores.process-dropbox.command=sh -c /workspace/bot/dropbox_sync.py &> /proc/1/fd/1"
