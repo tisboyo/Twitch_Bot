@@ -24,6 +24,11 @@ class TodoMod(Mod):
         if bot.user_ignored(str(msg.author)):
             return
 
+        if self.webhook is None:
+            await channels[cfg.channels[0]].send_message(
+                bot.msg_prefix + "I'm missing a webhook address. @tisboyo broke me."
+            )
+
         async with aiohttp.ClientSession() as session:
             response = await session.post(
                 self.webhook, json={"content": msg.content, "username": f"TwitchBot: Link by {msg.author}"}
