@@ -140,3 +140,14 @@ class WebAuth(Base):
     mod = Column(Boolean(), default=False)
     user = Column(Boolean(), default=False)
     api_key = Column(String(32), default=randomword)
+
+
+class Clips(Base):
+    """Table for storing twitch clips"""
+
+    __tablename__ = "clips"
+    id = Column(Integer(), primary_key=True)
+    name = Column(String(32), nullable=False, unique=True)
+    title = Column(String(1024))
+    url = Column(String(256), nullable=False)
+    enabled = Column(Boolean, default=True)
