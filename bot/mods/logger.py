@@ -78,6 +78,14 @@ class TwitchLog(Mod):
         elif raw.is_moderation_action and raw.moderation_action == "ban":
             # User banned
             pass
+        elif raw.is_moderation_action and raw.moderation_action == "clear":
+            # Chat as cleared by a moderator
+            async with AIOFile(f"irc_logs/{date.today().isoformat()}-{cfg.channels[0]}.log", "a") as afp:
+                data = f"{datetime.now().isoformat()}:{raw.raw_data}"
+                await afp.write("CHAT CLEARED!".center(80, "*") + "\n")
+                await afp.fsync()
+            print("Chat was cleared by a moderator.")
+
         else:
             # Unknown pubsub received, print out the data
             print(f"Unknown pubsub received: {raw.message_data}")
