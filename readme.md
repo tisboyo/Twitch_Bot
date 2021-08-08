@@ -58,6 +58,8 @@
     - [`msg` - Set the shoutout message](#msg---set-the-shoutout-message)
   - [`trivia` - Trivia base command](#trivia---trivia-base-command)
     - [`winner` - Announce the winner of the most recent trivia](#winner---announce-the-winner-of-the-most-recent-trivia)
+  - [`vipupdate` - Forces the bot to sync with Twitch's VIP list](#vipupdate---forces-the-bot-to-sync-with-twitchs-vip-list)
+  - [`todo` - The bot will send the entire contents of the message to a pre-defined discord channel](#todo---the-bot-will-send-the-entire-contents-of-the-message-to-a-pre-defined-discord-channel)
 - [Web](#web)
   - [`/send_command`](#send_command)
     - [`POST` - Send a command to the bot](#post---send-a-command-to-the-bot)
@@ -265,6 +267,12 @@ Permission: Admin
 ### `winner` - Announce the winner of the most recent trivia
 Permission: Admin
 
+## `vipupdate` - Forces the bot to sync with Twitch's VIP list
+Permission: Admin
+
+## `todo` - The bot will send the entire contents of the message to a pre-defined discord channel
+Permission: todo
+(Intended for VIP's to use)
 
 # Web
 ## `/send_command`
