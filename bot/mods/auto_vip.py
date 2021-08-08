@@ -25,6 +25,8 @@ class AutoVIPMod(Mod):
         await msg.channel.send_message("/vips")
 
     async def on_channel_joined(self, channel: Channel):
+        # Need to sleep just to make sure the the command isn't missed.
+        await sleep(1)
         await channel.send_message("/vips")
 
     async def on_raw_message(self, msg: Message):
