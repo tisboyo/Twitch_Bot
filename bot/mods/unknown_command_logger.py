@@ -33,8 +33,8 @@ class UnknownCommandLogger(Mod):
                 # The bot framework never fires on_privmsg_received if it detects
                 # that a message is a valid command, so all we have to do
                 # is handle the ones that are not valid commands
-                async with AIOFile(unknown_command_file, "w+") as afp:
-                    await afp.write(f"{str(datetime.now())}:{msg.author}:{msg.content}")
+                async with AIOFile(unknown_command_file, "a") as afp:
+                    await afp.write(f"{str(datetime.now())}:{msg.author}:{msg.content} \n")
 
         except IndexError:
             # Blank message for some reason, giving up.
