@@ -51,7 +51,7 @@ class ClipMod(Mod):
                 f"{bot.msg_prefix} {query.title if query.title else query.name}: https://clips.twitch.tv/{query.url}"
             )
 
-    @SubCommand(clip, "add", permission="admin")
+    @SubCommand(clip, "add", permission="addclip")
     async def clip_add(self, msg: Message, *args):
         """Add twitch clips to the database"""
 
