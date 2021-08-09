@@ -1,3 +1,4 @@
+import datetime
 import re
 
 from main import bot
@@ -18,6 +19,7 @@ class ClipMod(Mod):
     def __init__(self):
         super().__init__()
         print("ClipMod loaded")
+        self.last_random_clip_time = datetime.datetime.now()
 
     @ModCommand(name, "clip", context=CommandContext.CHANNEL)
     async def clip(self, msg: Message, *args):
@@ -25,28 +27,29 @@ class ClipMod(Mod):
         if bot.user_ignored(str(msg.author)):
             return
 
+        query = None  # Just to appease the linters
+
         parts_len = len(msg.parts)
         if parts_len == 1:
             # Base command only
-            query = (
-                session.query(Clips)
-                .filter(Clips.enabled == True)  # noqa:E712
-                .order_by(func.random())
-                .limit(1)
-                .one_or_none()
-            )
+            if (self.last_random_clip_time + datetime.timedelta(minutes=5)) < datetime.datetime.now():
+                query = (
+                    session.query(Clips)
+                    .filter(Clips.enabled == True)  # noqa:E712
+                    .order_by(func.random())
+                    .limit(1)
+                    .one_or_none()
+                )
+                self.last_random_clip_time = datetime.datetime.now()
 
         elif parts_len == 2:
             name = msg.parts[1]
             query = session.query(Clips).filter(Clips.name == name.lower(), Clips.enabled == True).one_or_none()  # noqa:E712
-            if not query:
-                return
-        else:
-            return
 
-        await msg.reply(
-            f"{bot.msg_prefix} {query.title if query.title else query.name}: https://clips.twitch.tv/{query.url}"
-        )
+        if query:
+            await msg.reply(
+                f"{bot.msg_prefix} {query.title if query.title else query.name}: https://clips.twitch.tv/{query.url}"
+            )
 
     @SubCommand(clip, "add", permission="admin")
     async def clip_add(self, msg: Message, *args):
