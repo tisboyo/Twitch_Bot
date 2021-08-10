@@ -34,12 +34,6 @@ class TwitchLog(Mod):
         if not msg.author:
             return
 
-    # async def on_connected(self):
-    #     """Load user data from file when connected"""
-    #     print("Loading user data from json file...", end="")
-    #     self.user_data = await load_data("user")
-    #     print("done")
-
     async def on_channel_raided(self, channel: Channel, raider: str, viewer_count: int) -> None:
         """Log channel raid"""
 
@@ -155,6 +149,7 @@ class TwitchLog(Mod):
             # Add count to the user for gifting a sub
             gifter_id = int(raw.message_dict["user_id"])
             channel_id = int(raw.message_dict["channel_id"])
+            user_name = raw.message_dict["recipient_user_name"]
             session.query(Users).filter(Users.user_id == gifter_id, Users.channel == channel_id).update(
                 {Users.subs_gifted: Users.subs_gifted + 1}
             )
@@ -162,6 +157,7 @@ class TwitchLog(Mod):
 
         else:  # A regular subscription
             user_id = raw.message_dict["user_id"]
+            user_name = raw.message_dict["user_name"]
 
         cumulative_months = raw.message_dict["cumulative_months"] if "cumulative_months" in raw.message_dict else 0
         streak_months = raw.message_dict["streak_months"] if "streak_months" in raw.message_dict else 0
@@ -180,13 +176,20 @@ class TwitchLog(Mod):
 
         # Add row if one wasn't updated.
         if not rows_affected:
-            user_object = Subscriptions(
+            if not session.query(Users).filter(Users.user_id == user_id, Users.channel == server_id).one_or_none():
+                # Make sure the user that is getting the sub is in the Users table. Fix for #241
+                user_object = Users(user_id=user_id, channel=server_id, user=user_name)
+                session.add(user_object)
+                session.commit()
+
+            sub_object = Subscriptions(
                 user_id=user_id,
                 channel=server_id,
                 subscription_level=sub_level,
                 cumulative_months=cumulative_months,
                 streak_months=streak_months,
             )
-            session.add(user_object)
+            session.add(sub_object)
 
+        # Up one level of indentation so it can commit the above update if it succeeded
         session.commit()
