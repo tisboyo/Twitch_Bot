@@ -119,8 +119,9 @@ async def callback(request: Request, code: str):
             enabled=True,
             user=True,
         )
-        db.session.add(new_user)
-        db.session.commit()
+        print(new_user)
+        # db.session.add(new_user)
+        # db.session.commit()
 
     redirect_path = request.cookies.get("redirect", "/")
     response = RedirectResponse(redirect_path)
