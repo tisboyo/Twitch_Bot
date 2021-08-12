@@ -151,3 +151,4 @@ class Clips(Base):
     title = Column(String(1024))
     url = Column(String(256), nullable=False)
     enabled = Column(Boolean, default=True)
+    added_by = Column(String(128), default="")
