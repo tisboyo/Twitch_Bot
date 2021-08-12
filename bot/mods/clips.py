@@ -80,3 +80,7 @@ class ClipMod(Mod):
                 await msg.reply(f"{bot.msg_prefix} Sorry, {name} already exists in the clip database.")
         else:
             await msg.reply(f"{bot.msg_prefix} Sorry, that's not a valid clip url.")
+
+    @SubCommand(clip, "list")
+    async def clip_list(self, msg: Message, *args):
+        await msg.reply(f"{bot.msg_prefix} Visit https://bald.ee/stream-clip-list for a list of clips!")
