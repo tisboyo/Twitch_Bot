@@ -103,8 +103,12 @@ class TwitchLog(Mod):
         # await save_data("bits", bits)
 
         user_id = raw.message_dict["data"]["user_id"]
+        username = raw.message_dict["data"]["user_name"]
         server_id = raw.message_dict["data"]["channel_id"]
         bits_used = raw.message_dict["data"]["bits_used"]
+        if raw.message_dict["data"]["is_anonymous"]:
+            user_id = "407665396"  # AnAnonymousCheerer
+            username = "AnAnonymousCheerer"
 
         rows_affected = (
             session.query(Users)
@@ -117,7 +121,7 @@ class TwitchLog(Mod):
             user_object = Users(
                 user_id=user_id,
                 channel=server_id,
-                user=raw.message_dict["data"]["user_name"],
+                user=username,
                 message_count=1,
                 cheers=bits_used,
             )
