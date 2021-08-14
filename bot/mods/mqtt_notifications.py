@@ -44,6 +44,9 @@ class MqttNotifications(Mod):
     async def on_pubsub_bits(self, raw: PubSubData, data) -> None:
         """Send MQTT push when a user redeems bits"""
         # No usable data provided in raw or data :(
+        if data.username is None:
+            data.username = "AnAnonymousCheerer"
+
         send_data = dumps({"username": data.username, "bits": data.bits_used, "total_bits": data.total_bits_used})
 
         if await bot.MQTT.send(bot.MQTT.Topics.channel_cheer, send_data):
