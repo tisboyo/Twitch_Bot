@@ -6,6 +6,7 @@ from starlette.exceptions import HTTPException
 from starlette.responses import RedirectResponse
 from uvicorn.main import logger
 from web_auth import check_user_valid
+from web_auth import get_user
 
 from models import IgnoreList
 
@@ -17,9 +18,15 @@ def get_ignore(request: Request):
     try:
         # Ensure logged in user
         check_user_valid(request)
+        me = get_user(request)
+        if not (me.admin):
+            raise HTTPException(403)
+
     except HTTPException:
         # Redirect to login if not
-        return RedirectResponse("/login")
+        response = RedirectResponse("/login")
+        response.set_cookie(key="redirect", value=request.url.path)
+        return response
 
     try:
         result = db.session.query(IgnoreList).order_by(IgnoreList.id).all()
