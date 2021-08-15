@@ -1,4 +1,5 @@
 import enum
+from functools import lru_cache
 from os import getenv
 
 import jwt
@@ -57,6 +58,7 @@ def check_user(level: AuthLevel = AuthLevel.admin):
     return check_user_req
 
 
+@lru_cache
 def check_valid_api_key(level: AuthLevel) -> bool:
     """Check the api_key passed and determine if it is valid for the user in the request"""
 
