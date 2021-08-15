@@ -7,6 +7,7 @@ from starlette.responses import RedirectResponse
 from twitchbot.database.models import CustomCommand
 from uvicorn.main import logger
 from web_auth import check_user_valid
+from web_auth import get_user
 
 router = APIRouter()
 
@@ -17,9 +18,15 @@ async def get_commands(request: Request):
     try:
         # Ensure logged in user
         check_user_valid(request)
+        me = get_user(request)
+        if not (me.admin):
+            raise HTTPException(403)
+
     except HTTPException:
         # Redirect to login if not
-        return RedirectResponse("/login")
+        response = RedirectResponse("/login")
+        response.set_cookie(key="redirect", value=request.url.path)
+        return response
 
     try:
         result = db.session.query(CustomCommand).order_by(CustomCommand.id).all()
@@ -30,7 +37,8 @@ async def get_commands(request: Request):
 
         return out
 
-    out = """<html>
+    out = """
+    <html>
     <body>
         <table border=1>
             <tr>
@@ -49,5 +57,5 @@ async def get_commands(request: Request):
     out += """
         </table>
     </body>
-</html>"""
+    </html>"""
     return out
