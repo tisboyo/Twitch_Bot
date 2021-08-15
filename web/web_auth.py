@@ -3,6 +3,7 @@ from os import getenv
 
 import jwt
 from fastapi.exceptions import HTTPException
+from fastapi.params import Depends
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
@@ -27,7 +28,67 @@ class AuthLevel(enum.Enum):
     admin = enum.auto()
 
 
-def get_user(request: Request) -> dict:
+class RequiresLoginException(Exception):
+    pass
+
+
+def check_user(level: AuthLevel = AuthLevel.admin):
+    """Checks the logged in user and redirects to login if they aren't the correct AuthLevel"""
+
+    # The nested function is so we can get the level from the function and still pass the request in
+    def check_user_req(request: Request):
+        try:
+            # Ensure logged in user
+            check_jwt_valid(request)
+            user = build_user(request)
+            if level is AuthLevel.user and any([user.user, user.mod, user.admin]):
+                return user
+            elif level is AuthLevel.mod and any([user.mod, user.admin]):
+                return user
+            elif level is AuthLevel.admin and user.admin:
+                return user
+            else:
+                raise HTTPException(403)
+
+        except HTTPException:
+            # Redirect to login if not logged in
+            raise RequiresLoginException  # Defined in web_auth.py, handled on main.py
+
+    return check_user_req
+
+
+def check_valid_api_key(level: AuthLevel) -> bool:
+    """Check the api_key passed and determine if it is valid for the user in the request"""
+
+    # The nested function is so we can get the level from the function and still pass the request in
+    def check_api_key(request: Request):
+
+        if not request.query_params.get("key", False):
+            # key paramater not specified
+            raise HTTPException(403)
+
+        query = (
+            db.session.query(WebAuth)
+            .filter(WebAuth.api_key == request.query_params["key"], WebAuth.enabled == True)  # noqa E712
+            .one_or_none()
+        )
+
+        if query:
+            if level == AuthLevel.admin and query.admin:
+                return request.query_params["key"]
+            elif level == AuthLevel.mod and any([query.admin, query.mod]):
+                return request.query_params["key"]
+            elif level == AuthLevel.user and any([query.admin, query.mod, query.user]):
+                return request.query_params["key"]
+            else:
+                raise HTTPException(403)
+        else:
+            raise HTTPException(403)
+
+    return check_api_key
+
+
+def build_user(request: Request) -> dict:
     try:
         encoded = request.session.get("discord_user")
         user = jwt.decode(encoded, getenv("WEB_COOKIE_KEY"), algorithms="HS256")
@@ -49,21 +110,7 @@ def get_user(request: Request) -> dict:
     return new_user
 
 
-def check_valid_api_key(api_key: str, auth_level: AuthLevel) -> bool:
-    """Check the api_key passed and determine if it is valid for the user in the request"""
-    query = db.session.query(WebAuth).filter(WebAuth.api_key == api_key).one_or_none()
-    if query:
-        if auth_level == AuthLevel.admin and query.admin:
-            return True
-        elif auth_level == AuthLevel.mod and (query.admin or query.mod):
-            return True
-        elif auth_level == AuthLevel.user and (query.admin or query.mod or query.user):
-            return True
-    else:
-        return False
-
-
-def check_user_valid(request: Request) -> dict:
+def check_jwt_valid(request: Request) -> dict:
     try:
         encoded = request.session.get("discord_user")
         user = jwt.decode(encoded, getenv("WEB_COOKIE_KEY"), algorithms="HS256")
@@ -130,8 +177,5 @@ async def callback(request: Request, code: str):
 
 
 @router.get("/user_data")
-async def user_data(request: Request):
-    check_user_valid(request)
-    user = get_user(request)
-
+async def user_data(request: Request, user=Depends(check_user)):
     return user
