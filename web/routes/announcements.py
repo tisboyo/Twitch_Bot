@@ -22,9 +22,14 @@ async def get_announcements(request: Request):
         # Ensure logged in user
         check_user_valid(request)
         me = get_user(request)
+        if not (me.admin or me.mod):
+            raise HTTPException(403)
+
     except HTTPException:
         # Redirect to login if not
-        return RedirectResponse("/login")
+        response = RedirectResponse("/login")
+        response.set_cookie(key="redirect", value=request.url.path)
+        return response
 
     try:
         result = (
@@ -88,11 +93,11 @@ async def get_announcements(request: Request):
                 <td>{announcement.id}</td>
                 <td>{announcement.times_sent}</td>
                 <td>
-                    <form action="">
-                    <input type="checkbox" name="enabled" onchange="updateAnnouncementEnable({announcement.id}, this.checked)"
-                        {"disabled" if me.mod else ""}
-                        {"checked" if announcement.enabled else ""}>
-                    </form>
+                <form action="">
+                <input type="checkbox" name="enabled" onchange="updateAnnouncementEnable({announcement.id}, this.checked)"
+                    {"disabled" if me.mod else ""}
+                    {"checked" if announcement.enabled else ""}>
+                </form>
                 </td>
                 <td>
                 <form action="">
