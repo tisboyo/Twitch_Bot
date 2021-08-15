@@ -140,6 +140,35 @@ async def trivia_background(request: Request, key: str = None):
     return FileResponse("static_files/trivia/laptop-background-transparent.png")
 
 
+@router.get("/trivia/manage/")
+async def trivia_manage(request: Request):
+    try:
+        # Ensure logged in user
+        check_user_valid(request)
+        me = get_user(request)
+        if not (me.admin):
+            raise HTTPException(403)
+
+    except HTTPException:
+        # Redirect to login if not
+        response = RedirectResponse("/login")
+        response.set_cookie(key="redirect", value=request.url.path)
+        return response
+
+    out = """
+    <html>
+        <body>
+            <form method="post" enctype="multipart/form-data" action="/trivia/manage/upload">
+                <input type="file" id="trivia" name="questions">
+                <input type="submit" value="Upload" name="submit">
+            </form>
+
+            Download current <a href="/trivia/manage/download">questions.txt</a>
+        </body>
+    </html>"""
+    return HTMLResponse(out)
+
+
 @router.post("/trivia/manage/upload")
 async def trivia_manage_upload(request: Request, questions: UploadFile = File(...)):
     try:
@@ -257,32 +286,3 @@ async def trivia_manage_download(request: Request):
 
     questions_txt = json.dumps(return_dict, indent=4, sort_keys=True, default=str).encode("utf-8")
     return Response(questions_txt, headers={"Content-Disposition": "attachment; filename=questions.txt"})
-
-
-@router.get("/trivia/manage/")
-async def trivia_manage(request: Request):
-    try:
-        # Ensure logged in user
-        check_user_valid(request)
-        me = get_user(request)
-        if not (me.admin):
-            raise HTTPException(403)
-
-    except HTTPException:
-        # Redirect to login if not
-        response = RedirectResponse("/login")
-        response.set_cookie(key="redirect", value=request.url.path)
-        return response
-
-    out = """
-    <html>
-        <body>
-            <form method="post" enctype="multipart/form-data" action="/trivia/manage/upload">
-                <input type="file" id="trivia" name="questions">
-                <input type="submit" value="Upload" name="submit">
-            </form>
-
-            Download current <a href="/trivia/manage/download">questions.txt</a>
-        </body>
-    </html>"""
-    return HTMLResponse(out)
