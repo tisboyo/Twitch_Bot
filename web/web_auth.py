@@ -52,8 +52,11 @@ def check_user(level: AuthLevel = AuthLevel.admin):
                 raise HTTPException(403)
 
         except HTTPException:
-            # Redirect to login if not logged in
-            raise RequiresLoginException  # Defined in web_auth.py, handled on main.py
+
+            if request.method == "POST":  # If a post request, just return a 403 so there isn't a redirect
+                raise HTTPException(403)
+            else:  # Redirect to login if not logged in
+                raise RequiresLoginException  # Defined in web_auth.py, handled on main.py
 
     return check_user_req
 
@@ -67,7 +70,7 @@ def check_valid_api_key(level: AuthLevel) -> bool:
 
         if not request.query_params.get("key", False):
             # key paramater not specified
-            raise HTTPException(403)
+            raise HTTPException(403, "`key` parameter not passed")
 
         query = (
             db.session.query(WebAuth)
@@ -179,5 +182,5 @@ async def callback(request: Request, code: str):
 
 
 @router.get("/user_data")
-async def user_data(request: Request, user=Depends(check_user)):
+async def user_data(request: Request, user=Depends(check_user(level=AuthLevel.user))):
     return user
