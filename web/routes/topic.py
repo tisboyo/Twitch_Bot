@@ -3,67 +3,32 @@ from os import getenv
 
 import websockets
 from fastapi import APIRouter
-from fastapi.exceptions import HTTPException
 from fastapi.params import Body
 from fastapi.params import Depends
-from fastapi.params import Security
 from fastapi.responses import JSONResponse
-from fastapi.security.api_key import APIKey
-from fastapi.security.api_key import APIKeyCookie
-from fastapi.security.api_key import APIKeyHeader
-from fastapi.security.api_key import APIKeyQuery
 from fastapi_sqlalchemy import db
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
-from starlette.status import HTTP_401_UNAUTHORIZED
-from web_auth import check_user_valid
+from web_auth import AuthLevel
+from web_auth import check_user
+from web_auth import check_valid_api_key
 
 from models import Settings
 
 router = APIRouter()
 
-API_KEY = getenv("WEB_API_KEY")
-API_KEY_NAME = "access_token"
-
-
-api_key_query = APIKeyQuery(name=API_KEY_NAME, auto_error=False)
-api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
-api_key_cookie = APIKeyCookie(name=API_KEY_NAME, auto_error=False)
-
-
-async def get_api_key(
-    api_key_query: str = Security(api_key_query),
-    api_key_header: str = Security(api_key_header),
-    api_key_cookie: str = Security(api_key_cookie),
-):
-    if api_key_query == API_KEY:
-        return api_key_query
-    elif api_key_header == API_KEY:
-        return api_key_header
-    elif api_key_cookie == API_KEY:
-        return api_key_cookie
-    else:
-        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
-
 
 @router.get("/topic")
-async def get_topic(request: Request):
-    try:
-        # Ensure logged in user
-        check_user_valid(request)
-    except HTTPException:
-        # Redirect to login if not
-        return RedirectResponse("/login")
-
+async def get_topic(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
     topic = db.session.query(Settings).filter(Settings.key == "topic").one_or_none()
+    topic = topic.value  # type: ignore
     db.session.commit()  # Required so the object updates and gets new data on the next run.
-    return JSONResponse({"topic": topic.value})
+    return JSONResponse({"topic": topic})
 
 
 @router.post("/topic")
 async def post_topic(
     body: dict = Body(..., example={"message": "Post your message here, it will be relayed to twitch chat"}),
-    api_key: APIKey = Depends(get_api_key),
+    api_key=Depends(check_valid_api_key(level=AuthLevel.admin)),
 ):
     """Manual testing
     curl --header "Content-Type: application/json" --header "access_token: testKey" --request POST --data '{"topic":"Test topic sent from a json post"}' http://localhost:5000/topic

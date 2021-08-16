@@ -5,21 +5,20 @@ from random import shuffle
 from fastapi import APIRouter
 from fastapi.datastructures import UploadFile
 from fastapi.exceptions import HTTPException
+from fastapi.params import Depends
 from fastapi.params import File
 from fastapi.requests import Request
 from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
-from fastapi.responses import RedirectResponse
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
 from sqlalchemy import func
 from web_auth import AuthLevel
-from web_auth import check_user_valid
+from web_auth import check_user
 from web_auth import check_valid_api_key
-from web_auth import get_user
 
 from models import TriviaQuestions
 
@@ -30,7 +29,7 @@ templates = Jinja2Templates(directory="static_files/trivia")
 
 
 @router.get("/trivia/q")
-async def trivia_q(request: Request, key: str = None):
+async def trivia_q(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     if not check_valid_api_key(key, AuthLevel.admin):
         return Response(status_code=403)
 
@@ -101,7 +100,7 @@ async def trivia_q(request: Request, key: str = None):
 
 
 @router.post("/trivia/end")
-async def trivia_end(key: str = None):
+async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     if not check_valid_api_key(key, AuthLevel.admin):
         return Response(status_code=403)
 
@@ -112,15 +111,15 @@ async def trivia_end(key: str = None):
 
 # Static file returns
 @router.get("/trivia")
-async def trivia_index(request: Request, key: str = None):
-    if not check_valid_api_key(key, AuthLevel.admin):
-        return Response(status_code=403)
+async def trivia_index(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    # if not check_valid_api_key(key, AuthLevel.admin):
+    #     return Response(status_code=403)
 
     return templates.TemplateResponse("index.html", {"request": request, "key": key})
 
 
 @router.get("/trivia/trivia.js")
-async def trivia_js(request: Request, key: str = None):
+async def trivia_js(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     if not check_valid_api_key(key, AuthLevel.admin):
         return Response(status_code=403)
 
@@ -133,7 +132,7 @@ async def trivia_css(request: Request):
 
 
 @router.get("/trivia/laptop-background-transparent.png")
-async def trivia_background(request: Request, key: str = None):
+async def trivia_background(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     if not check_valid_api_key(key, AuthLevel.admin):
         return Response(status_code=403)
 
@@ -141,20 +140,7 @@ async def trivia_background(request: Request, key: str = None):
 
 
 @router.get("/trivia/manage/")
-async def trivia_manage(request: Request):
-    try:
-        # Ensure logged in user
-        check_user_valid(request)
-        me = get_user(request)
-        if not (me.admin):
-            raise HTTPException(403)
-
-    except HTTPException:
-        # Redirect to login if not
-        response = RedirectResponse("/login")
-        response.set_cookie(key="redirect", value=request.url.path)
-        return response
-
+async def trivia_manage(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
     out = """
     <html>
         <body>
@@ -170,19 +156,9 @@ async def trivia_manage(request: Request):
 
 
 @router.post("/trivia/manage/upload")
-async def trivia_manage_upload(request: Request, questions: UploadFile = File(...)):
-    try:
-        # Ensure logged in user
-        check_user_valid(request)
-        me = get_user(request)
-        if not (me.admin):
-            raise HTTPException(403)
-
-    except HTTPException:
-        # Redirect to login if not
-        response = RedirectResponse("/login")
-        response.set_cookie(key="redirect", value=request.url.path)
-        return response
+async def trivia_manage_upload(
+    request: Request, questions: UploadFile = File(...), user=Depends(check_user(level=AuthLevel.admin))
+):
 
     # Read the file and decode it to a dictionary
     value = await questions.read()
@@ -259,19 +235,7 @@ async def trivia_manage_upload(request: Request, questions: UploadFile = File(..
 
 
 @router.get("/trivia/manage/download")
-async def trivia_manage_download(request: Request):
-    try:
-        # Ensure logged in user
-        check_user_valid(request)
-        me = get_user(request)
-        if not (me.admin):
-            raise HTTPException(403)
-
-    except HTTPException:
-        # Redirect to login if not
-        response = RedirectResponse("/login")
-        response.set_cookie(key="redirect", value=request.url.path)
-        return response
+async def trivia_manage_download(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
 
     query = db.session.query(TriviaQuestions).order_by(TriviaQuestions.id).all()
     return_dict = {"quiz": {}}
