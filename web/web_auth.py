@@ -1,3 +1,4 @@
+import datetime
 import enum
 from functools import lru_cache
 from os import getenv
@@ -7,9 +8,11 @@ from fastapi.exceptions import HTTPException
 from fastapi.params import Depends
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
+from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from fastapi_sqlalchemy import db
 from munch import munchify
+from oauthlib.oauth2.rfc6749.errors import InvalidClientIdError
 from starlette_discord.client import DiscordOAuthClient
 from uvicorn.main import logger
 
@@ -21,6 +24,7 @@ CLIENT_ID = getenv("DISCORD_CLIENT_ID")
 CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
 REDIRECT_URI = f"https://{getenv('WEB_HOSTNAME')}/callback"
 webauth_client = DiscordOAuthClient(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
+cookie_life = 604800  # In seconds, 604800 = 7 days
 
 
 class AuthLevel(enum.Enum):
@@ -40,8 +44,11 @@ def check_user(level: AuthLevel = AuthLevel.admin):
     def check_user_req(request: Request):
         try:
             # Ensure logged in user
-            check_jwt_valid(request)
             user = build_user(request)
+            if user.expires < datetime.datetime.now():
+                # Cookie is expired if the timestamp for it is before now
+                raise HTTPException(401)
+
             if level is AuthLevel.user and any([user.user, user.mod, user.admin]):
                 return user
             elif level is AuthLevel.mod and any([user.mod, user.admin]):
@@ -95,11 +102,11 @@ def check_valid_api_key(level: AuthLevel) -> bool:
 
 def build_user(request: Request) -> dict:
     try:
-        encoded = request.session.get("discord_user")
+        check_jwt_valid(request)
+        encoded = request.cookies["_session"]
         user = jwt.decode(encoded, getenv("WEB_COOKIE_KEY"), algorithms="HS256")
-    except Exception as e:
-        print(e)
-        raise HTTPException(401)
+    except HTTPException as e:
+        raise HTTPException(e.status_code)
 
     query = db.session.query(WebAuth).filter(WebAuth.id == user["id"]).one_or_none()
     if query:
@@ -111,13 +118,16 @@ def build_user(request: Request) -> dict:
     # Convert the user id to an integer instead of a string
     user["id"] = int(user["id"])
 
+    # Convert cookie expiration to datetime object
+    user["expires"] = datetime.datetime.fromisoformat(user["expires"])
+
     new_user = munchify(user)
     return new_user
 
 
 def check_jwt_valid(request: Request) -> dict:
     try:
-        encoded = request.session.get("discord_user")
+        encoded = request.cookies["_session"]
         user = jwt.decode(encoded, getenv("WEB_COOKIE_KEY"), algorithms="HS256")
 
     except jwt.exceptions.InvalidSignatureError:
@@ -128,8 +138,11 @@ def check_jwt_valid(request: Request) -> dict:
         # Modified JWT or no session cookie set
         raise HTTPException(401)
 
+    except KeyError:
+        raise HTTPException(401)
+
     except Exception as e:
-        print(e)
+        logger.warning(f"{type(e)} {e}")
         raise HTTPException(500)
 
     if not user:
@@ -149,16 +162,22 @@ async def login_with_discord():
 
 @router.get("/logout")
 async def logout(request: Request):
-    request.session["discord_user"] = None
+    response = Response("Bye!", status_code=418)
+    response.delete_cookie("_session")
+    return response
 
 
 # NOTE: REDIRECT_URI should be this path.
 @router.get("/callback")
 async def callback(request: Request, code: str):
-    user = await webauth_client.login(code)
+    try:
+        user = await webauth_client.login(code)
+    except InvalidClientIdError:
+        raise HTTPException(403)
+
+    user["expires"] = str(datetime.datetime.now() + datetime.timedelta(seconds=cookie_life))
     encoded = jwt.encode(user, getenv("WEB_COOKIE_KEY"), algorithm="HS256")
-    request.session["discord_user"] = encoded
-    logger.info(f"{user['username']} logged into webserver")
+    logger.info(f"    {user['username']} logged into webserver")
 
     # If the user doesn't exist in the database, insert them.
     # Doing the query without checking if they are enabled allows for
@@ -171,13 +190,15 @@ async def callback(request: Request, code: str):
             enabled=True,
             user=True,
         )
-        print(new_user)
+        logger.info(new_user)
+        # Temporarily disabled intentionally
         # db.session.add(new_user)
         # db.session.commit()
 
     redirect_path = request.cookies.get("redirect", "/")
     response = RedirectResponse(redirect_path)
     response.delete_cookie("redirect")
+    response.set_cookie("_session", encoded, max_age=cookie_life, secure=True, httponly=True)
     return response
 
 
