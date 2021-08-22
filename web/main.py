@@ -92,7 +92,7 @@ def favicon():
 async def login_exception_handler(request: Request, exc: RequiresLoginException) -> RedirectResponse:
     """Sets a cookie for the url that made the request, and redirects to login"""
     response = RedirectResponse("/login")
-    response.set_cookie(key="redirect", value=request.url.path)
+    response.set_cookie(key="redirect", value=request.url.path, expires=180, secure=True, httponly=True)
     return response
 
 
