@@ -16,6 +16,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
 from sqlalchemy import func
+from uvicorn.main import logger
 from web_auth import AuthLevel
 from web_auth import check_user
 from web_auth import check_valid_api_key
@@ -30,9 +31,6 @@ templates = Jinja2Templates(directory="static_files/trivia")
 
 @router.get("/trivia/q")
 async def trivia_q(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    if not check_valid_api_key(key, AuthLevel.admin):
-        return Response(status_code=403)
-
     question = (
         db.session.query(TriviaQuestions)
         .filter(TriviaQuestions.last_used_date < date.today(), TriviaQuestions.enabled == True)  # noqa:E712
@@ -42,7 +40,7 @@ async def trivia_q(request: Request, key: str = Depends(check_valid_api_key(leve
     )
 
     if not question:  # The query returned None
-        print("We have used all of the trivia questions today!")
+        logger.warning("We have used all of the trivia questions today!")
         return JSONResponse(
             {
                 "text": "We've used ALL of the trivia questions today.",
@@ -101,10 +99,7 @@ async def trivia_q(request: Request, key: str = Depends(check_valid_api_key(leve
 
 @router.post("/trivia/end")
 async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    if not check_valid_api_key(key, AuthLevel.admin):
-        return Response(status_code=403)
-
-    print("Trivia ended")
+    logger.info("Trivia ended")
     await send_command_to_bot("trivia", ["end"])
     return Response(status_code=204)
 
@@ -112,17 +107,11 @@ async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(le
 # Static file returns
 @router.get("/trivia")
 async def trivia_index(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    # if not check_valid_api_key(key, AuthLevel.admin):
-    #     return Response(status_code=403)
-
     return templates.TemplateResponse("index.html", {"request": request, "key": key})
 
 
 @router.get("/trivia/trivia.js")
 async def trivia_js(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    if not check_valid_api_key(key, AuthLevel.admin):
-        return Response(status_code=403)
-
     return FileResponse("static_files/trivia/trivia.js")
 
 
@@ -133,9 +122,6 @@ async def trivia_css(request: Request):
 
 @router.get("/trivia/laptop-background-transparent.png")
 async def trivia_background(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    if not check_valid_api_key(key, AuthLevel.admin):
-        return Response(status_code=403)
-
     return FileResponse("static_files/trivia/laptop-background-transparent.png")
 
 
