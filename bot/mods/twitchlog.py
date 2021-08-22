@@ -71,7 +71,9 @@ class TwitchLog(Mod):
             pass
         elif raw.is_moderation_action and raw.moderation_action == "ban":
             # User banned
-            pass
+            print(f"{raw.args[0]} banned by {raw.created_by}.")
+        elif raw.is_moderation_action and raw.moderation_action == "unban":
+            print(f"{raw.args[0]} unbanned by {raw.created_by}.")
         elif raw.is_moderation_action and raw.moderation_action == "clear":
             # Chat as cleared by a moderator
             async with AIOFile(f"irc_logs/{date.today().isoformat()}-{cfg.channels[0]}.log", "a") as afp:
