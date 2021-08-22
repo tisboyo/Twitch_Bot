@@ -5,6 +5,8 @@ from json import dumps
 from main import bot
 from mods._database import session
 from mqtt import MqttTopics
+from sqlalchemy.exc import DatabaseError
+from sqlalchemy.exc import PendingRollbackError
 from twitchbot import Message
 from twitchbot import Mod
 
@@ -30,12 +32,22 @@ class UserMessageCount(Mod):
 
         user_id = msg.tags.user_id
         server_id = msg.tags.room_id
+        rows_affected = None
 
-        rows_affected = (
-            session.query(Users)
-            .filter(Users.user_id == user_id, Users.channel == server_id)
-            .update({"message_count": Users.message_count + 1, "last_message": datetime.now()})
-        )
+        try:
+            rows_affected = (
+                session.query(Users)
+                .filter(Users.user_id == user_id, Users.channel == server_id)
+                .update({"message_count": Users.message_count + 1, "last_message": datetime.now()})
+            )
+        except (DatabaseError, PendingRollbackError) as e:
+            print(f"DATABASE ERROR: {type(e)=} {e.orig.msg=} {e.statement=} {e.params=}")
+            session.rollback()
+            rows_affected = (
+                session.query(Users)
+                .filter(Users.user_id == user_id, Users.channel == server_id)
+                .update({"message_count": Users.message_count + 1, "last_message": datetime.now()})
+            )
 
         # If the user doesn't exist, insert them
         if not rows_affected:

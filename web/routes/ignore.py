@@ -1,11 +1,11 @@
 from fastapi import APIRouter
 from fastapi import Request
+from fastapi.params import Depends
 from fastapi.responses import HTMLResponse
 from fastapi_sqlalchemy import db
-from starlette.exceptions import HTTPException
-from starlette.responses import RedirectResponse
 from uvicorn.main import logger
-from web_auth import check_user_valid
+from web_auth import AuthLevel
+from web_auth import check_user
 
 from models import IgnoreList
 
@@ -13,14 +13,7 @@ router = APIRouter()
 
 
 @router.get("/ignore", response_class=HTMLResponse)
-def get_ignore(request: Request):
-    try:
-        # Ensure logged in user
-        check_user_valid(request)
-    except HTTPException:
-        # Redirect to login if not
-        return RedirectResponse("/login")
-
+def get_ignore(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
     try:
         result = db.session.query(IgnoreList).order_by(IgnoreList.id).all()
 

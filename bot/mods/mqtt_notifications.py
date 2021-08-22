@@ -44,9 +44,15 @@ class MqttNotifications(Mod):
     async def on_pubsub_bits(self, raw: PubSubData, data) -> None:
         """Send MQTT push when a user redeems bits"""
         # No usable data provided in raw or data :(
-        send_data = dumps({"username": data.username, "bits": data.bits_used, "total_bits": data.total_bits_used})
+        send_data = dumps(
+            {
+                "username": data.username if data.username else "AnAnonymousCheerer",
+                "bits": data.bits_used,
+                "total_bits": data.total_bits_used,
+            }
+        )
 
         if await bot.MQTT.send(bot.MQTT.Topics.channel_cheer, send_data):
-            print("Cheer announced to MQTT")
+            print(f"Cheer announced to MQTT. {send_data}")
         else:
             print("Unable to announce Cheer to MQTT")
