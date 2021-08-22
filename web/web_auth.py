@@ -4,12 +4,15 @@ from functools import lru_cache
 from os import getenv
 
 import jwt
+from fastapi import Security
 from fastapi.exceptions import HTTPException
 from fastapi.params import Depends
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
+from fastapi.security.api_key import APIKeyHeader
+from fastapi.security.api_key import APIKeyQuery
 from fastapi_sqlalchemy import db
 from munch import munchify
 from oauthlib.oauth2.rfc6749.errors import InvalidClientIdError
@@ -71,31 +74,38 @@ def check_user(level: AuthLevel = AuthLevel.admin):
 @lru_cache
 def check_valid_api_key(level: AuthLevel) -> bool:
     """Check the api_key passed and determine if it is valid for the user in the request"""
+    API_KEY_NAME = "key"
+    api_key_query = APIKeyQuery(name=API_KEY_NAME, auto_error=False)
+    api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
     # The nested function is so we can get the level from the function and still pass the request in
-    def check_api_key(request: Request):
+    def check_api_key(
+        request: Request,
+        api_key_query: str = Security(api_key_query),
+        api_key_header: str = Security(api_key_header),
+    ):
 
-        if not request.query_params.get("key", False):
-            # key paramater not specified
-            raise HTTPException(403, "`key` parameter not passed")
+        key = api_key_header or api_key_query  # request.query_params["key"]
+        if key is None:
+            raise HTTPException(401)
 
-        query = (
-            db.session.query(WebAuth)
-            .filter(WebAuth.api_key == request.query_params["key"], WebAuth.enabled == True)  # noqa E712
-            .one_or_none()
-        )
+        # if not request.query_params.get("key", False):
+        #     # key paramater not specified
+        #     raise HTTPException(403, "`key` parameter not passed")
+
+        query = db.session.query(WebAuth).filter(WebAuth.api_key == key, WebAuth.enabled == True).one_or_none()  # noqa E712
 
         if query:
             if level == AuthLevel.admin and query.admin:
-                return request.query_params["key"]
+                return key
             elif level == AuthLevel.mod and any([query.admin, query.mod]):
-                return request.query_params["key"]
+                return key
             elif level == AuthLevel.user and any([query.admin, query.mod, query.user]):
-                return request.query_params["key"]
+                return key
             else:
                 raise HTTPException(403)
         else:
-            raise HTTPException(403)
+            raise HTTPException(401)
 
     return check_api_key
 
