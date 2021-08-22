@@ -6,10 +6,11 @@ from os import getenv
 import aiohttp
 from fastapi import APIRouter
 from fastapi import Request
+from fastapi.params import Depends
 from fastapi_sqlalchemy import db
-from starlette.exceptions import HTTPException
 from starlette.responses import RedirectResponse
-from web_auth import check_user_valid
+from web_auth import AuthLevel
+from web_auth import check_user
 
 from models import Settings
 
@@ -19,16 +20,10 @@ return_uri = f"https://{getenv('WEB_HOSTNAME')}/dropbox-response"
 
 
 @router.get("/dropbox")  # , response_class=RedirectResponse)
-async def get_dropbox(request: Request):
+async def get_dropbox(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
     try:
-        # Ensure logged in user
-        check_user_valid(request)
-    except HTTPException:
-        # Redirect to login if not
-        return RedirectResponse("/login")
-
-    try:
-        client_id = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none().value
+        client_id = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none()
+        client_id = client_id.value  # type: ignore
     except AttributeError:
         print("Dropbox Client ID not set")
         return
@@ -39,10 +34,12 @@ async def get_dropbox(request: Request):
 
 
 @router.get("/dropbox-response")
-async def post_dropbox(request: Request):
+async def post_dropbox(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
     try:
-        client_id = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none().value
-        client_secret = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_secret").one_or_none().value
+        client_id = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_id").one_or_none()
+        client_id = client_id.value  # type: ignore
+        client_secret = db.session.query(Settings.value).filter(Settings.key == "dropbox_client_secret").one_or_none()
+        client_secret = client_secret.value  # type: ignore
     except AttributeError:
         print("Dropbox Client ID or Secret not set.")
         return

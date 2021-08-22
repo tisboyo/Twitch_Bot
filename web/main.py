@@ -3,16 +3,17 @@ from os import getenv
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.params import Depends
 from fastapi.responses import FileResponse
+from fastapi.responses import RedirectResponse
 from fastapi_sqlalchemy import db
 from fastapi_sqlalchemy import DBSessionMiddleware
-from starlette.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from uvicorn.main import logger
-from web_auth import check_user_valid
-from web_auth import get_user
-from web_auth import webauth_client
+from web_auth import AuthLevel
+from web_auth import check_user
+from web_auth import RequiresLoginException
 
 from models import Settings
 
@@ -78,22 +79,21 @@ async def startup_event():
 
 
 @app.get("/")
-def root(request: Request):
-    try:
-        check_user_valid(request)
-        user = get_user(request)
-    except HTTPException as e:
-        if e.status_code == 403:
-            raise HTTPException(403)
-        else:
-            return webauth_client.redirect()
-
+def root(request: Request, user=Depends(check_user(level=AuthLevel.user))):
     return {"Hello": user.username}
 
 
 @app.get("/favicon.ico")
 def favicon():
     return FileResponse("static_files/favicon.ico")
+
+
+@app.exception_handler(RequiresLoginException)
+async def login_exception_handler(request: Request, exc: RequiresLoginException) -> RedirectResponse:
+    """Sets a cookie for the url that made the request, and redirects to login"""
+    response = RedirectResponse("/login")
+    response.set_cookie(key="redirect", value=request.url.path, expires=180, secure=True, httponly=True)
+    return response
 
 
 app.add_middleware(SessionMiddleware, secret_key=getenv("SESSION_KEY"))

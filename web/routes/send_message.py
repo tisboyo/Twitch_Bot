@@ -3,51 +3,23 @@ from os import getenv
 
 import websockets
 from fastapi import APIRouter
-from fastapi.exceptions import HTTPException
 from fastapi.params import Body
 from fastapi.params import Depends
-from fastapi.params import Security
 from fastapi.responses import JSONResponse
-from fastapi.security.api_key import APIKey
-from fastapi.security.api_key import APIKeyCookie
-from fastapi.security.api_key import APIKeyHeader
-from fastapi.security.api_key import APIKeyQuery
-from starlette.status import HTTP_401_UNAUTHORIZED
+from web_auth import AuthLevel
+from web_auth import check_valid_api_key
 
 router = APIRouter()
-
-API_KEY = getenv("WEB_API_KEY")
-API_KEY_NAME = "access_token"
-
-
-api_key_query = APIKeyQuery(name=API_KEY_NAME, auto_error=False)
-api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
-api_key_cookie = APIKeyCookie(name=API_KEY_NAME, auto_error=False)
-
-
-async def get_api_key(
-    api_key_query: str = Security(api_key_query),
-    api_key_header: str = Security(api_key_header),
-    api_key_cookie: str = Security(api_key_cookie),
-):
-    if api_key_query == API_KEY:
-        return api_key_query
-    elif api_key_header == API_KEY:
-        return api_key_header
-    elif api_key_cookie == API_KEY:
-        return api_key_cookie
-    else:
-        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
 
 
 @router.post("/post_message")
 async def post_message(
     body: dict = Body(..., example={"message": "Post your message here, it will be relayed to twitch chat"}),
-    api_key: APIKey = Depends(get_api_key),
+    api_key=Depends(check_valid_api_key(level=AuthLevel.admin)),
 ):
     """Manual testing
-    curl --header "Content-Type: application/json" --header "access_token: testKey" --request POST --data '{"message":"Test message sent from a json post"}' http://localhost:5000/post_message
-    curl --header "Content-Type: application/json" --request POST --data '{"message":"Test"}' http://localhost:5000/post_message?access_token=testKey
+    curl --header "Content-Type: application/json" --header "key: testKey" --request POST --data '{"message":"Test message sent from a json post"}' http://localhost:5000/post_message
+    curl --header "Content-Type: application/json" --request POST --data '{"message":"Test"}' http://localhost:5000/post_message?key=testKey
     """  # noqa E501
     if body.get("message", False):
         uri = "ws://bot:13337"

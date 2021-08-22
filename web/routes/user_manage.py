@@ -2,12 +2,12 @@ from fastapi import APIRouter
 from fastapi import Form
 from fastapi import Request
 from fastapi.exceptions import HTTPException
+from fastapi.params import Depends
 from fastapi.responses import HTMLResponse
-from fastapi.responses import RedirectResponse
 from fastapi_sqlalchemy import db
 from uvicorn.main import logger
-from web_auth import check_user_valid
-from web_auth import get_user
+from web_auth import AuthLevel
+from web_auth import check_user
 
 from models import WebAuth
 
@@ -17,19 +17,7 @@ headers = {"Cache-Control": "no-store"}
 
 
 @router.get("/users", response_class=HTMLResponse)
-async def get_users(request: Request):
-
-    try:
-        # Ensure logged in user
-        check_user_valid(request)
-        me = get_user(request)
-        if not (me.mod or me.admin):
-            raise HTTPException(403)
-
-    except HTTPException:
-        # Redirect to login if not
-        return RedirectResponse("/login")
-
+async def get_users(request: Request, me=Depends(check_user(level=AuthLevel.admin))):
     try:
         result = (
             db.session.query(WebAuth)
@@ -122,9 +110,14 @@ async def get_users(request: Request):
 
 
 @router.post("/users/level", response_class=HTMLResponse)
-async def post_user_level(request: Request, user_id: int = Form(...), level: str = Form(...)):
-    check_user_valid(request)
-    user = get_user(request)
+async def post_user_level(
+    request: Request,
+    user_id: int = Form(...),
+    level: str = Form(...),
+    user=Depends(
+        check_user(level=AuthLevel.admin),
+    ),
+):
     if user.admin:
         query = db.session.query(WebAuth).filter(WebAuth.id == user_id).one_or_none()
         if query:
@@ -152,14 +145,18 @@ async def post_user_level(request: Request, user_id: int = Form(...), level: str
 
 
 @router.post("/users/enable", response_class=HTMLResponse)
-async def post_user_enable(request: Request, user_id: int = Form(...), enabled: bool = Form(...)):
-    check_user_valid(request)
-    me = get_user(request)
-    if me.admin or me.mod:
+async def post_user_enable(
+    request: Request,
+    user_id: int = Form(...),
+    enabled: bool = Form(...),
+    user=Depends(check_user(level=AuthLevel.admin)),
+):
+
+    if user.admin or user.mod:
         query = db.session.query(WebAuth).filter(WebAuth.id == user_id).one_or_none()
         if query:
             # Mods can only enable/disable users, admins can modify anyone
-            if (me.mod and not (query.admin or query.mod)) or me.admin:
+            if (user.mod and not (query.admin or query.mod)) or user.admin:
                 query.enabled = enabled
                 db.session.commit()
                 return HTMLResponse(f'{query.name} {"enabled" if enabled else "disabled"}.', headers=headers)

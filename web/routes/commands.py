@@ -1,25 +1,18 @@
 from fastapi import APIRouter
 from fastapi import Request
+from fastapi.params import Depends
 from fastapi.responses import HTMLResponse
 from fastapi_sqlalchemy import db
-from starlette.exceptions import HTTPException
-from starlette.responses import RedirectResponse
 from twitchbot.database.models import CustomCommand
 from uvicorn.main import logger
-from web_auth import check_user_valid
+from web_auth import AuthLevel
+from web_auth import check_user
 
 router = APIRouter()
 
 
 @router.get("/commands", response_class=HTMLResponse)
-async def get_commands(request: Request):
-
-    try:
-        # Ensure logged in user
-        check_user_valid(request)
-    except HTTPException:
-        # Redirect to login if not
-        return RedirectResponse("/login")
+async def get_commands(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
 
     try:
         result = db.session.query(CustomCommand).order_by(CustomCommand.id).all()
@@ -30,7 +23,8 @@ async def get_commands(request: Request):
 
         return out
 
-    out = """<html>
+    out = """
+    <html>
     <body>
         <table border=1>
             <tr>
@@ -49,5 +43,5 @@ async def get_commands(request: Request):
     out += """
         </table>
     </body>
-</html>"""
+    </html>"""
     return out
