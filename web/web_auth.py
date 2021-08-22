@@ -85,13 +85,9 @@ def check_valid_api_key(level: AuthLevel) -> bool:
         api_key_header: str = Security(api_key_header),
     ):
 
-        key = api_key_header or api_key_query  # request.query_params["key"]
+        key = api_key_header or api_key_query
         if key is None:
             raise HTTPException(401)
-
-        # if not request.query_params.get("key", False):
-        #     # key paramater not specified
-        #     raise HTTPException(403, "`key` parameter not passed")
 
         query = db.session.query(WebAuth).filter(WebAuth.api_key == key, WebAuth.enabled == True).one_or_none()  # noqa E712
 
@@ -201,7 +197,7 @@ async def callback(request: Request, code: str):
             user=True,
         )
         logger.info(new_user)
-        # Temporarily disabled intentionally
+        # Temporarily disabled intentionally to prevent new users from being added to the database
         # db.session.add(new_user)
         # db.session.commit()
 
