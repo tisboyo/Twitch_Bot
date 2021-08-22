@@ -1,6 +1,7 @@
 import re
 
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import Request
 from fastapi.params import Form
 from fastapi.responses import HTMLResponse
@@ -8,8 +9,8 @@ from fastapi_sqlalchemy import db
 from starlette.exceptions import HTTPException
 from starlette.responses import RedirectResponse
 from uvicorn.main import logger
-from web_auth import check_user_valid
-from web_auth import get_user
+from web_auth import AuthLevel
+from web_auth import check_user
 
 from models import Clips
 
@@ -17,18 +18,7 @@ router = APIRouter()
 
 
 @router.get("/clips", response_class=HTMLResponse)
-async def get_clips(request: Request):
-
-    try:
-        # Ensure logged in user
-        check_user_valid(request)
-        me = get_user(request)
-
-    except HTTPException:
-        # Redirect to login if not
-        response = RedirectResponse("/login")
-        response.set_cookie(key="redirect", value=request.url.path)
-        return response
+async def get_clips(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
 
     try:
         result = db.session.query(Clips).order_by(Clips.id).all()
@@ -83,7 +73,7 @@ async def get_clips(request: Request):
                 <td>
                     <form action="" >
                     <input type="checkbox" name="enabled" onchange="updateClipEnable({clip.id}, this.checked)"
-                        {"disabled" if not me.admin else ""}
+                        {"disabled" if not user.admin else ""}
                         {"checked" if clip.enabled else ""}>
                     </form>
                 </td>
@@ -96,7 +86,7 @@ async def get_clips(request: Request):
                     </form>
                 </td>
             </tr>
-        """
+        """  # noqa: E501
 
     out += """
         </table>
@@ -127,46 +117,34 @@ async def get_clips(request: Request):
 
 
 @router.get("/clips/json")
-async def get_clips_json(request: Request):
+async def get_clips_json(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
     result = db.session.query(Clips).filter(Clips.enabled == True).order_by(Clips.id).all()  # noqa E712
     return result
 
 
 @router.post("/clips/delete")
-async def post_clips_delete(request: Request, clip_id: int = Form(...)):
-    check_user_valid(request)
-    me = get_user(request)
-    if me.admin:
+async def post_clips_delete(request: Request, clip_id: int = Form(...), user=Depends(check_user(level=AuthLevel.admin))):
+    db.session.query(Clips).filter(Clips.id == clip_id).delete()
+    db.session.commit()
 
-        db.session.query(Clips).filter(Clips.id == clip_id).delete()
-        db.session.commit()
-
-        print(f"{me.username} Deleted clip id:{clip_id}")
-        response = RedirectResponse("/clips", status_code=303)
-        response.set_cookie("clipmsg", f"Deleted clip id:{clip_id}")
-        return response
-    else:
-        raise HTTPException(403)
+    print(f"{user.username} Deleted clip id:{clip_id}")
+    response = RedirectResponse("/clips", status_code=303)
+    response.set_cookie("clipmsg", f"Deleted clip id:{clip_id}")
+    return response
 
 
 @router.post("/clips/enable")
-async def post_clips_enabled(request: Request, clip_id: int = Form(...), enable: bool = Form(...)):
-    check_user_valid(request)
-    me = get_user(request)
-
-    if me.admin:
-        query = db.session.query(Clips).filter(Clips.id == clip_id).one_or_none()
-        if query:
-            query.enabled = enable
-            db.session.commit()
-            return HTMLResponse(f"Clip #{query.id} {'enabled' if query.enabled else 'disabled'}.")
-        else:
-            # Announcement ID wasn't in database
-            raise HTTPException(404)
-
+async def post_clips_enabled(
+    request: Request, clip_id: int = Form(...), enable: bool = Form(...), user=Depends(check_user(level=AuthLevel.admin))
+):
+    query = db.session.query(Clips).filter(Clips.id == clip_id).one_or_none()
+    if query:
+        query.enabled = enable
+        db.session.commit()
+        return HTMLResponse(f"Clip #{query.id} {'enabled' if query.enabled else 'disabled'}.")
     else:
-        # User wasn't an admin or mod
-        raise HTTPException(403)
+        # Announcement ID wasn't in database
+        raise HTTPException(404)
 
 
 @router.post("/clips/add")
@@ -176,17 +154,8 @@ async def post_clips_add(
     name: str = Form(...),
     title: str = Form(default=""),
     url: str = Form(...),
+    user=Depends(check_user(level=AuthLevel.admin)),
 ):
-    try:
-        # Ensure logged in user
-        check_user_valid(request)
-        me = get_user(request)
-
-    except HTTPException:
-        # Redirect to login if not
-        response = RedirectResponse("/login")
-        response.set_cookie(key="redirect", value=request.url.path)
-        return response
 
     regex = r"(https?:\/\/(www\.|clips\.)?twitch\.tv\/(baldengineer\/clip\/)?(?P<clip_id>[A-Za-z0-9]*)?)"
     match = re.search(regex, url)
@@ -200,14 +169,14 @@ async def post_clips_add(
         query = db.session.query(Clips).filter(Clips.name == name.lower()).one_or_none()
         if not query:
             # name didn't exist, so it's time to add it
-            clip = Clips(name=name.lower(), enabled=enabled, title=title, url=clip_id, added_by=me.username)
+            clip = Clips(name=name.lower(), enabled=enabled, title=title, url=clip_id, added_by=user.username)
 
             db.session.add(clip)
             db.session.commit()
-            response.set_cookie("clipmsg", f"{name} has been added to the clip database.")
+            response.set_cookie("clipmsg", f"{name} has been added to the clip database.", expires=5)
         else:
-            response.set_cookie("clipmsg", f"Sorry, {name} already exists in the clip database.")
+            response.set_cookie("clipmsg", f"Sorry, {name} already exists in the clip database.", expires=5)
     else:
-        response.set_cookie("clipmsg", "Sorry, that's not a valid clip url.")
+        response.set_cookie("clipmsg", "Sorry, that's not a valid clip url.", expires=5)
 
     return response
