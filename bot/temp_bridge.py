@@ -61,8 +61,9 @@ class Paho:
 
     def on_message(self, client, userdata, message):
         print("message received  ", str(message.payload.decode("utf-8")))
-        if message.topic == "stream/dispense-treat-toggle":
-            self.AIO.send("dispense-treat-toggle", message.payload.decode("utf-8"))
+        topic = message.topic.split("/")
+        if topic[1] == "dispense-treat-toggle":
+            self.AIO.send(topic[1], message.payload.decode("utf-8"))
 
     def on_connect(self, client, userdata, flags, rc):
         print("Connected flags ", str(flags), "result code ", str(rc))
