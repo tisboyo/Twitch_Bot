@@ -6,5 +6,8 @@ python alembic_update.py
 # echo "Updating Trivia..."
 # python trivia_import.py
 
+echo "Starting adafruit temp bridge..."
+python temp_bridge.py  &
+
 echo "Starting Bot..."
 python main.py
