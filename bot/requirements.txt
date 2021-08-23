@@ -1,4 +1,4 @@
-adafruit-io
+Adafruit_IO==2.5.0
 aiofile==3.6.0
 aiohttp==3.7.4.post0
 alembic==1.6.5
