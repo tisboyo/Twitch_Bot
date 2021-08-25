@@ -20,7 +20,7 @@ filePath = "/var/log/access.log"
 format = "common"
 
   [accessLog.filters]
-  statusCodes=["400-499"]
+  statusCodes=["400-451"]
 
 [providers]
   [providers.docker]
