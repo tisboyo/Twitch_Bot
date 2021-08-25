@@ -17,8 +17,8 @@ COPY ./requirements.txt /workspace/web/
 RUN pip install --upgrade -r /workspace/web/requirements.txt
 
 # Install needed libraries
-RUN apt-get update && apt-get install -y \
-    git
+# RUN apt-get update && apt-get install -y \
+#     git
 
 # Create the working directory
 WORKDIR /workspace/web

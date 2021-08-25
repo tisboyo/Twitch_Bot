@@ -32,6 +32,8 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TO_DO_WEBHOOK: ${TO_DO_WEBHOOK}
+      PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+      PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
 
     labels:
       - "deck-chores.process-dropbox.command=sh -c /workspace/bot/dropbox_sync.py &> /proc/1/fd/1"
@@ -77,6 +79,8 @@ services:
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
       SESSION_KEY: ${SESSION_KEY}
+      PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+      PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
 
     # Uncommenting these disables the requirement to re-build on updates, useful for dev.
     # volumes:
@@ -98,6 +102,8 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_TEST_LOGIN_FILE: /var/lib/mysql/.mylogin.cnf #Run mysql_config_editor set -p in container to set password
+      PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+      PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
 
     cap_add:
       - SYS_NICE # CAP_SYS_NICE
@@ -123,7 +129,9 @@ services:
       - "./traefik/acme.json:/acme.json"
       - "./traefik/log:/var/log"
     environment:
-      - "TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL"
+      TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL: "TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL"
+      PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+      PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
 
   fail2ban:
     container_name: twitchbot_fail2ban
@@ -131,6 +139,8 @@ services:
     network_mode: "host"
     environment:
       F2B_DB_PURGE_AGE: "1d"
+      PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+      PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
     cap_add:
       - NET_ADMIN
       - NET_RAW
@@ -145,6 +155,8 @@ services:
     restart: unless-stopped
     environment:
       TIMEZONE: America/Chicago
+      PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+      PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
@@ -158,7 +170,9 @@ services:
       - ./mosquitto/log:/mosquitto/log
       - ./traefik/certs/${WEB_HOSTNAME}:/mosquitto/certs/site
       - ./traefik/certs/private/:/mosquitto/certs/private
-
+    environment:
+      PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+      PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
     ports:
       - 8883:8883
       - 9883:9883
@@ -168,6 +182,9 @@ services:
 
   traefik-certs-dumper:
     image: ldez/traefik-certs-dumper:v2.7.4
+    environment:
+      PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+      PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
     entrypoint: sh -c '
       apk add jq
       ; while ! [ -e /data/acme.json ]

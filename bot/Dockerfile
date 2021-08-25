@@ -17,8 +17,8 @@ COPY ./requirements.txt /workspace/bot/
 RUN pip install --upgrade -r /workspace/bot/requirements.txt
 
 # Install needed libraries
-RUN apt-get update && apt-get install -y \
-    git
+# RUN apt-get update && apt-get install -y \
+#     git
 
 
 # Create the working directory
