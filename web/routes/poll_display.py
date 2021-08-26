@@ -1,27 +1,33 @@
 from os import getenv
 
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import Request
 from fastapi.responses import FileResponse
 from starlette.responses import RedirectResponse
+from web_auth import AuthLevel
+from web_auth import check_user
 
 router = APIRouter()
 
-# TODO: Disabled until authorization is setup
-# @router.get("/obs_poll")
-# async def get_obs_poll(request: Request):
-#     mqtt_user = getenv("MQTT_USER")
-#     mqtt_pass = getenv("MQTT_KEY")
 
-#     url = (
-#         f"{request.base_url}poll-display?"
-#         f"url={request.base_url.hostname}&"
-#         "port=9883&"
-#         f"username={mqtt_user}&"
-#         f"password={mqtt_pass}"
-#     )
+@router.get("/obs_poll")
+async def get_obs_poll(
+    request: Request,
+    user=Depends(check_user(level=AuthLevel.mod)),
+):
+    mqtt_user = getenv("MQTT_USER")
+    mqtt_pass = getenv("MQTT_KEY")
 
-#     return RedirectResponse(url)
+    url = (
+        f"{request.base_url}poll-display?"
+        f"url={request.base_url.hostname}&"
+        "port=9883&"
+        f"username={mqtt_user}&"
+        f"password={mqtt_pass}"
+    )
+
+    return RedirectResponse(url)
 
 
 @router.get("/poll-display", response_class=FileResponse)
