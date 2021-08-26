@@ -1,26 +1,20 @@
 from os import getenv
 
 from fastapi import APIRouter
-from fastapi import Depends
 from fastapi import Request
 from fastapi.responses import FileResponse
 from starlette.responses import RedirectResponse
-from web_auth import AuthLevel
-from web_auth import check_user
 
 router = APIRouter()
 
 
-@router.get("/obs_poll")
-async def get_obs_poll(
-    request: Request,
-    user=Depends(check_user(level=AuthLevel.mod)),
-):
+@router.get("/trivia/results_obs")
+async def get_obs_poll(request: Request):
     mqtt_user = getenv("MQTT_USER")
     mqtt_pass = getenv("MQTT_KEY")
 
     url = (
-        f"{request.base_url}poll-display?"
+        f"{request.base_url}trivia/results?"
         f"url={request.base_url.hostname}&"
         "port=9883&"
         f"username={mqtt_user}&"
@@ -30,21 +24,21 @@ async def get_obs_poll(
     return RedirectResponse(url)
 
 
-@router.get("/poll-display", response_class=FileResponse)
+@router.get("/trivia/results", response_class=FileResponse)
 async def get_poll_display(request: Request):
-    return FileResponse("static_files/poll/poll-display.html")
+    return FileResponse("static_files/trivia_display/trivia_display.html")
 
 
-@router.get("/poll.css", response_class=FileResponse)
+@router.get("/trivia/trivia_display.css", response_class=FileResponse)
 async def get_poll_css(request: Request):
-    return FileResponse("static_files/poll/poll.css")
+    return FileResponse("static_files/trivia_display/trivia_display.css")
 
 
-@router.get("/mqtt-source.js", response_class=FileResponse)
+@router.get("/trivia/trivia_mqtt.js", response_class=FileResponse)
 async def get_mqtt_source_js(request: Request):
-    return FileResponse("static_files/poll/mqtt-source.js")
+    return FileResponse("static_files/trivia_display/trivia_mqtt.js")
 
 
-@router.get("/mononoki-Regular.woff2", response_class=FileResponse)
+@router.get("/trivia/mononoki-Regular.woff2", response_class=FileResponse)
 async def get_mononoki(request: Request):
     return FileResponse("static_files/mononoki-Regular.woff2")

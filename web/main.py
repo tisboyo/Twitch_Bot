@@ -31,6 +31,7 @@ from routes.topic import router as topic_router
 from routes.twitch_webhook import router as twitch_webhook_router
 from routes.ignore import router as ignore_router
 from routes.trivia import router as trivia_router
+from routes.trivia_display import router as trivia_display_router
 from web_auth import router as webauth_router
 from routes.user_manage import router as user_manage_router
 from routes.clips import router as clips_manage_router
@@ -57,6 +58,7 @@ app.include_router(topic_router)
 app.include_router(twitch_webhook_router)
 app.include_router(ignore_router)
 app.include_router(trivia_router)
+app.include_router(trivia_display_router)
 app.include_router(webauth_router)
 app.include_router(user_manage_router)
 app.include_router(clips_manage_router)
