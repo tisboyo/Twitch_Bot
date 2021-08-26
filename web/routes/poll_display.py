@@ -40,9 +40,9 @@ async def get_poll_css(request: Request):
     return FileResponse("static_files/poll/poll.css")
 
 
-@router.get("/mqtt-source.js", response_class=FileResponse)
+@router.get("/poll-mqtt-source.js", response_class=FileResponse)
 async def get_mqtt_source_js(request: Request):
-    return FileResponse("static_files/poll/mqtt-source.js")
+    return FileResponse("static_files/poll/poll-mqtt-source.js")
 
 
 @router.get("/mononoki-Regular.woff2", response_class=FileResponse)
