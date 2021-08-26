@@ -9,7 +9,6 @@ from fastapi.params import Depends
 from fastapi.params import File
 from fastapi.requests import Request
 from fastapi.responses import FileResponse
-from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
@@ -27,6 +26,11 @@ from models import TriviaQuestions
 router = APIRouter()
 
 templates = Jinja2Templates(directory="static_files/trivia")
+
+
+@router.get("/trivia")
+async def trivia_index(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    return templates.TemplateResponse("index.html", {"request": request, "key": key})
 
 
 @router.get("/trivia/q")
@@ -104,12 +108,6 @@ async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(le
     return Response(status_code=204)
 
 
-# Static file returns
-@router.get("/trivia")
-async def trivia_index(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    return templates.TemplateResponse("index.html", {"request": request, "key": key})
-
-
 @router.get("/trivia/trivia.js")
 async def trivia_js(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     return FileResponse("static_files/trivia/trivia.js")
@@ -127,18 +125,7 @@ async def trivia_background(request: Request, key: str = Depends(check_valid_api
 
 @router.get("/trivia/manage/")
 async def trivia_manage(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
-    out = """
-    <html>
-        <body>
-            <form method="post" enctype="multipart/form-data" action="/trivia/manage/upload">
-                <input type="file" id="trivia" name="questions">
-                <input type="submit" value="Upload" name="submit">
-            </form>
-
-            Download current <a href="/trivia/manage/download">questions.txt</a>
-        </body>
-    </html>"""
-    return HTMLResponse(out)
+    return templates.TemplateResponse("manage.html", {"request": request})
 
 
 @router.post("/trivia/manage/upload")
