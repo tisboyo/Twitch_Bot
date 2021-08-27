@@ -27,6 +27,8 @@ router = APIRouter()
 
 templates = Jinja2Templates(directory="static_files/trivia")
 
+# /trivia/play Load this to play trivia in OBS
+
 
 @router.get("/trivia/play")
 async def trivia_index(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
@@ -121,6 +123,27 @@ async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(le
 @router.get("/trivia/laptop-background-transparent.png")
 async def trivia_background(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     return FileResponse("static_files/trivia/laptop-background-transparent.png")
+
+
+# /trivia/leaders - Show the current leaderboard
+
+
+@router.get("/trivia/leaders", response_class=FileResponse)
+async def get_poll_display(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    return templates.TemplateResponse("leaders.html", {"request": request, "key": key})
+
+
+@router.get("/trivia/leaders.css", response_class=FileResponse)
+async def get_poll_css(request: Request):
+    return FileResponse("static_files/trivia/leaders.css")
+
+
+@router.get("/trivia/trivia_mqtt.js", response_class=FileResponse)
+async def get_mqtt_source_js(request: Request):
+    return FileResponse("static_files/trivia/leaders.js")
+
+
+# /trivia/manage - Trivia management
 
 
 @router.get("/trivia/manage/")
