@@ -31,22 +31,22 @@ templates = Jinja2Templates(directory="static_files/trivia")
 
 
 @router.get("/trivia/play")
-async def trivia_index(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+async def trivia_play(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     return templates.TemplateResponse("play.html", {"request": request, "key": key})
 
 
 @router.get("/trivia/play.js")
-async def trivia_js(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+async def trivia_play_js(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     return FileResponse("static_files/trivia/play.js")
 
 
 @router.get("/trivia/play.css")
-async def trivia_css(request: Request):
+async def trivia_play_css(request: Request):
     return FileResponse("static_files/trivia/play.css")
 
 
 @router.get("/trivia/get_question")
-async def trivia_q(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+async def trivia_get_question(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     question = (
         db.session.query(TriviaQuestions)
         .filter(TriviaQuestions.last_used_date < date.today(), TriviaQuestions.enabled == True)  # noqa:E712
@@ -125,22 +125,40 @@ async def trivia_background(request: Request, key: str = Depends(check_valid_api
     return FileResponse("static_files/trivia/laptop-background-transparent.png")
 
 
-# /trivia/leaders - Show the current leaderboard
+# /trivia/leaders - Show the current leaderboard for all questions
 
 
 @router.get("/trivia/leaders", response_class=FileResponse)
-async def get_poll_display(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+async def trivia_leaders(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     return templates.TemplateResponse("leaders.html", {"request": request, "key": key})
 
 
 @router.get("/trivia/leaders.css", response_class=FileResponse)
-async def get_poll_css(request: Request):
+async def trivia_leaders_css(request: Request):
     return FileResponse("static_files/trivia/leaders.css")
 
 
-@router.get("/trivia/trivia_mqtt.js", response_class=FileResponse)
-async def get_mqtt_source_js(request: Request):
+@router.get("/trivia/leaders.js", response_class=FileResponse)
+async def trivia_leaders_js(request: Request):
     return FileResponse("static_files/trivia/leaders.js")
+
+
+# /trivia/question_results - Shows the results of the question as it plays
+
+
+@router.get("/trivia/question_results", response_class=FileResponse)
+async def trivia_question_results(request: Request):
+    return FileResponse("static_files/trivia_answer/question_results.html")
+
+
+@router.get("/trivia/question_results.css", response_class=FileResponse)
+async def trivia_question_results_css(request: Request):
+    return FileResponse("static_files/trivia/question_results.css")
+
+
+@router.get("/trivia/question_results.js", response_class=FileResponse)
+async def trivia_question_results_js(request: Request):
+    return FileResponse("static_files/trivia/question_results.js")
 
 
 # /trivia/manage - Trivia management
