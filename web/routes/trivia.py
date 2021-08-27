@@ -33,6 +33,16 @@ async def trivia_index(request: Request, key: str = Depends(check_valid_api_key(
     return templates.TemplateResponse("play.html", {"request": request, "key": key})
 
 
+@router.get("/trivia/play.js")
+async def trivia_js(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    return FileResponse("static_files/trivia/play.js")
+
+
+@router.get("/trivia/play.css")
+async def trivia_css(request: Request):
+    return FileResponse("static_files/trivia/play.css")
+
+
 @router.get("/trivia/get_question")
 async def trivia_q(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     question = (
@@ -106,16 +116,6 @@ async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(le
     logger.info("Trivia ended")
     await send_command_to_bot("trivia", ["end"])
     return Response(status_code=204)
-
-
-@router.get("/trivia/trivia.js")
-async def trivia_js(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    return FileResponse("static_files/trivia/trivia.js")
-
-
-@router.get("/trivia/trivia.css")
-async def trivia_css(request: Request):
-    return FileResponse("static_files/trivia/trivia.css")
 
 
 @router.get("/trivia/laptop-background-transparent.png")
