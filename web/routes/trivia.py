@@ -1,5 +1,6 @@
 import json
 from datetime import date
+from os import getenv
 from random import shuffle
 
 from fastapi import APIRouter
@@ -10,6 +11,7 @@ from fastapi.params import File
 from fastapi.requests import Request
 from fastapi.responses import FileResponse
 from fastapi.responses import JSONResponse
+from fastapi.responses import RedirectResponse
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
@@ -128,8 +130,28 @@ async def trivia_background(request: Request, key: str = Depends(check_valid_api
 # /trivia/leaders - Show the current leaderboard for all questions
 
 
-@router.get("/trivia/leaders", response_class=FileResponse)
-async def trivia_leaders(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+@router.get("/trivia/leaders")
+async def trivia_leaders(
+    request: Request,
+    key=Depends(check_valid_api_key(level=AuthLevel.admin)),
+):
+    mqtt_user = getenv("MQTT_USER")
+    mqtt_pass = getenv("MQTT_KEY")
+
+    url = (
+        f"{request.base_url}trivia/leaders.html?"
+        f"url={request.base_url.hostname}&"
+        "port=9883&"
+        f"username={mqtt_user}&"
+        f"password={mqtt_pass}&"
+        f"key={key}"
+    )
+
+    return RedirectResponse(url)
+
+
+@router.get("/trivia/leaders.html", response_class=FileResponse)
+async def trivia_leaders_html(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     return templates.TemplateResponse("leaders.html", {"request": request, "key": key})
 
 
