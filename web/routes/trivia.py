@@ -28,12 +28,12 @@ router = APIRouter()
 templates = Jinja2Templates(directory="static_files/trivia")
 
 
-@router.get("/trivia")
+@router.get("/trivia/play")
 async def trivia_index(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    return templates.TemplateResponse("index.html", {"request": request, "key": key})
+    return templates.TemplateResponse("play.html", {"request": request, "key": key})
 
 
-@router.get("/trivia/q")
+@router.get("/trivia/get_question")
 async def trivia_q(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     question = (
         db.session.query(TriviaQuestions)

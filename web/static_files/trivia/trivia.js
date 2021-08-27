@@ -10,7 +10,7 @@ var questionOBJ;
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const api_key = urlParams.get('key')
-yourUrl = "/trivia/q?key=" + api_key;
+yourUrl = "/trivia/get_question?key=" + api_key;
 
 // Global Timers
 var displayAnswerTimer;
