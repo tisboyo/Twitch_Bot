@@ -33,7 +33,7 @@ class MqttTopics:
     trivia_prefix = "trivia/"
     trivia_setup = trivia_prefix + "setup"
     trivia_data = trivia_prefix + "data"
-    trivia_leaderboard = trivia_prefix + "trivia/leaderboard"
+    trivia_leaderboard = trivia_prefix + "leaderboard"
 
 
 class MQTT:
