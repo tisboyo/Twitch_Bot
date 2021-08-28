@@ -367,7 +367,8 @@ class TriviaMod(Mod):
         self.trivia_active = False
         self.active_question = None
         self.active_answer = None
-        self.answered_active_question_correctly = list()
+        self.ready_for_answers = False
+        self.answered_active_question = dict()
         self.scoreboard = dict()
 
         # Read the set delay from the db, or default to 7 seconds if not set
@@ -397,7 +398,7 @@ class TriviaMod(Mod):
         self.active_answer = ascii_lowercase[answer_num - 1]
 
         if self.active_question is not None:
-            started_at = datetime.datetime.now()
+            self.started_at = datetime.datetime.now()
             last_timer_message_sent = 0
 
             # Send a welcome message and instructions if this is the first question of the session
@@ -410,7 +411,7 @@ class TriviaMod(Mod):
 
             def check_send_time(seconds_into_trivia: int):
                 return (
-                    started_at
+                    self.started_at
                     + datetime.timedelta(seconds=self.question_delay)
                     + datetime.timedelta(seconds=seconds_into_trivia)
                 ) < datetime.datetime.now()
@@ -418,23 +419,24 @@ class TriviaMod(Mod):
             while self.active_question:
                 if last_timer_message_sent == 0 and check_send_time(0):  # Message 1
                     # Send the question to chat
+                    self.ready_for_answers = True
                     await msg.reply(f"{self.msg_prefix}{self.active_question.text}")
-                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
+                    ic(f"{datetime.datetime.now() - self.started_at} seconds into question.")
 
                     last_timer_message_sent += 1
 
                 elif last_timer_message_sent == 1 and check_send_time(10):
-                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
+                    ic(f"{datetime.datetime.now() - self.started_at} seconds into question.")
                     last_timer_message_sent += 1
 
                 elif last_timer_message_sent == 2 and check_send_time(20):
-                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
+                    ic(f"{datetime.datetime.now() - self.started_at} seconds into question.")
                     last_timer_message_sent += 1
                 elif last_timer_message_sent == 3 and check_send_time(30):
-                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
+                    ic(f"{datetime.datetime.now() - self.started_at} seconds into question.")
                     last_timer_message_sent += 1
                 elif last_timer_message_sent == 4 and check_send_time(40):
-                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
+                    ic(f"{datetime.datetime.now() - self.started_at} seconds into question.")
                     last_timer_message_sent += 1
 
                 elif last_timer_message_sent == 5 and check_send_time(44):  # Message 2
@@ -450,7 +452,7 @@ class TriviaMod(Mod):
                     last_timer_message_sent += 1
 
                 elif last_timer_message_sent == 6 and check_send_time(50):
-                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
+                    ic(f"{datetime.datetime.now() - self.started_at} seconds into question.")
                     last_timer_message_sent += 1
 
                 elif last_timer_message_sent == 7 and check_send_time(54):  # Message 3
@@ -462,13 +464,22 @@ class TriviaMod(Mod):
                     # All scoring is done elsewhere
                     self.active_question = None  # End the question
                     self.active_answer = None
+                    self.started_at = None
+                    self.ready_for_answers = False
 
                 else:
                     await sleep(0.25)  # Do an asyncio sleep to let other things run while we wait
 
             ic("Trivia question ended")
-            if self.answered_active_question_correctly:
-                msg_names = ", ".join(self.answered_active_question_correctly)
+
+            # Build a list of people that got the answer correct
+            correct_list = list()
+            for author, correct in self.answered_active_question.items():
+                if correct:
+                    correct_list.append(author)
+
+            if correct_list:
+                msg_names = ", ".join(correct_list)
                 message = f"{self.msg_prefix} Congrats to {msg_names} for the correct answer."
                 if len(message) > 500:
                     count = len(msg_names.split(", "))
@@ -479,7 +490,7 @@ class TriviaMod(Mod):
 
             await msg.reply(message)
 
-            self.answered_active_question_correctly = list()
+            self.answered_active_question = dict()
 
     @SubCommand(trivia, "delay", permission="admin")
     async def trivia_delay(self, msg: Message, new_delay: int = None):
@@ -510,13 +521,49 @@ class TriviaMod(Mod):
         # Give the bot just enough time to send the last message for the current question.
         await sleep(1)
 
+        await self.calculate_winner(msg)
+
     async def on_raw_message(self, msg: Message):
-        if self.active_question and msg.is_privmsg:  # Check if trivia is active and not a server message
+        if (
+            self.active_question and self.ready_for_answers and msg.is_privmsg
+        ):  # Check if trivia is active and not a server message
             normalized: tuple = msg.normalized_parts  # Normalize converts all words in message to lowercase
             if len(normalized) == 1 and len(normalized[0]) == 1 and normalized[0] in ascii_lowercase:
                 answer = normalized[0]
 
-                if answer == self.active_answer and msg.author not in self.answered_active_question_correctly:
-                    add_to_score = 1
+                if answer == self.active_answer and msg.author not in self.answered_active_question.keys():
+                    add_to_score = self.calculate_points_for_question()
+                    _ = f"{msg.author} awarded {add_to_score} points"
+                    ic(_)
+
                     self.scoreboard[msg.author] = self.scoreboard.get(msg.author, 0) + add_to_score
-                    self.answered_active_question_correctly.append(msg.author)
+                    self.answered_active_question[msg.author] = True
+
+                elif msg.author not in self.answered_active_question.keys():
+                    self.answered_active_question[msg.author] = False
+
+    def calculate_points_for_question(self):
+        """Calculates and returns the score for the user, will always return a minimum of 5 points"""
+
+        now = datetime.datetime.now()
+        if self.started_at:
+            adjusted_start = self.started_at + datetime.timedelta(seconds=self.question_delay)
+        else:
+            return 5
+
+        if now - adjusted_start < datetime.timedelta(seconds=60):
+            seconds = datetime.timedelta(seconds=60) - (now - adjusted_start)
+            score = int(seconds.total_seconds() * 10)
+            score = score if score > 5 else 5
+        else:
+            # Just in case the answer comes in before the delay expires, max out the score
+            score = 600
+
+        return score
+
+    async def calculate_winner(self, msg: Message):
+        ordered_scoreboard = {k: v for k, v in sorted(self.scoreboard.items(), key=lambda item: item[1])}
+        ic(ordered_scoreboard)
+
+    async def update_player_scores(self):
+        pass
