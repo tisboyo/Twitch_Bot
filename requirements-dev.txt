@@ -1,5 +1,6 @@
 black
 flake8
+icecream
 pipreqs
 pre-commit
 python-dotenv
