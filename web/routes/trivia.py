@@ -94,7 +94,7 @@ async def trivia_get_question(request: Request, key: str = Depends(check_valid_a
 
     try:
         # Send the question to TwitchBot
-        await send_command_to_bot("trivia", ["q", question.id, answer_id])
+        await send_command_to_bot("trivia", ["run_question", question.id, answer_id])
     except HTTPException:
         return JSONResponse(
             {
