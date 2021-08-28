@@ -11,8 +11,8 @@ from twitchbot import SubCommand
 from twitchbot.message import Message
 from twitchbot.util import run_command
 from twitchbot.util.twitch_api_util import get_user_id
-from uvicorn.main import logger
 
+from models import Settings
 from models import TriviaQuestions
 from models import TriviaResults
 from models import Users
@@ -366,7 +366,14 @@ class TriviaMod(Mod):
         self.msg_prefix: str = "❔"
         self.trivia_active = False
         self.active_question = None
-        self.question_delay = 7
+        self.active_answer = None
+        self.answered_active_question_correctly = list()
+        self.scoreboard = dict()
+
+        # Read the set delay from the db, or default to 7 seconds if not set
+        self.trivia_delay_key = "trivia_delay"
+        query = session.query(Settings).filter(Settings.key == self.trivia_delay_key).one_or_none()
+        self.question_delay = int(query.value) if query else 7
 
     @ModCommand(name, "trivia", permission="admin")
     async def trivia(self, msg, *args):
@@ -376,21 +383,22 @@ class TriviaMod(Mod):
     async def trivia_run_question(self, msg: Message, question_num: int, answer_num: int):
         question_num, answer_num = int(question_num), int(answer_num)  # Framework only passes strings, convert it.
 
-        logger.info(f"Trivia question #{question_num}, Answer: {ascii_lowercase[answer_num-1].upper()}")
-
         # Don't send a question while another is active
         # This will only prevent the next question from starting
         # not multiple sent at the same time
-        if self.active_question:
+        while self.active_question:
             await sleep(0.5)
 
-        question = session.query(TriviaQuestions).filter_by(id=question_num).one_or_none()
+        print(f"Trivia question #{question_num}, Answer: {ascii_lowercase[answer_num-1].upper()}")
 
-        if question is not None:
+        self.active_question = session.query(TriviaQuestions).filter_by(id=question_num).one_or_none()
+
+        # Save the answer letter for score checking
+        self.active_answer = ascii_lowercase[answer_num - 1]
+
+        if self.active_question is not None:
             started_at = datetime.datetime.now()
             last_timer_message_sent = 0
-            # Mark question as active
-            self.active_question = question_num
 
             # Send a welcome message and instructions if this is the first question of the session
             if not self.trivia_active:
@@ -410,15 +418,26 @@ class TriviaMod(Mod):
             while self.active_question:
                 if last_timer_message_sent == 0 and check_send_time(0):  # Message 1
                     # Send the question to chat
-                    await msg.reply(f"{self.msg_prefix}{question.text}")
+                    await msg.reply(f"{self.msg_prefix}{self.active_question.text}")
+                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
 
-                    print(datetime.datetime.now())
                     last_timer_message_sent += 1
-                elif last_timer_message_sent == 1 and check_send_time(29):
-                    await msg.reply("30 seconds left")
-                    print(datetime.datetime.now())
+
+                elif last_timer_message_sent == 1 and check_send_time(10):
+                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
                     last_timer_message_sent += 1
-                elif last_timer_message_sent == 2 and check_send_time(44):  # Message 2
+
+                elif last_timer_message_sent == 2 and check_send_time(20):
+                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
+                    last_timer_message_sent += 1
+                elif last_timer_message_sent == 3 and check_send_time(30):
+                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
+                    last_timer_message_sent += 1
+                elif last_timer_message_sent == 4 and check_send_time(40):
+                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
+                    last_timer_message_sent += 1
+
+                elif last_timer_message_sent == 5 and check_send_time(44):  # Message 2
                     message_text = [
                         "Time is almost up",
                         "15 seconds remaining",
@@ -428,18 +447,76 @@ class TriviaMod(Mod):
                     selected_message_text = random.choice(message_text)
                     await msg.reply(f"{self.msg_prefix}{selected_message_text}")
 
-                    print(datetime.datetime.now())
                     last_timer_message_sent += 1
 
-                elif last_timer_message_sent == 3 and check_send_time(54):
+                elif last_timer_message_sent == 6 and check_send_time(50):
+                    ic(f"{datetime.datetime.now() - started_at} seconds into question.")
+                    last_timer_message_sent += 1
+
+                elif last_timer_message_sent == 7 and check_send_time(54):  # Message 3
                     await msg.reply(f"{self.msg_prefix}Final answers...")
-                    print(datetime.datetime.now())
+
                     last_timer_message_sent += 1
 
-                elif last_timer_message_sent == 4 and check_send_time(60):
-                    print("question ended")
-                    print(datetime.datetime.now())
-                    last_timer_message_sent += 1
-                    break
+                elif last_timer_message_sent == 8 and check_send_time(60):  # Message 4
+                    # All scoring is done elsewhere
+                    self.active_question = None  # End the question
+                    self.active_answer = None
+
                 else:
                     await sleep(0.25)  # Do an asyncio sleep to let other things run while we wait
+
+            ic("Trivia question ended")
+            if self.answered_active_question_correctly:
+                msg_names = ", ".join(self.answered_active_question_correctly)
+                message = f"{self.msg_prefix} Congrats to {msg_names} for the correct answer."
+                if len(message) > 500:
+                    count = len(msg_names.split(", "))
+                    message = f"{self.msg_prefix} Wow! {count} of you got it right! Congrats"
+
+            else:
+                message = f"{self.msg_prefix}Hmm... on to question number next!"
+
+            await msg.reply(message)
+
+            self.answered_active_question_correctly = list()
+
+    @SubCommand(trivia, "delay", permission="admin")
+    async def trivia_delay(self, msg: Message, new_delay: int = None):
+        """Adds a delay at the start of the next question"""
+        if new_delay:
+            self.question_delay = int(new_delay)  # framework doesn't typecast
+
+            # Update delay in database, or insert if key doesn't exist.
+            query = session.query(Settings).filter(Settings.key == self.trivia_delay_key).one_or_none()
+            if query:
+                query.value = new_delay
+                session.commit()
+            else:
+                query = Settings(key=self.trivia_delay_key, value=new_delay)
+                session.add(query)
+                session.commit()
+
+            await msg.reply(f"{self.msg_prefix}Flux Capacitor Trimmed to {self.question_delay} seconds")
+        else:
+            await msg.reply(f"{self.msg_prefix}Flux capacitor currently calibrated to {self.question_delay} seconds")
+
+    @SubCommand(trivia, "end", permission="bot")
+    async def trivia_end(self, msg: Message):
+
+        # Clears the current question, interrupting the timer loop for it
+        self.active_question = None
+
+        # Give the bot just enough time to send the last message for the current question.
+        await sleep(1)
+
+    async def on_raw_message(self, msg: Message):
+        if self.active_question and msg.is_privmsg:  # Check if trivia is active and not a server message
+            normalized: tuple = msg.normalized_parts  # Normalize converts all words in message to lowercase
+            if len(normalized) == 1 and len(normalized[0]) == 1 and normalized[0] in ascii_lowercase:
+                answer = normalized[0]
+
+                if answer == self.active_answer and msg.author not in self.answered_active_question_correctly:
+                    add_to_score = 1
+                    self.scoreboard[msg.author] = self.scoreboard.get(msg.author, 0) + add_to_score
+                    self.answered_active_question_correctly.append(msg.author)
