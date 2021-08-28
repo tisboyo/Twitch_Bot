@@ -1,4 +1,4 @@
-# Added for #152
+import datetime
 import random
 from asyncio import sleep
 from string import ascii_lowercase
@@ -11,13 +11,14 @@ from twitchbot import SubCommand
 from twitchbot.message import Message
 from twitchbot.util import run_command
 from twitchbot.util.twitch_api_util import get_user_id
+from uvicorn.main import logger
 
 from models import TriviaQuestions
 from models import TriviaResults
 from models import Users
 
 
-class TriviaMod(Mod):
+class TriviaModOld:  # (Mod):
     name = "triviamod"
 
     def __init__(self):
@@ -355,3 +356,90 @@ class TriviaMod(Mod):
         """Update the scoreboard mqtt topic"""
 
         pass
+
+
+class TriviaMod(Mod):
+    name = "triviamod"
+
+    def __init__(self):
+        super().__init__()
+        self.msg_prefix: str = "❔"
+        self.trivia_active = False
+        self.active_question = None
+        self.question_delay = 7
+
+    @ModCommand(name, "trivia", permission="admin")
+    async def trivia(self, msg, *args):
+        pass
+
+    @SubCommand(trivia, "run_question", permission="bot", hidden=True)
+    async def trivia_run_question(self, msg: Message, question_num: int, answer_num: int):
+        question_num, answer_num = int(question_num), int(answer_num)  # Framework only passes strings, convert it.
+
+        logger.info(f"Trivia question #{question_num}, Answer: {ascii_lowercase[answer_num-1].upper()}")
+
+        # Don't send a question while another is active
+        # This will only prevent the next question from starting
+        # not multiple sent at the same time
+        if self.active_question:
+            await sleep(0.5)
+
+        question = session.query(TriviaQuestions).filter_by(id=question_num).one_or_none()
+
+        if question is not None:
+            started_at = datetime.datetime.now()
+            last_timer_message_sent = 0
+            # Mark question as active
+            self.active_question = question_num
+
+            # Send a welcome message and instructions if this is the first question of the session
+            if not self.trivia_active:
+                await msg.reply(f"{bot.msg_prefix}Trivia incoming...")
+                await msg.reply(
+                    f"{self.msg_prefix}To play trivia, answer with a single letter message of your answer(case insensitive)."
+                )
+                self.trivia_active = True
+
+            def check_send_time(seconds_into_trivia: int):
+                return (
+                    started_at
+                    + datetime.timedelta(seconds=self.question_delay)
+                    + datetime.timedelta(seconds=seconds_into_trivia)
+                ) < datetime.datetime.now()
+
+            while self.active_question:
+                if last_timer_message_sent == 0 and check_send_time(0):  # Message 1
+                    # Send the question to chat
+                    await msg.reply(f"{self.msg_prefix}{question.text}")
+
+                    print(datetime.datetime.now())
+                    last_timer_message_sent += 1
+                elif last_timer_message_sent == 1 and check_send_time(29):
+                    await msg.reply("30 seconds left")
+                    print(datetime.datetime.now())
+                    last_timer_message_sent += 1
+                elif last_timer_message_sent == 2 and check_send_time(44):  # Message 2
+                    message_text = [
+                        "Time is almost up",
+                        "15 seconds remaining",
+                        "0xF seconds remaining",
+                        "0x10 seconds remaining",
+                    ]
+                    selected_message_text = random.choice(message_text)
+                    await msg.reply(f"{self.msg_prefix}{selected_message_text}")
+
+                    print(datetime.datetime.now())
+                    last_timer_message_sent += 1
+
+                elif last_timer_message_sent == 3 and check_send_time(54):
+                    await msg.reply(f"{self.msg_prefix}Final answers...")
+                    print(datetime.datetime.now())
+                    last_timer_message_sent += 1
+
+                elif last_timer_message_sent == 4 and check_send_time(60):
+                    print("question ended")
+                    print(datetime.datetime.now())
+                    last_timer_message_sent += 1
+                    break
+                else:
+                    await sleep(0.25)  # Do an asyncio sleep to let other things run while we wait
