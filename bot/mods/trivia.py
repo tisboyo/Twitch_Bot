@@ -489,6 +489,7 @@ class TriviaMod(Mod):
                 message = f"{self.msg_prefix}Hmm... on to question number next!"
 
             await msg.reply(message)
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, self.calculate_scoreboard())
 
             self.answered_active_question = dict()
 
