@@ -521,7 +521,28 @@ class TriviaMod(Mod):
         # Give the bot just enough time to send the last message for the current question.
         await sleep(1)
 
-        await self.calculate_winner(msg)
+        await msg.reply(
+            f"{bot.msg_prefix}Thank you for playing trivia! Stick around, @baldengineer will share the winners soon!"
+        )
+
+    @SubCommand(trivia, "winner", permission="admin")
+    async def trivia_winner(self, msg: Message):
+        """Sends the winners to chat, also clearing the scoreboard"""
+
+        winners = self.calculate_winner()
+        how_many_winners = len(winners)
+
+        places = ["first", "second", "third"]
+
+        for pl in range(how_many_winners):
+            # Negative length of winners + current range number, used to count backwards in the places list
+            place = -how_many_winners + pl
+            winner = winners.pop()
+            ic(winner, places[place])
+            await msg.reply(f"{self.msg_prefix} In {places[place]} is {winner[0]} with {winner[1]} points.")
+            await sleep(5)
+
+        self.scoreboard = dict()
 
     async def on_raw_message(self, msg: Message):
         if (
@@ -561,9 +582,19 @@ class TriviaMod(Mod):
 
         return score
 
-    async def calculate_winner(self, msg: Message):
+    def calculate_winner(self):
         ordered_scoreboard = {k: v for k, v in sorted(self.scoreboard.items(), key=lambda item: item[1])}
-        ic(ordered_scoreboard)
+        top_three = list()
+        num = len(ordered_scoreboard) if len(ordered_scoreboard) < 3 else 3
+        for _ in range(num):
+            top_three.append(ordered_scoreboard.popitem())
+
+        return top_three
+
+    def calculate_scoreboard(self):
+        ordered_scoreboard = {k: v for k, v in sorted(self.scoreboard.items(), key=lambda item: item[1])}
+        return ordered_scoreboard
 
     async def update_player_scores(self):
+        """Write the player scores to the database"""
         pass
