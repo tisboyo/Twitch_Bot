@@ -165,10 +165,30 @@ async def trivia_leaders_js(request: Request):
     return FileResponse("static_files/trivia/leaders.js")
 
 
-# /trivia/question_results - Shows the results of the question as it plays
+# /trivia/question_answers - Shows the results of the question as it plays
 
 
-@router.get("/trivia/question_answers", response_class=FileResponse)
+@router.get("/trivia/question_answers")
+async def trivia_question_answers(
+    request: Request,
+    key=Depends(check_valid_api_key(level=AuthLevel.admin)),
+):
+    mqtt_user = getenv("MQTT_USER")
+    mqtt_pass = getenv("MQTT_KEY")
+
+    url = (
+        f"{request.base_url}trivia/question_answers.html?"
+        f"url={request.base_url.hostname}&"
+        "port=9883&"
+        f"username={mqtt_user}&"
+        f"password={mqtt_pass}&"
+        f"key={key}"
+    )
+
+    return RedirectResponse(url)
+
+
+@router.get("/trivia/question_answers.html", response_class=FileResponse)
 async def trivia_question_results(request: Request):
     return FileResponse("static_files/trivia/question_answers.html")
 
