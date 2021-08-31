@@ -1,7 +1,9 @@
 import datetime
+import json
 import random
 from asyncio import sleep
 from string import ascii_lowercase
+from string import ascii_uppercase
 
 from main import bot
 from mods._database import session
@@ -369,6 +371,7 @@ class TriviaMod(Mod):
         self.active_answer = None
         self.ready_for_answers = False
         self.answered_active_question = dict()
+        self.current_question_answers = dict()
         self.scoreboard = dict()
 
         # Read the set delay from the db, or default to 7 seconds if not set
@@ -408,6 +411,22 @@ class TriviaMod(Mod):
                     f"{self.msg_prefix}To play trivia, answer with a single letter message of your answer(case insensitive)."
                 )
                 self.trivia_active = True
+
+            # How many answers are there for this question
+            self.num_of_answers = len(json.loads(self.active_question.answers))
+            # Build MQTT topic trivia_current_question_answers_setup
+            answers = list()
+            for idx in range(self.num_of_answers):
+                answers.append(ascii_uppercase[idx])
+
+            mqtt_answers_setup = {
+                "title": self.active_question.text,
+                "total_duration": 59,
+                "choices": answers,
+                "active": True,
+            }
+            # Send the setup data
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, mqtt_answers_setup, retain=True)
 
             def check_send_time(seconds_into_trivia: int):
                 return (
@@ -464,7 +483,7 @@ class TriviaMod(Mod):
                     # All scoring is done elsewhere
                     self.active_question = None  # End the question
                     self.active_answer = None
-                    self.started_at = None
+                    self.started_at = datetime.datetime.max
                     self.ready_for_answers = False
 
                 else:
@@ -491,6 +510,12 @@ class TriviaMod(Mod):
             await msg.reply(message)
             await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, self.calculate_scoreboard())
 
+            # Wipe the current answers display
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, {"active": False}, retain=True)
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers, {})
+            self.current_question_answers = dict()
+
+            # Clear the dict of who answered
             self.answered_active_question = dict()
 
     @SubCommand(trivia, "delay", permission="admin")
@@ -552,6 +577,16 @@ class TriviaMod(Mod):
             normalized: tuple = msg.normalized_parts  # Normalize converts all words in message to lowercase
             if len(normalized) == 1 and len(normalized[0]) == 1 and normalized[0] in ascii_lowercase:
                 answer = normalized[0]
+
+                if (
+                    msg.author not in self.answered_active_question.keys()  # Make sure the user hasn't already answered
+                    and answer in ascii_lowercase[: self.num_of_answers]  # Make sure answer is a valid one
+                ):
+                    # Increment the counter for the answer given, and send to MQTT
+                    self.current_question_answers[answer.upper()] = self.current_question_answers.get(answer.upper(), 0) + 1
+                    await bot.MQTT.send(
+                        bot.MQTT.Topics.trivia_current_question_answers_data, {"votes": self.current_question_answers}
+                    )
 
                 if answer == self.active_answer and msg.author not in self.answered_active_question.keys():
                     add_to_score = self.calculate_points_for_question()
