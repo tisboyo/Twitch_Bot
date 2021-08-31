@@ -10,7 +10,7 @@
   src: local("mononoki-Bold"), url(/mononoki-Bold.woff2) format("woff2");
 }
 :root {
-  --poll-background: white;
+  --poll-background: rgba(255, 255, 255, 0.25);
   --odd-color: red;
   --even-color: green;
   --border-color: #aaaaaa;
