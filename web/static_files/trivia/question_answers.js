@@ -131,7 +131,7 @@
 
                         let howtovote = document.createElement('div');
                         howtovote.setAttribute('class', 'footer-div');
-                        howtovote.innerHTML = "Vote with !vote &ltx&gt";
+                        howtovote.innerHTML = "";
                         poll.appendChild(howtovote);
 
 
@@ -199,19 +199,19 @@
                                 choiceline.style.setProperty('width', Math.round((data.votes[i] / total) * 100) + '%');
                             }
 
-                            let timeremaining = document.getElementById('timeremaining');
-                            if (data.seconds_left < 1) {
-                                timeremaining.innerHTML = "Voting Closed."
-                            } else if (data.seconds_left < 10) {
-                                timeremaining.innerHTML = "Closing Vote."
-                            } else if (data.seconds_left < 30) {
-                                timeremaining.innerHTML = "Hurry and Vote!"
-                            } else if (data.seconds_left < 60) {
-                                timeremaining.innerHTML = "Less than a minute remaining";
-                            } else if (data.seconds_left > 60) {
-                                var mins = Math.floor(data.seconds_left / 60) + 1
-                                timeremaining.innerHTML = "Less than " + mins + " minutes remaining";
-                            }
+                            // let timeremaining = document.getElementById('timeremaining');
+                            // if (data.seconds_left < 1) {
+                            //     timeremaining.innerHTML = "Voting Closed."
+                            // } else if (data.seconds_left < 10) {
+                            //     timeremaining.innerHTML = "Closing Vote."
+                            // } else if (data.seconds_left < 30) {
+                            //     timeremaining.innerHTML = "Hurry and Vote!"
+                            // } else if (data.seconds_left < 60) {
+                            //     timeremaining.innerHTML = "Less than a minute remaining";
+                            // } else if (data.seconds_left > 60) {
+                            //     var mins = Math.floor(data.seconds_left / 60) + 1
+                            //     timeremaining.innerHTML = "Less than " + mins + " minutes remaining";
+                            // }
 
                         }
                         break;
