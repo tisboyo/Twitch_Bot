@@ -23,16 +23,20 @@ class MqttTopics:
     channel_cheer = stream_prefix + "channel-cheer"
     channel_follow = stream_prefix + "channel-follow"
     yay_toggle = stream_prefix + "yay-toggle"
-    poll_setup = stream_prefix + "poll/setup"
-    poll_data = stream_prefix + "poll/data"
-    verify_1k = stream_prefix + "verify1k"
     test = stream_prefix + "mqtttest"
+    verify_1k = stream_prefix + "verify1k"
     first_time_chatter = stream_prefix + "first_time_chatter"
     new_chatter = stream_prefix + "new_chatter"
 
-    trivia_prefix = "trivia/"
+    poll_prefix = stream_prefix + "poll/"
+    poll_setup = poll_prefix + "setup"
+    poll_data = poll_prefix + "data"
+
+    trivia_prefix = stream_prefix + "trivia/"
     trivia_setup = trivia_prefix + "setup"
     trivia_data = trivia_prefix + "data"
+    trivia_current_question_answers_setup = trivia_prefix + "current_question_answers_setup"
+    trivia_current_question_answers_data = trivia_prefix + "current_question_answers_data"
     trivia_leaderboard = trivia_prefix + "leaderboard"
 
 
