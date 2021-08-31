@@ -420,7 +420,7 @@ class TriviaMod(Mod):
                 answers.append(ascii_uppercase[idx])
 
             mqtt_answers_setup = {
-                "title": self.active_question.text,
+                "title": "Choose your answer",
                 "total_duration": 59,
                 "choices": answers,
                 "active": True,
@@ -511,8 +511,12 @@ class TriviaMod(Mod):
             await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, self.calculate_scoreboard())
 
             # Wipe the current answers display
-            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, {"active": False}, retain=True)
-            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers, {})
+            await bot.MQTT.send(
+                bot.MQTT.Topics.trivia_current_question_answers_data, {"votes": self.current_question_answers, "done": True}
+            )
+            await sleep(8)
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_data, {})
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, {"active": False})
             self.current_question_answers = dict()
 
             # Clear the dict of who answered
@@ -583,9 +587,11 @@ class TriviaMod(Mod):
                     and answer in ascii_lowercase[: self.num_of_answers]  # Make sure answer is a valid one
                 ):
                     # Increment the counter for the answer given, and send to MQTT
-                    self.current_question_answers[answer.upper()] = self.current_question_answers.get(answer.upper(), 0) + 1
-                    await bot.MQTT.send(
-                        bot.MQTT.Topics.trivia_current_question_answers_data, {"votes": self.current_question_answers}
+                    ascii_index = str(ascii_lowercase.index(answer) + 1)
+                    self.current_question_answers[ascii_index] = self.current_question_answers.get(ascii_index, 0) + 1
+                    await bot.MQTT.send(  # {"seconds_left": 4.5, "votes": {"1": 1, "2": 2, "3": 3}, "done": false}
+                        bot.MQTT.Topics.trivia_current_question_answers_data,
+                        {"votes": self.current_question_answers, "done": False},
                     )
 
                 if answer == self.active_answer and msg.author not in self.answered_active_question.keys():

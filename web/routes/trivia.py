@@ -168,19 +168,19 @@ async def trivia_leaders_js(request: Request):
 # /trivia/question_results - Shows the results of the question as it plays
 
 
-@router.get("/trivia/question_results", response_class=FileResponse)
+@router.get("/trivia/question_answers", response_class=FileResponse)
 async def trivia_question_results(request: Request):
-    return FileResponse("static_files/trivia_answer/question_results.html")
+    return FileResponse("static_files/trivia/question_answers.html")
 
 
-@router.get("/trivia/question_results.css", response_class=FileResponse)
+@router.get("/trivia/question_answers.css", response_class=FileResponse)
 async def trivia_question_results_css(request: Request):
-    return FileResponse("static_files/trivia/question_results.css")
+    return FileResponse("static_files/trivia/question_answers.css")
 
 
-@router.get("/trivia/question_results.js", response_class=FileResponse)
+@router.get("/trivia/question_answers.js", response_class=FileResponse)
 async def trivia_question_results_js(request: Request):
-    return FileResponse("static_files/trivia/question_results.js")
+    return FileResponse("static_files/trivia/question_answers.js")
 
 
 # /trivia/manage - Trivia management

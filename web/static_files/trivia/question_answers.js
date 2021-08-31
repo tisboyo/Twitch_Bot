@@ -79,10 +79,10 @@
 
 
         client.on('connect', function () {
-            client.subscribe('stream/poll/setup', function (err) {
+            client.subscribe('stream/trivia/current_question_answers_setup', function (err) {
 
             });
-            client.subscribe('stream/poll/data', function (err) {
+            client.subscribe('stream/trivia/current_question_answers_data', function (err) {
 
             });
 
@@ -93,7 +93,7 @@
             var data = JSON.parse(message);
 
             switch (topic) {
-                case "stream/poll/setup":
+                case "stream/trivia/current_question_answers_setup":
                     { //{"title": "Poll Title 4", "total_duration": 28, "choices": ["Choice 1", "Choice 2", "Choice 3"], "active": false, "sub_multiplier": 0}
                         if (!data.active) {
                             PollTitle = "";
@@ -145,8 +145,8 @@
                             elem.setAttribute('id', 'pollElement-' + i);
                             container.appendChild(elem);
                             let choiceelem = document.createElement('div');
-                            let votenum = parseInt(i) + 1
-                            choiceelem.innerHTML = votenum + ") " + data.choices[i];
+                            //let votenum = parseInt(i) + 1
+                            choiceelem.innerHTML = data.choices[i];
                             choiceelem.setAttribute('class', 'choice');
                             choiceelem.setAttribute('id', 'choice-' + i);
                             elem.appendChild(choiceelem);
@@ -173,7 +173,7 @@
                         root.style.setProperty('--fade', 1);
                         break;
                     }
-                case "stream/poll/data":
+                case "stream/trivia/current_question_answers_data":
                     { //{"seconds_left": 4.5, "votes": {"1": 1, "2": 2, "3": 3}, "done": false}
                         if (ActivePoll) {
                             let total = 0;

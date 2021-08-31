@@ -1,13 +1,13 @@
 @font-face {
   font-family: "mononoki";
-  src: local("mononoki-Regular"), url(mononoki-Regular.woff2) format("woff2");
+  src: local("mononoki-Regular"), url(/mononoki-Regular.woff2) format("woff2");
 }
 
 @font-face {
   font-family: "mononoki bold";
   font-style: normal;
   font-weight: bold;
-  src: local("mononoki-Bold"), url(mononoki-Bold.woff2) format("woff2");
+  src: local("mononoki-Bold"), url(/mononoki-Bold.woff2) format("woff2");
 }
 :root {
   --poll-background: white;
