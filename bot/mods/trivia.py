@@ -582,7 +582,6 @@ class TriviaMod(Mod):
         self.scoreboard = dict()
 
     async def on_privmsg_received(self, msg: Message):
-        ic(msg)
         if (
             self.active_question and self.ready_for_answers and msg.is_privmsg
         ):  # Check if trivia is active and not a server message
