@@ -373,6 +373,7 @@ class TriviaMod(Mod):
         self.answered_active_question = dict()
         self.current_question_answers = dict()
         self.scoreboard = dict()
+        self.questions_into_trivia = 0
 
         # Read the set delay from the db, or default to 7 seconds if not set
         self.trivia_delay_key = "trivia_delay"
@@ -411,6 +412,9 @@ class TriviaMod(Mod):
                     f"{self.msg_prefix}To play trivia, answer with a single letter message of your answer(case insensitive)."
                 )
                 self.trivia_active = True
+
+            # How many questions into trivia are we
+            self.questions_into_trivia += 1
 
             # How many answers are there for this question
             self.num_of_answers = len(json.loads(self.active_question.answers))
@@ -514,13 +518,14 @@ class TriviaMod(Mod):
             await bot.MQTT.send(
                 bot.MQTT.Topics.trivia_current_question_answers_data, {"votes": self.current_question_answers, "done": True}
             )
-            await sleep(8)
-            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_data, {})
-            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, {"active": False})
             self.current_question_answers = dict()
 
             # Clear the dict of who answered
             self.answered_active_question = dict()
+
+            await sleep(5)
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_data, {})
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, {"active": False})
 
     @SubCommand(trivia, "delay", permission="admin")
     async def trivia_delay(self, msg: Message, new_delay: int = None):
@@ -548,6 +553,8 @@ class TriviaMod(Mod):
         # Clears the current question, interrupting the timer loop for it
         self.active_question = None
 
+        self.questions_into_trivia = 0
+
         # Give the bot just enough time to send the last message for the current question.
         await sleep(1)
 
@@ -574,7 +581,8 @@ class TriviaMod(Mod):
 
         self.scoreboard = dict()
 
-    async def on_raw_message(self, msg: Message):
+    async def on_privmsg_received(self, msg: Message):
+        ic(msg)
         if (
             self.active_question and self.ready_for_answers and msg.is_privmsg
         ):  # Check if trivia is active and not a server message
@@ -616,11 +624,12 @@ class TriviaMod(Mod):
 
         if now - adjusted_start < datetime.timedelta(seconds=60):
             seconds = datetime.timedelta(seconds=60) - (now - adjusted_start)
-            score = int(seconds.total_seconds() * 10)
+            score = int(seconds.total_seconds() * 1)
             score = score if score > 5 else 5
+            score = score * self.questions_into_trivia
         else:
             # Just in case the answer comes in before the delay expires, max out the score
-            score = 600
+            score = 60 * self.questions_into_trivia
 
         return score
 
