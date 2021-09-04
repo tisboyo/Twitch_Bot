@@ -599,7 +599,7 @@ class TriviaMod(Mod):
 
         # Clear the trivia related MQTT topics
         await sleep(5)
-        await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, None, retain=True)
+        await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, None)
         await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, None)
         await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_data, None)
 
