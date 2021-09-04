@@ -575,18 +575,33 @@ class TriviaMod(Mod):
         winners = self.calculate_winner()
         how_many_winners = len(winners)
 
-        places = ["first", "second", "third"]
+        # places = ["first", "second", "third"]
+        places = ["third", "second", "first"]
 
+        messages = list()  # Store for the messages to send
         for pl in range(how_many_winners):
             # Negative length of winners + current range number, used to count backwards in the places list
             place = -how_many_winners + pl
             winner = winners.pop()
             ic(winner, places[place])
-            await msg.reply(f"{self.msg_prefix} In {places[place]} is {winner[0]} with {winner[1]} points.")
+            messages.append(f"{self.msg_prefix} In {places[place]} is {winner[0]} with {winner[1]} points.")
+
+        # Send leaderboard to MQTT
+        await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, self.scoreboard, retain=True)
+
+        for idx in range(len(messages)):
+            # Send the congratulatory messages with a delay between them
+            await msg.reply(messages[idx])
             await sleep(5)
 
         # Clear the scoreboard for the next session
         self.scoreboard = dict()
+
+        # Clear the trivia related MQTT topics
+        await sleep(5)
+        await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, None, retain=True)
+        await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, None)
+        await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_data, None)
 
     async def on_privmsg_received(self, msg: Message):
         if (
