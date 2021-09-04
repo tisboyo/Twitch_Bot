@@ -184,4 +184,4 @@ easyauth/db
 easyauth/keys
 notes.md
 bot/pubsub_logs/*
-web/static_files/new_trivia_question.wav
+web/static_files/trivia/new_trivia_question.wav

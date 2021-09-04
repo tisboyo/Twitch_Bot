@@ -53,7 +53,7 @@ async def trivia_play_css(request: Request):
 async def trivia_play_wav(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     def iterfile():
 
-        audio_file = Path(__file__).resolve().parent / ".." / "static_files" / "new_trivia_question.wav"
+        audio_file = Path(__file__).resolve().parent / ".." / "static_files" / "trivia" / "new_trivia_question.wav"
 
         with open(audio_file, mode="rb") as file_like:
             yield from file_like
