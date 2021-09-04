@@ -38,6 +38,8 @@ class MqttTopics:
     trivia_current_question_answers_setup = trivia_prefix + "current_question_answers_setup"
     trivia_current_question_answers_data = trivia_prefix + "current_question_answers_data"
     trivia_leaderboard = trivia_prefix + "leaderboard"
+    trivia_question = trivia_prefix + "question_text"
+    trivia_answers = trivia_prefix + "answers"
 
 
 class MQTT:
