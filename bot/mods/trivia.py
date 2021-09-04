@@ -431,6 +431,8 @@ class TriviaMod(Mod):
             }
             # Send the setup data
             await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, mqtt_answers_setup, retain=True)
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_question, self.active_question.text)
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_answers, self.active_question.answers)
 
             def check_send_time(seconds_into_trivia: int):
                 return (
