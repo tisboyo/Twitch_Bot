@@ -1,6 +1,7 @@
 import json
 from datetime import date
 from os import getenv
+from pathlib import Path
 from random import shuffle
 
 from fastapi import APIRouter
@@ -13,6 +14,7 @@ from fastapi.responses import FileResponse
 from fastapi.responses import JSONResponse
 from fastapi.responses import RedirectResponse
 from fastapi.responses import Response
+from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
@@ -48,15 +50,22 @@ async def trivia_play_css(request: Request):
 
 
 @router.get("/trivia/play.wav")
-async def trivia_play_wav(request: Request):
-    return FileResponse("static_files/trivia/new_trivia_question.wav")
+async def trivia_play_wav(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    def iterfile():
+
+        audio_file = Path(__file__).resolve().parent / ".." / "static_files" / "new_trivia_questiona.wav"
+
+        with open(audio_file, mode="rb") as file_like:
+            yield from file_like
+
+    return StreamingResponse(iterfile(), media_type="audio/wav")
 
 
 @router.get("/trivia/get_question")
 async def trivia_get_question(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     question = (
         db.session.query(TriviaQuestions)
-        .filter(TriviaQuestions.last_used_date < date.today(), TriviaQuestions.enabled == True)  # noqa:E712
+        .filter(TriviaQuestions.enabled == True)  # noqa:E712
         .order_by(func.random())
         .limit(1)
         .one_or_none()

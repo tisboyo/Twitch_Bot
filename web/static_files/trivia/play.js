@@ -87,6 +87,10 @@ function shuffle(array) {
 }
 
 function processResponse(obj) {
+
+    var audio = new Audio('/trivia/play.wav?key=' + api_key)
+    audio.play()
+
     // the question
     document.getElementById("question").innerHTML = "<h2>" + obj.text + "</h2>";
 
@@ -141,6 +145,7 @@ function processResponse(obj) {
 
         answer_section.appendChild(the_answer).appendChild(answer_node);
         document.getElementById("answers").appendChild(answer_section);
+
     }
 }
 
