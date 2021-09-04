@@ -68,7 +68,7 @@ function Get(yourUrl) {
 
 function processResponse(obj) {
 
-    var audio = new Audio('/trivia/sounds/' + obj.id + '?key=' + api_key)
+    var audio = new Audio('/trivia/sounds/' + obj.sound + '?key=' + api_key)
     audio.play()
 
     // the question
@@ -91,14 +91,13 @@ function processResponse(obj) {
     console.log("Length of answer objs: " + answer_objs_key_count);
     for (x = 0; x < answer_objs_key_count; x++)
         answer_key_order[x] = x;
-    console.log("Going to check these: " + answer_key_order.toString());
-    var random_key_order = answer_key_order;
-    console.log("Now we got: " + random_key_order.toString());
+    console.log("Answer keys: " + answer_key_order.toString());
+
 
     //for (var answer_key of Object.keys(answerOBJs)) {
     var answer_letter_counter = 65;
     for (this_random_key = 0; this_random_key < answer_objs_key_count; this_random_key++) {
-        var answer_key = random_key_order[this_random_key] + 1;
+        var answer_key = answer_key_order[this_random_key] + 1;
         var answer_text = answerOBJs[answer_key].text;
         if (answerOBJs[answer_key].is_answer == '1')
             var is_answer = 1;

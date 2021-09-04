@@ -49,14 +49,14 @@ async def trivia_play_css(request: Request):
     return FileResponse("static_files/trivia/play.css")
 
 
-@router.get("/trivia/sounds/{question_id}")
+@router.get("/trivia/sounds/{sound_id}")
 async def trivia_play_wav(
-    request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), question_id="default"
+    request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), sound_id="default"
 ):
     def iterfile():
 
         audio_file_path = Path(__file__).resolve().parent / ".." / "static_files" / "trivia" / "sounds"
-        question_file = audio_file_path / f"{question_id}.wav"
+        question_file = audio_file_path / f"{sound_id}.wav"
         default_file = audio_file_path / "default.wav"
         if question_file.is_file():
             audio_file = question_file
@@ -108,7 +108,7 @@ async def trivia_get_question(request: Request, key: str = Depends(check_valid_a
         "text": question.text,
         "answers": randomized_answers,
         "explain": question.explain,
-        "id": question.id,
+        "sound": question.id if question.sound is None else question.sound,
     }
 
     try:
@@ -125,7 +125,7 @@ async def trivia_get_question(request: Request, key: str = Depends(check_valid_a
                     "4": {"text": "Did the Twitch API key expire again?"},
                 },
                 "explain": "Lets try again and see if it wakes up this time.",
-                "id": "error",
+                "sound": "error",
             }
         )
 
