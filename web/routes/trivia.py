@@ -47,6 +47,11 @@ async def trivia_play_css(request: Request):
     return FileResponse("static_files/trivia/play.css")
 
 
+@router.get("/trivia/play.wav")
+async def trivia_play_wav(request: Request):
+    return FileResponse("static_files/trivia/new_trivia_question.wav")
+
+
 @router.get("/trivia/get_question")
 async def trivia_get_question(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     question = (
