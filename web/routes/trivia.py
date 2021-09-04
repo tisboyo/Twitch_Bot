@@ -49,11 +49,19 @@ async def trivia_play_css(request: Request):
     return FileResponse("static_files/trivia/play.css")
 
 
-@router.get("/trivia/play.wav")
-async def trivia_play_wav(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+@router.get("/trivia/sounds/{question_id}")
+async def trivia_play_wav(
+    request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), question_id="default"
+):
     def iterfile():
 
-        audio_file = Path(__file__).resolve().parent / ".." / "static_files" / "trivia" / "new_trivia_question.wav"
+        audio_file_path = Path(__file__).resolve().parent / ".." / "static_files" / "trivia" / "sounds"
+        question_file = audio_file_path / f"{question_id}.wav"
+        default_file = audio_file_path / "default.wav"
+        if question_file.is_file():
+            audio_file = question_file
+        else:
+            audio_file = default_file
 
         with open(audio_file, mode="rb") as file_like:
             yield from file_like
@@ -73,11 +81,7 @@ async def trivia_get_question(request: Request, key: str = Depends(check_valid_a
 
     if not question:  # The query returned None
         logger.warning("We have used all of the trivia questions today!")
-        return JSONResponse(
-            {
-                "text": "We've used ALL of the trivia questions today.",
-            }
-        )
+        return JSONResponse({"text": "We've used ALL of the trivia questions today.", "id": "error"})
 
     # Randomize answers, generate a new number order of indexes
     ans = json.loads(question.answers)
@@ -104,6 +108,7 @@ async def trivia_get_question(request: Request, key: str = Depends(check_valid_a
         "text": question.text,
         "answers": randomized_answers,
         "explain": question.explain,
+        "id": question.id,
     }
 
     try:
@@ -120,6 +125,7 @@ async def trivia_get_question(request: Request, key: str = Depends(check_valid_a
                     "4": {"text": "Did the Twitch API key expire again?"},
                 },
                 "explain": "Lets try again and see if it wakes up this time.",
+                "id": "error",
             }
         )
 

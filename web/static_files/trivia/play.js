@@ -66,29 +66,9 @@ function Get(yourUrl) {
     return Httpreq.responseText;
 }
 
-function shuffle(array) {
-    //Shuffling moved to python script.
-    // var currentIndex = array.length, temporaryValue, randomIndex;
-
-    // // While there remain elements to shuffle...
-    // while (0 !== currentIndex) {
-
-    //   // Pick a remaining element...
-    //   randomIndex = Math.floor(Math.random() * currentIndex);
-    //   currentIndex -= 1;
-
-    //   // And swap it with the current element.
-    //   temporaryValue = array[currentIndex];
-    //   array[currentIndex] = array[randomIndex];
-    //   array[randomIndex] = temporaryValue;
-    // }
-
-    return array;
-}
-
 function processResponse(obj) {
 
-    var audio = new Audio('/trivia/play.wav?key=' + api_key)
+    var audio = new Audio('/trivia/sounds/' + obj.id + '?key=' + api_key)
     audio.play()
 
     // the question
@@ -112,7 +92,7 @@ function processResponse(obj) {
     for (x = 0; x < answer_objs_key_count; x++)
         answer_key_order[x] = x;
     console.log("Going to check these: " + answer_key_order.toString());
-    var random_key_order = shuffle(answer_key_order);
+    var random_key_order = answer_key_order;
     console.log("Now we got: " + random_key_order.toString());
 
     //for (var answer_key of Object.keys(answerOBJs)) {
