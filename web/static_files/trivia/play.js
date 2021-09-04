@@ -12,6 +12,11 @@ const urlParams = new URLSearchParams(queryString);
 const api_key = urlParams.get('key')
 yourUrl = "/trivia/get_question?key=" + api_key;
 
+const debugging = urlParams.get('debug')
+if (debugging) {
+    yourUrl = yourUrl + "&debug=true"
+}
+
 // Global Timers
 var displayAnswerTimer;
 var myTimer;
