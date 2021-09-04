@@ -550,6 +550,8 @@ class TriviaMod(Mod):
     @SubCommand(trivia, "end", permission="bot")
     async def trivia_end(self, msg: Message):
 
+        self.trivia_active = False  # Deactivate trivia, allows winner to run
+
         # Clears the current question, interrupting the timer loop for it
         self.active_question = None
 
@@ -566,6 +568,10 @@ class TriviaMod(Mod):
     async def trivia_winner(self, msg: Message):
         """Sends the winners to chat, also clearing the scoreboard"""
 
+        if self.trivia_active:
+            # Trivia hasn't ended yet, force end it.
+            await run_command("trivia", msg, ["end"], blocking=True)
+
         winners = self.calculate_winner()
         how_many_winners = len(winners)
 
@@ -579,6 +585,7 @@ class TriviaMod(Mod):
             await msg.reply(f"{self.msg_prefix} In {places[place]} is {winner[0]} with {winner[1]} points.")
             await sleep(5)
 
+        # Clear the scoreboard for the next session
         self.scoreboard = dict()
 
     async def on_privmsg_received(self, msg: Message):
