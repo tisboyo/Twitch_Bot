@@ -65,7 +65,7 @@ async def trivia_play_wav(request: Request, key: str = Depends(check_valid_api_k
 async def trivia_get_question(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     question = (
         db.session.query(TriviaQuestions)
-        .filter(TriviaQuestions.enabled == True)  # noqa:E712
+        .filter(TriviaQuestions.last_used_date < date.today(), TriviaQuestions.enabled == True)  # noqa:E712
         .order_by(func.random())
         .limit(1)
         .one_or_none()
