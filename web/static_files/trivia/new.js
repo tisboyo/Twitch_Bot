@@ -136,7 +136,7 @@
                         ActivePoll = data.active;
                         //Make BigBoiBox that holed the actual poll
                         let root = document.documentElement;
-                        root.style.setProperty('--update-frequency', data.update_frequency + "s");
+
                         let big_boi = document.createElement("div");
                         big_boi.setAttribute("id", "poll");
                         big_boi.setAttribute("class", "big-boi-container");
@@ -212,7 +212,7 @@
                         let howtovote = document.createElement('div');
                         howtovote.setAttribute('class', 'footer-div');
                         howtovote.setAttribute('id', 'footer-div');
-                        howtovote.innerHTML = "Vote with !vote &ltx&gt";
+                        howtovote.innerHTML = "Respond in chat with A, B, C, D, etc...";
                         poll.appendChild(howtovote);
 
                         root.style.setProperty('--fade', 1);

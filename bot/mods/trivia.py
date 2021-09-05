@@ -538,6 +538,7 @@ class TriviaMod(Mod):
             await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, self.calculate_scoreboard())
 
             # Send the current answer status to MQTT
+            # Always send answer_id when done = True otherwise the front end will puke
             await self.send_answers_to_mqtt(done=True, explanation=explanation, answer_id=answer_num)
 
             self.current_question_answers = dict()
@@ -546,9 +547,6 @@ class TriviaMod(Mod):
             self.answered_active_question = dict()
 
             await sleep(5)
-            await bot.MQTT.send(
-                bot.MQTT.Topics.trivia_current_question_data, {"done": True, "answer_id": answer_num}, retain=True
-            )  # Always send answer_id when done = True otherwise the front end will puke
             await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, {"active": False}, retain=True)
 
     @SubCommand(trivia, "delay", permission="admin")
@@ -715,7 +713,7 @@ class TriviaMod(Mod):
             "done": done,
         }
         if explanation:
-            message["explanation"] = explanation
+            message["explain"] = explanation
         if answer_id:
             message["answer_id"] = answer_id
 
