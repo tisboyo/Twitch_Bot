@@ -8,6 +8,7 @@ from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
 from signing import is_request_valid
 from starlette.status import HTTP_204_NO_CONTENT
+from uvicorn.main import logger
 
 from models import IgnoreList
 
@@ -27,7 +28,13 @@ async def twitch_webhook_follow_post(data: dict, request: Request):
     # 'from_name': '', 'to_id': '', 'to_name': ''}]
 
     if await is_request_valid(request):
-        data = data["data"][0]
+        try:
+            data = data["data"][0]
+        except IndexError:
+            logger.error(f"Follow error: {data=}")
+
+            # Return 204 so twitch will quit attempting to send the bad data
+            return Response(status_code=HTTP_204_NO_CONTENT)
 
         # Load the ignore list from the database on startup
         ignore_list_patterns = dict()
