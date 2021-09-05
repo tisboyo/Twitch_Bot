@@ -84,7 +84,7 @@ class Paho:
 
 
 # Only run if it's enabled, implemented so it's off in dev environments
-if getenv("ENABLE_AIO_BRIDGE"):
+if int(getenv("ENABLE_AIO_BRIDGE")):
     print("AIO Bridge starting...")
     aio = AIO()
     my_mqtt = Paho()
