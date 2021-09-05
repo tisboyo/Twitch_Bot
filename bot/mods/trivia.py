@@ -301,7 +301,24 @@ class TriviaMod(Mod):
 
             # Run the question
             await run_command("trivia", msg, ["run_question", str(question.id)], blocking=True)
-            await sleep(5)
+            await sleep(1)
+            await bot.MQTT.send(
+                bot.MQTT.Topics.trivia_current_question_setup,
+                {
+                    "text": "New trivia preview!",
+                    "choices": [],
+                    "answers": {},
+                    "id": "default",
+                    "active": True,
+                    "image": 0,
+                    "sound": 0,
+                    "explain": "Send your trivia suggestions in discord!",
+                },
+                retain=True,
+            )
+            await sleep(2)
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, {"active": False}, retain=True)
+            await sleep(2)
 
         self.start_running = False
 
@@ -309,7 +326,7 @@ class TriviaMod(Mod):
     async def trivia_end(self, msg: Message):
 
         self.trivia_active = False  # Deactivate trivia, allows winner to run
-
+        self.start_running = False
         # Clears the current question, interrupting the timer loop for it
         self.active_question = None
 
