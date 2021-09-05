@@ -52,6 +52,8 @@ services:
     volumes:
       - ./web/web_user_db.json:/workspace/web/web_user_db.json
       - ./models.py:/workspace/web/models.py
+      - ./web/static_files/trivia/images:/workspace/web/static_files/trivia/images
+      - ./web/static_files/trivia/sounds:/workspace/web/static_files/trivia/sounds
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`${WEB_HOSTNAME}`)"
