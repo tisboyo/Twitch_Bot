@@ -202,7 +202,13 @@ async def trivia_get_question(
     return JSONResponse(jsonret)
 
 
-# @router.post("/trivia/start")
+@router.post("/trivia/start")
+async def trivia_start(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    logger.info("Trivia started")
+    await send_command_to_bot("trivia", ["start"])
+    return Response(status_code=204)
+
+
 @router.post("/trivia/end")
 async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     logger.info("Trivia ended")

@@ -1,10 +1,7 @@
 (function () {
     //Not a great coder look at all my globals
     var ActivePoll,
-        TriviaQuestion,
-        ChoiceCount,
-        SubMultiplier;
-
+        TriviaQuestion;
 
     // Graciously stolen from sitepoint
     // https://www.sitepoint.com/get-url-parameters-with-javascript/
@@ -67,7 +64,16 @@
         return obj;
     }
 
-
+    var endTriviaNotified = false
+    document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === 'hidden') {
+            if (!endTriviaNotified) {
+                var params = getAllUrlParams()
+                endTriviaNotified = true;
+                navigator.sendBeacon('/trivia/end?key=' + params.key);
+            }
+        }
+    });
 
     window.onload = async () => {
 
@@ -257,3 +263,12 @@
         };
     };
 })();
+
+function startTrivia(url) {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const key = urlParams.get('key')
+    if (document.visibilityState === 'visible') {
+        navigator.sendBeacon('/trivia/start?key=' + key);
+    }
+}
