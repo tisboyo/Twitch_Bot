@@ -13,6 +13,7 @@ from models import Settings
 
 @dataclass
 class MqttTopics:
+    connected = "bot_connected"
     stream_prefix = "stream/"
     treat_in_queue = stream_prefix + "treat-in-queue"
     dispense_treat_toggle = stream_prefix + "dispense-treat-toggle"

@@ -1,5 +1,6 @@
 import asyncio
 import re
+from datetime import datetime
 from json import loads
 from os import _exit
 
@@ -87,6 +88,10 @@ class AddOhmsBot(BaseBot):
 
         # Nothing matched, so return False
         return False
+
+    async def on_connected(self):
+        # We need to send a mqtt message early to stabilize the mqtt connection. Lets hope this fixes it.
+        await self.MQTT.send(self.MQTT.Topics.connected, datetime.now().isoformat(), retain=True)
 
 
 bot = AddOhmsBot()  # Needs to be out here so it's able to be imported from other modules
