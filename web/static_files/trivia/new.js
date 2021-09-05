@@ -359,7 +359,7 @@
             if (document.visibilityState === "hidden") {
                 if (!endTriviaNotified) {
                     endTriviaNotified = true;
-                    //navigator.sendBeacon("/trivia/end?key=" + params.key);
+                    navigator.sendBeacon("/trivia/end?key=" + params.key);
                 }
             }
         });
