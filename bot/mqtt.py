@@ -33,10 +33,8 @@ class MqttTopics:
     poll_data = poll_prefix + "data"
 
     trivia_prefix = stream_prefix + "trivia/"
-    trivia_setup = trivia_prefix + "setup"
-    trivia_data = trivia_prefix + "data"
-    trivia_current_question_answers_setup = trivia_prefix + "current_question_answers_setup"
-    trivia_current_question_answers_data = trivia_prefix + "current_question_answers_data"
+    trivia_current_question_setup = trivia_prefix + "current_question_setup"
+    trivia_current_question_data = trivia_prefix + "current_question_data"
     trivia_leaderboard = trivia_prefix + "leaderboard"
     trivia_question = trivia_prefix + "question_text"
     trivia_answers = trivia_prefix + "answers"

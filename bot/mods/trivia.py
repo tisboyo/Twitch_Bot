@@ -374,6 +374,7 @@ class TriviaMod(Mod):
         self.current_question_answers = dict()
         self.scoreboard = dict()
         self.questions_into_trivia = 0
+        self.started_at = datetime.datetime.max
 
         # Read the set delay from the db, or default to 7 seconds if not set
         self.trivia_delay_key = "trivia_delay"
@@ -386,6 +387,13 @@ class TriviaMod(Mod):
 
     @SubCommand(trivia, "run_question", permission="bot", hidden=True)
     async def trivia_run_question(self, msg: Message, question_num: int, answer_num: int):
+        def check_send_time(seconds_into_trivia: int):
+            return (
+                self.started_at
+                + datetime.timedelta(seconds=self.question_delay)
+                + datetime.timedelta(seconds=seconds_into_trivia)
+            ) < datetime.datetime.now()
+
         question_num, answer_num = int(question_num), int(answer_num)  # Framework only passes strings, convert it.
 
         # Don't send a question while another is active
@@ -418,28 +426,40 @@ class TriviaMod(Mod):
 
             # How many answers are there for this question
             self.num_of_answers = len(json.loads(self.active_question.answers))
-            # Build MQTT topic trivia_current_question_answers_setup
-            answers = list()
+            # Build MQTT topic trivia_current_question_setup
+            answers_choices = list()
             for idx in range(self.num_of_answers):
-                answers.append(ascii_uppercase[idx])
+                # Parenthesis inside the f string is sent to the trivia page to format it
+                answers_choices.append(f"{ascii_uppercase[idx]})")
 
-            mqtt_answers_setup = {
-                "title": "Choose your answer",
+            # Pad out the answer_choices so the spacing on the trivia display displays correctly
+            min_number_of_questions_to_send = 4
+            while len(answers_choices) < min_number_of_questions_to_send:
+                answers_choices.append("")
+
+            mqtt_question_setup = {
+                "id": self.active_question.id,
+                "text": self.active_question.text,
                 "total_duration": 59,
-                "choices": answers,
+                "choices": answers_choices,
+                "answers": json.loads(self.active_question.answers),
+                "image": self.active_question.id if self.active_question.image is None else self.active_question.image,
+                "sound": self.active_question.id if self.active_question.sound is None else self.active_question.sound,
                 "active": True,
             }
+            # Pad out the answers if there are less than 4 so the spacing is correct on the front end
+            if len(mqtt_question_setup["answers"]) < min_number_of_questions_to_send:
+                for idx in range(len(mqtt_question_setup["answers"]) + 1, min_number_of_questions_to_send + 1):
+                    mqtt_question_setup["answers"][str(idx)] = {"is_answer": 0, "text": ""}
+
             # Send the setup data
-            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, mqtt_answers_setup, retain=True)
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, mqtt_question_setup, retain=True)
             await bot.MQTT.send(bot.MQTT.Topics.trivia_question, self.active_question.text)
             await bot.MQTT.send(bot.MQTT.Topics.trivia_answers, self.active_question.answers)
 
-            def check_send_time(seconds_into_trivia: int):
-                return (
-                    self.started_at
-                    + datetime.timedelta(seconds=self.question_delay)
-                    + datetime.timedelta(seconds=seconds_into_trivia)
-                ) < datetime.datetime.now()
+            explanation = (
+                self.active_question.explain if self.active_question.explain is not None else " "
+            )  # Save this to send with the closing mqtt
 
             while self.active_question:
                 if last_timer_message_sent == 0 and check_send_time(0):  # Message 1
@@ -493,6 +513,7 @@ class TriviaMod(Mod):
                     self.ready_for_answers = False
 
                 else:
+                    await self.send_answers_to_mqtt()
                     await sleep(0.25)  # Do an asyncio sleep to let other things run while we wait
 
             ic("Trivia question ended")
@@ -516,18 +537,19 @@ class TriviaMod(Mod):
             await msg.reply(message)
             await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, self.calculate_scoreboard())
 
-            # Wipe the current answers display
-            await bot.MQTT.send(
-                bot.MQTT.Topics.trivia_current_question_answers_data, {"votes": self.current_question_answers, "done": True}
-            )
+            # Send the current answer status to MQTT
+            await self.send_answers_to_mqtt(done=True, explanation=explanation, answer_id=answer_num)
+
             self.current_question_answers = dict()
 
             # Clear the dict of who answered
             self.answered_active_question = dict()
 
             await sleep(5)
-            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_data, {})
-            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, {"active": False})
+            await bot.MQTT.send(
+                bot.MQTT.Topics.trivia_current_question_data, {"done": True, "answer_id": answer_num}, retain=True
+            )  # Always send answer_id when done = True otherwise the front end will puke
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, {"active": False}, retain=True)
 
     @SubCommand(trivia, "delay", permission="admin")
     async def trivia_delay(self, msg: Message, new_delay: int = None):
@@ -602,8 +624,8 @@ class TriviaMod(Mod):
         # Clear the trivia related MQTT topics
         await sleep(5)
         await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, None)
-        await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_setup, None)
-        await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_answers_data, None)
+        await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, None)
+        await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_data, None)
 
     async def on_privmsg_received(self, msg: Message):
         if (
@@ -620,10 +642,9 @@ class TriviaMod(Mod):
                     # Increment the counter for the answer given, and send to MQTT
                     ascii_index = str(ascii_lowercase.index(answer) + 1)
                     self.current_question_answers[ascii_index] = self.current_question_answers.get(ascii_index, 0) + 1
-                    await bot.MQTT.send(  # {"seconds_left": 4.5, "votes": {"1": 1, "2": 2, "3": 3}, "done": false}
-                        bot.MQTT.Topics.trivia_current_question_answers_data,
-                        {"votes": self.current_question_answers, "done": False},
-                    )
+
+                    # Send the current answer status to MQTT
+                    await self.send_answers_to_mqtt()
 
                 if answer == self.active_answer and msg.author not in self.answered_active_question.keys():
                     add_to_score = self.calculate_points_for_question()
@@ -633,7 +654,10 @@ class TriviaMod(Mod):
                     self.scoreboard[msg.author] = self.scoreboard.get(msg.author, 0) + add_to_score
                     self.answered_active_question[msg.author] = True
 
-                elif msg.author not in self.answered_active_question.keys():
+                elif (
+                    msg.author not in self.answered_active_question.keys()
+                    and answer in ascii_lowercase[: self.num_of_answers]
+                ):
                     self.answered_active_question[msg.author] = False
 
     def calculate_points_for_question(self):
@@ -672,3 +696,31 @@ class TriviaMod(Mod):
     async def update_player_scores(self):
         """Write the player scores to the database"""
         pass
+
+    async def send_answers_to_mqtt(self, done: bool = False, explanation: str = None, answer_id=None):
+
+        # Track the total number of votes so we can send it to the front end
+        total_votes = 0
+        for k, v in self.current_question_answers.items():
+            total_votes += v
+
+        time_left = datetime.timedelta(seconds=60) - (datetime.datetime.now() - self.started_at)
+        if time_left < datetime.timedelta(seconds=0):
+            time_left = datetime.timedelta(seconds=0)
+
+        message = {
+            "votes": self.current_question_answers,
+            "total": total_votes,
+            "seconds_left": time_left.seconds,
+            "done": done,
+        }
+        if explanation:
+            message["explanation"] = explanation
+        if answer_id:
+            message["answer_id"] = answer_id
+
+        await bot.MQTT.send(
+            bot.MQTT.Topics.trivia_current_question_data,
+            message,
+            retain=True,
+        )

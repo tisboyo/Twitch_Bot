@@ -185,3 +185,4 @@ easyauth/keys
 notes.md
 bot/pubsub_logs/*
 web/static_files/trivia/sounds/
+web/static_files/trivia/images/

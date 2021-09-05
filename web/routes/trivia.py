@@ -69,6 +69,42 @@ async def trivia_play_wav(
     return StreamingResponse(iterfile(), media_type="audio/wav")
 
 
+@router.get("/trivia/images/{image_id}")
+async def trivia_play_jpg(
+    request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), image_id="default"
+):
+    image_file_path = Path(__file__).resolve().parent / ".." / "static_files" / "trivia" / "images"
+    question_file_jpg = image_file_path / f"{image_id}.jpg"
+    question_file_png = image_file_path / f"{image_id}.png"
+    question_file_gif = image_file_path / f"{image_id}.gif"
+    default_file = image_file_path / "default.png"
+
+    if question_file_jpg.is_file():
+        return FileResponse(question_file_jpg)
+    elif question_file_png.is_file():
+        return FileResponse(question_file_png)
+    elif question_file_gif.is_file():
+        return FileResponse(question_file_gif)
+    else:
+        # return Response(None, status_code=204)
+        return FileResponse(default_file)
+
+
+@router.get("/trivia/new")
+async def trivia_new(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    return templates.TemplateResponse("new.html", {"request": request, "key": key})
+
+
+@router.get("/trivia/new.js")
+async def trivia_new_js(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    return FileResponse("static_files/trivia/new.js")
+
+
+@router.get("/trivia/new.css")
+async def trivia_new_css(request: Request):
+    return FileResponse("static_files/trivia/new.css")
+
+
 @router.get("/trivia/get_question")
 async def trivia_get_question(
     request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), debug: bool = False
@@ -146,6 +182,7 @@ async def trivia_get_question(
     return JSONResponse(jsonret)
 
 
+# @router.post("/trivia/start")
 @router.post("/trivia/end")
 async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     logger.info("Trivia ended")
@@ -155,6 +192,7 @@ async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(le
 
 @router.get("/trivia/laptop-background-transparent.png")
 async def trivia_background(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    # return FileResponse("static_files/trivia/newlt.png")
     return FileResponse("static_files/trivia/laptop-background-transparent.png")
 
 

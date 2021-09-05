@@ -1,7 +1,10 @@
 (function () {
     //Not a great coder look at all my globals
     var ActivePoll,
-        ChoiceCount;
+        TriviaQuestion,
+        ChoiceCount,
+        SubMultiplier;
+
 
     // Graciously stolen from sitepoint
     // https://www.sitepoint.com/get-url-parameters-with-javascript/
@@ -70,20 +73,15 @@
 
         var params = getAllUrlParams(),
             client = mqtt.connect('wss://' + params.url + ':' + params.port, {
-                clientId: 'pollpage' + Math.random().toString(36).slice(2),
+                clientId: 'triviapage' + Math.random().toString(36).slice(2),
                 username: params.username,
                 password: params.password
             });
 
 
         client.on('connect', function () {
-            client.subscribe('stream/trivia/current_question_setup', function (err) {
-
-            });
-            client.subscribe('stream/trivia/current_question_data', function (err) {
-
-            });
-
+            client.subscribe('stream/trivia/current_question_setup'), function (err) { };
+            client.subscribe('stream/trivia/current_question_data'), function (err) { }; //{'votes': {'1':1}, 'done':false}
         })
 
         client.on('message', function (topic, message) {
@@ -112,19 +110,27 @@
                         //     "active": true
                         // }
 
+                        let display_div = document.getElementById("display-div");
+                        let timer = document.getElementById('timer');
+
                         if (!data.active) {
+                            TriviaQuestion = "";
                             ChoiceCount = "";
                             SubMultiplier = "";
                             ActivePoll = "";
                             update_frequency = "1"
+                            timer.innerHTML = "";
                             let root = document.documentElement;
-                            root.style.setProperty('--fade', 0);
+
                             setTimeout(function () {
-                                document.body.innerHTML = '';
+                                display_div.innerHTML = '';
                             }, 1000);
+                            root.style.setProperty('--fade', 0);
 
                             break;
                         }
+
+                        TriviaQuestion = data.text;
                         ChoiceCount = data.choices.length;
                         SubMultiplier = data.sub_multiplier;
                         ActivePoll = data.active;
@@ -134,99 +140,109 @@
                         let big_boi = document.createElement("div");
                         big_boi.setAttribute("id", "poll");
                         big_boi.setAttribute("class", "big-boi-container");
-                        document.body.appendChild(big_boi);
+
+                        display_div.appendChild(big_boi);
 
                         // Create Poll header
                         let title = document.createElement('div');
-                        title.setAttribute('class', 'pollHeader');
-                        title.innerHTML = "Choose your answer";
+                        title.setAttribute('class', 'triviaQuestion');
+                        title.innerHTML = TriviaQuestion;
 
                         let poll = document.getElementById("poll");
-                        poll.appendChild(title);
+                        big_boi.appendChild(title);
 
-                        let howtovote = document.createElement('div');
-                        howtovote.setAttribute('class', 'footer-div');
-                        howtovote.innerHTML = "";
-                        poll.appendChild(howtovote);
+                        let smolboi = document.createElement('div');
+                        smolboi.setAttribute('class', 'smolboi');
+                        big_boi.appendChild(smolboi);
+
+                        let box = document.createElement('div');
+                        box.setAttribute('class', 'questions');
+                        smolboi.appendChild(box)
+
+                        let picturebox = document.createElement('div');
+                        picturebox.setAttribute('class', 'picturebox');
+                        smolboi.appendChild(picturebox)
+
+                        let picture = document.createElement('img');
+                        picture.setAttribute('class', 'picture');
+                        picture.setAttribute('src', "/trivia/images/" + data.image + "?key=" + params.key);
+
+                        picturebox.appendChild(picture)
+
+                        var audio = new Audio('/trivia/sounds/' + data.sound + '?key=' + params.key)
+                        audio.play()
 
 
-                        for (let i in data.choices) {
-                            let container = document.createElement('div');
+                        for (let i in data.answers) {
+                            let container = document.createElement('div');   //Full container holds everything for a question
                             container.setAttribute('class', 'outer-div');
                             container.setAttribute('id', 'pollElement-' + i);
-                            poll.appendChild(container);
-                            let elem = document.createElement('div');
+                            box.appendChild(container);
+
+                            let elem = document.createElement('div'); //Floating container that holds question info above progressbar
                             elem.setAttribute('class', 'info-div');
                             elem.setAttribute('id', 'pollElement-' + i);
                             container.appendChild(elem);
-                            let choiceelem = document.createElement('div');
-                            //let votenum = parseInt(i) + 1
-                            choiceelem.innerHTML = data.choices[i];
-                            choiceelem.setAttribute('class', 'choice');
+
+                            let voteletters = data.choices
+                            let choiceelem = document.createElement('div');  //Actual Question
+                            //let votenum = parseInt(i) - 1
+                            choiceelem.innerHTML = data.choices[i - 1] + " " + data.answers[i].text;
+                            choiceelem.setAttribute('class', 'answer');
                             choiceelem.setAttribute('id', 'choice-' + i);
                             elem.appendChild(choiceelem);
-                            let voteelem = document.createElement('div');
+
+                            let voteelem = document.createElement('div');  //Vote Count
                             voteelem.innerHTML = '';
                             voteelem.setAttribute('class', 'count');
                             voteelem.setAttribute('id', 'votes-' + i);
-                            voteelem.innerHTML = 0;
+                            // voteelem.innerHTML = 0;  // Starting Answer Count
                             elem.appendChild(voteelem);
-                            let progress = document.createElement('div');
+
+                            let progress = document.createElement('div');  //Progress bar
                             progress.innerHTML = '';
                             progress.setAttribute('class', 'bar-div');
                             progress.setAttribute('id', 'bar-div-' + i);
                             container.appendChild(progress);
                         }
 
-                        let timeremaining = document.createElement('div');
-                        timeremaining.innerHTML = '';
-                        timeremaining.setAttribute('class', 'footer-div');
-                        timeremaining.setAttribute('id', 'timeremaining');
-                        poll.appendChild(timeremaining);
 
+
+
+                        let howtovote = document.createElement('div');
+                        howtovote.setAttribute('class', 'footer-div');
+                        howtovote.setAttribute('id', 'footer-div');
+                        howtovote.innerHTML = "Vote with !vote &ltx&gt";
+                        poll.appendChild(howtovote);
 
                         root.style.setProperty('--fade', 1);
                         break;
                     }
                 case "stream/trivia/current_question_data":
-                    { //{"seconds_left": 4.5, "votes": {"1": 1, "2": 2, "3": 3}, "done": false}
+                    {
                         if (ActivePoll) {
-                            let total = 0;
+
                             if (data.done) {
                                 //Grey out all non winners
                                 for (i in data.votes) {
-                                    let vote = document.getElementById('bar-div-' + (i - 1));
+                                    let vote = document.getElementById('bar-div-' + (i));
                                     vote.style.setProperty('filter', 'saturate(0)')
                                 }
-                                let winner = Object.keys(data.votes).reduce((a, b) => data.votes[a] > data.votes[b] ? a : b) - 1;
-                                let vote = document.getElementById('bar-div-' + winner);
+                                let vote = document.getElementById('bar-div-' + data.answer_id);
                                 vote.style.setProperty('filter', 'saturate(1)');
+                                let footer = document.getElementById('footer-div');
+                                footer.innerHTML = data.explain;
+
                                 break;
                             }
-                            for (i in data.votes) {
-                                total += data.votes[i];
-                            }
+                            let timer = document.getElementById('timer');
+                            timer.innerHTML = data.seconds_left;
                             for (i in data.votes) {
                                 //TODO Figureout "better looking" scaling.
-                                let vote = document.getElementById('votes-' + (i - 1));
-                                vote.innerHTML = data.votes[i];
-                                let choiceline = document.getElementById('bar-div-' + (i - 1));
-                                choiceline.style.setProperty('width', Math.round((data.votes[i] / total) * 100) + '%');
+                                let choiceline = document.getElementById('bar-div-' + (i));
+                                choiceline.style.setProperty('width', Math.round((data.votes[i] / data.total) * 100) + '%');
                             }
 
-                            // let timeremaining = document.getElementById('timeremaining');
-                            // if (data.seconds_left < 1) {
-                            //     timeremaining.innerHTML = "Voting Closed."
-                            // } else if (data.seconds_left < 10) {
-                            //     timeremaining.innerHTML = "Closing Vote."
-                            // } else if (data.seconds_left < 30) {
-                            //     timeremaining.innerHTML = "Hurry and Vote!"
-                            // } else if (data.seconds_left < 60) {
-                            //     timeremaining.innerHTML = "Less than a minute remaining";
-                            // } else if (data.seconds_left > 60) {
-                            //     var mins = Math.floor(data.seconds_left / 60) + 1
-                            //     timeremaining.innerHTML = "Less than " + mins + " minutes remaining";
-                            // }
 
                         }
                         break;
