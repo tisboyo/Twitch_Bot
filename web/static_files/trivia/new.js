@@ -64,16 +64,7 @@
         return obj;
     }
 
-    var endTriviaNotified = false
-    document.addEventListener("visibilitychange", function () {
-        if (document.visibilityState === 'hidden') {
-            if (!endTriviaNotified) {
-                var params = getAllUrlParams()
-                endTriviaNotified = true;
-                navigator.sendBeacon('/trivia/end?key=' + params.key);
-            }
-        }
-    });
+
 
     window.onload = async () => {
 
@@ -137,8 +128,6 @@
                         }
 
                         TriviaQuestion = data.text;
-                        ChoiceCount = data.choices.length;
-                        SubMultiplier = data.sub_multiplier;
                         ActivePoll = data.active;
                         //Make BigBoiBox that holed the actual poll
                         let root = document.documentElement;
@@ -162,12 +151,20 @@
                         big_boi.appendChild(smolboi);
 
                         let box = document.createElement('div');
-                        box.setAttribute('class', 'questions');
-                        smolboi.appendChild(box)
-
                         let picturebox = document.createElement('div');
+
+
+                        if (Object.keys(data.answers).length) {
+
+                            box.setAttribute('class', 'questions');
+                            smolboi.appendChild(box)
+                        } else {
+                            picturebox.setAttribute('style', 'flex-grow:1');
+                        }
+
                         picturebox.setAttribute('class', 'picturebox');
                         smolboi.appendChild(picturebox)
+
 
                         let picture = document.createElement('img');
                         picture.setAttribute('class', 'picture');
@@ -218,7 +215,11 @@
                         let howtovote = document.createElement('div');
                         howtovote.setAttribute('class', 'footer-div');
                         howtovote.setAttribute('id', 'footer-div');
-                        howtovote.innerHTML = "Respond in chat with A, B, C, D, etc...";
+                        if (data.explain) {
+                            howtovote.innerHTML = data.explain;
+                        } else {
+                            howtovote.innerHTML = "Respond in chat with A, B, C, D, etc...";
+                        }
                         poll.appendChild(howtovote);
 
                         root.style.setProperty('--fade', 1);
@@ -226,16 +227,22 @@
                     }
                 case "stream/trivia/current_question_data":
                     {
+                        //seconds_left
+                        //data.done
                         if (ActivePoll) {
 
                             if (data.done) {
                                 //Grey out all non winners
-                                for (i in data.votes) {
-                                    let vote = document.getElementById('bar-div-' + (i));
-                                    vote.style.setProperty('filter', 'saturate(0)')
-                                }
-                                let vote = document.getElementById('bar-div-' + data.answer_id);
-                                vote.style.setProperty('filter', 'saturate(1)');
+                                try { //If only a picture is sent, don't try to send these elements and ignore the exception
+                                    for (i in data.votes) {
+                                        let vote = document.getElementById('bar-div-' + (i));
+                                        vote.style.setProperty('filter', 'saturate(0)')
+                                    }
+
+                                    let vote = document.getElementById('bar-div-' + data.answer_id)
+                                    vote.style.setProperty('filter', 'saturate(1)');
+                                } catch (e) { }
+
                                 let footer = document.getElementById('footer-div');
                                 footer.innerHTML = data.explain;
 
@@ -261,14 +268,108 @@
         window.onunload = () => {
             client.end();
         };
-    };
-})();
 
-function startTrivia(url) {
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const key = urlParams.get('key')
-    if (document.visibilityState === 'visible') {
-        navigator.sendBeacon('/trivia/start?key=' + key);
-    }
-}
+
+
+
+        if (document.visibilityState === 'visible') {
+            //navigator.sendBeacon('/trivia/start?key=' + params.key);
+            var Httpreq = new XMLHttpRequest(); // a new request
+            var url = "start?key=" + params.key;
+            if (params.debug) {
+                url = url + "&debug=" + params.debug
+            }
+            Httpreq.open("GET", url, false);
+            Httpreq.onload = function () { console.log(Httpreq.status) }
+            Httpreq.send();
+            var status = Httpreq.status
+            if (status === 503) {
+                client.end();
+                let display_div = document.getElementById("display-div");
+
+                let big_boi = document.createElement("div");
+                big_boi.setAttribute("id", "poll");
+                big_boi.setAttribute("class", "big-boi-container");
+                display_div.appendChild(big_boi);  //Add large box
+
+
+                let title = document.createElement('div');
+                title.setAttribute('class', 'triviaQuestion');
+                title.innerHTML = "Unable to connect to TwitchBot for Trivia";
+                big_boi.appendChild(title); //Add Title
+
+                let smolboi = document.createElement('div');
+                smolboi.setAttribute('class', 'smolboi');
+                big_boi.appendChild(smolboi);
+
+                let box = document.createElement('div');
+                box.setAttribute('class', 'questions');
+                smolboi.appendChild(box)
+
+                let container = document.createElement('div');   //Full container holds everything for a question
+                container.setAttribute('class', 'info-div answer');
+                container.setAttribute('id', 'pollElement-1');
+                container.innerHTML = "A) Fire Tisboyo."
+                box.appendChild(container);
+                container = document.createElement('div');   //Full container holds everything for a question
+                container.setAttribute('class', 'info-div answer');
+                container.setAttribute('id', 'pollElement-1');
+                container.innerHTML = "B) Sacrifice some Ohms to the bot gods."
+                box.appendChild(container);
+                container = document.createElement('div');   //Full container holds everything for a question
+                container.setAttribute('class', 'info-div answer');
+                container.setAttribute('id', 'pollElement-1');
+                container.innerHTML = "c) Kick AWS for breaking the bot."
+                box.appendChild(container);
+                container = document.createElement('div');   //Full container holds everything for a question
+                container.setAttribute('class', 'info-div answer');
+                container.setAttribute('id', 'pollElement-1');
+                container.innerHTML = "D) Did the Twitch API key expire again?"
+                box.appendChild(container);
+
+                let howtovote = document.createElement('div');
+                howtovote.setAttribute('class', 'footer-div');
+                howtovote.setAttribute('id', 'footer-div');
+                howtovote.innerHTML = "Lets try again and see if it wakes up this time.";
+                poll.appendChild(howtovote);
+
+                var audio = new Audio('/trivia/sounds/error?key=' + params.key)
+                audio.play()
+                // {
+                //     "text": "Unable to connect to TwitchBot for Trivia",
+                //     "answers": {
+                //         "1": {"text": "Fire Tisboyo."},
+                //         "2": {"text": "Sacrifice some Ohms to the bot gods."},
+                //         "3": {"text": "Kick AWS for breaking the bot."},
+                //         "4": {"text": "Did the Twitch API key expire again?"},
+                //     },
+                //     "explain": "Lets try again and see if it wakes up this time.",
+                //     "sound": "error",
+                // }
+
+                document.documentElement.style.setProperty('--fade', 1);
+            }
+
+
+
+        }
+
+        var endTriviaNotified = false
+        document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState === "hidden") {
+                if (!endTriviaNotified) {
+                    endTriviaNotified = true;
+                    //navigator.sendBeacon("/trivia/end?key=" + params.key);
+                }
+            }
+        });
+
+    } //End of Onload Function
+
+
+
+
+
+
+
+})();

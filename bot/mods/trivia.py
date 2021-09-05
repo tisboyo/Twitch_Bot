@@ -7,6 +7,7 @@ from string import ascii_uppercase
 
 from main import bot
 from mods._database import session
+from sqlalchemy import func
 from twitchbot import cfg
 from twitchbot import Mod
 from twitchbot import ModCommand
@@ -37,6 +38,7 @@ class TriviaMod(Mod):
         self.scoreboard = dict()
         self.questions_into_trivia = 0
         self.started_at = datetime.datetime.max
+        self.start_running = False
 
         # Read the set delay from the db, or default to 7 seconds if not set
         self.trivia_delay_key = "trivia_delay"
@@ -52,7 +54,7 @@ class TriviaMod(Mod):
         pass
 
     @SubCommand(trivia, "run_question", permission="bot", hidden=True)
-    async def trivia_run_question(self, msg: Message, question_num: int, answer_num: int):
+    async def trivia_run_question(self, msg: Message, question_num: int):
         def check_send_time(seconds_into_trivia: int):
             return (
                 self.started_at
@@ -60,7 +62,7 @@ class TriviaMod(Mod):
                 + datetime.timedelta(seconds=seconds_into_trivia)
             ) < datetime.datetime.now()
 
-        question_num, answer_num = int(question_num), int(answer_num)  # Framework only passes strings, convert it.
+        question_num = int(question_num)  # Framework only passes strings, convert it.
 
         # Don't send a question while another is active
         # This will only prevent the next question from starting
@@ -68,14 +70,34 @@ class TriviaMod(Mod):
         while self.active_question:
             await sleep(0.5)
 
-        print(f"Trivia question #{question_num}, Answer: {ascii_lowercase[answer_num-1].upper()}")
-
         self.active_question = session.query(TriviaQuestions).filter_by(id=question_num).one_or_none()
 
-        # Save the answer letter for score checking
-        self.active_answer = ascii_lowercase[answer_num - 1]
-
         if self.active_question is not None:
+            # Randomize answers, generate a new number order of indexes
+            ans = json.loads(self.active_question.answers)
+            ln = len(ans)
+            new_order = [idx for idx in range(1, ln + 1)]
+            random.shuffle(new_order)
+
+            # Assign the new random indexes to the question text
+            randomized_answers = dict()
+            temp_counter = 0
+            for k in ans:
+                randomized_answers[str(new_order[temp_counter])] = ans[k]
+                temp_counter += 1
+
+            # Grab the correct answer from the new order
+            for a in randomized_answers:
+                if bool(randomized_answers[a]["is_answer"]):
+                    self.active_answer = int(a) - 1
+                    break
+
+            print(f"Trivia question #{question_num}, Answer: {ascii_lowercase[self.active_answer].upper()}")
+
+            # Update the question last used
+            self.active_question.last_used_date = datetime.date.today()
+            session.commit()
+
             self.started_at = datetime.datetime.now()
             last_timer_message_sent = 0
 
@@ -108,7 +130,7 @@ class TriviaMod(Mod):
                 "text": self.active_question.text,
                 "total_duration": 59,
                 "choices": answers_choices,
-                "answers": json.loads(self.active_question.answers),
+                "answers": randomized_answers,
                 "image": self.active_question.id if self.active_question.image is None else self.active_question.image,
                 "sound": self.active_question.id if self.active_question.sound is None else self.active_question.sound,
                 "active": True,
@@ -123,8 +145,9 @@ class TriviaMod(Mod):
             await bot.MQTT.send(bot.MQTT.Topics.trivia_question, self.active_question.text)
             await bot.MQTT.send(bot.MQTT.Topics.trivia_answers, self.active_question.answers)
 
+            exp_choices = ["AddOhms: 🤖 Thanks for playing!", "Wizard James: 🧙‍♂️ Thanks for playing!"]
             explanation = (
-                self.active_question.explain if self.active_question.explain is not None else " "
+                self.active_question.explain if self.active_question.explain is not None else random.choice(exp_choices)
             )  # Save this to send with the closing mqtt
 
             while self.active_question:
@@ -136,7 +159,7 @@ class TriviaMod(Mod):
 
                     last_timer_message_sent += 1
 
-                elif last_timer_message_sent == 2 and check_send_time(44):  # Message 2
+                elif last_timer_message_sent == 1 and check_send_time(44):  # Message 2
                     message_text = [
                         "Time is almost up",
                         "15 seconds remaining",
@@ -148,15 +171,15 @@ class TriviaMod(Mod):
 
                     last_timer_message_sent += 1
 
-                elif last_timer_message_sent == 3 and check_send_time(54):  # Message 3
+                elif last_timer_message_sent == 2 and check_send_time(54):  # Message 3
                     await msg.reply(f"{self.msg_prefix}Final answers...")
 
                     last_timer_message_sent += 1
 
-                elif last_timer_message_sent == 4 and check_send_time(60):  # Message 4
+                elif last_timer_message_sent == 3 and check_send_time(60):  # Message 4
                     # All scoring is done elsewhere
                     self.active_question = None  # End the question
-                    self.active_answer = None
+                    # self.active_answer = None
                     self.started_at = datetime.datetime.max
                     self.ready_for_answers = False
 
@@ -189,7 +212,7 @@ class TriviaMod(Mod):
 
             # Send the current answer status to MQTT
             # Always send answer_id when done = True otherwise the front end will puke
-            await self.send_answers_to_mqtt(done=True, explanation=explanation, answer_id=answer_num)
+            await self.send_answers_to_mqtt(done=True, explanation=explanation, answer_id=self.active_answer + 1)
 
             await self.update_users_in_database(question_num)
 
@@ -223,8 +246,64 @@ class TriviaMod(Mod):
             await msg.reply(f"{self.msg_prefix}Flux capacitor currently calibrated to {self.question_delay} seconds")
 
     @SubCommand(trivia, "start", permission="bot")
-    async def trivia_start(self, msg: Message):
-        pass
+    async def trivia_start(self, msg: Message, debug=False):
+        ic("!trivia start command run")
+        if self.start_running:
+            return
+
+        self.start_running = True
+
+        debug = bool(int(debug))
+
+        while self.start_running:
+            if self.active_question:
+                # There is already a question active, lets not start another one.
+                sleep(0.25)
+
+            if not debug:
+                question = (
+                    session.query(TriviaQuestions)
+                    .filter(
+                        TriviaQuestions.last_used_date < datetime.date.today(), TriviaQuestions.enabled == True  # noqa:E712
+                    )
+                    .order_by(func.random())
+                    .limit(1)
+                    .one_or_none()
+                )
+            else:
+                question = (
+                    session.query(TriviaQuestions)
+                    .filter(TriviaQuestions.enabled == True)  # noqa:E712
+                    .order_by(func.random())
+                    .limit(1)
+                    .one_or_none()
+                )
+
+            if not question:  # The query returned None
+                print("We have used all of the trivia questions today!")
+                await bot.MQTT.send(
+                    bot.MQTT.Topics.trivia_current_question_setup,
+                    {
+                        "text": "We've used ALL of the trivia questions today.",
+                        "choices": [],
+                        "answers": {},
+                        "id": "error",
+                        "active": True,
+                        "image": 0,
+                        "sound": 0,
+                        "explain": "Send your trivia suggestions in discord!",
+                    },
+                    retain=True,
+                )
+                self.trivia_active = False
+                self.start_running = False
+                break
+
+            # Run the question
+            await run_command("trivia", msg, ["run_question", str(question.id)], blocking=True)
+            await sleep(5)
+
+        self.start_running = False
 
     @SubCommand(trivia, "end", permission="bot")
     async def trivia_end(self, msg: Message):
@@ -363,7 +442,7 @@ class TriviaMod(Mod):
                     answer in ascii_lowercase[: self.num_of_answers]
                     and msg.author not in self.answered_active_question.keys()
                 ):
-                    correct: bool = answer == self.active_answer  # Did they have the correct answer?
+                    correct: bool = answer == ascii_lowercase[self.active_answer]  # Did they have the correct answer?
 
                     self.question_points[msg.author] = self.calculate_points_for_question(correct)
                     _ = f"{msg.author} awarded {self.question_points[msg.author]} points"

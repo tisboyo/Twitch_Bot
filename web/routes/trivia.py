@@ -202,18 +202,18 @@ async def trivia_get_question(
     return JSONResponse(jsonret)
 
 
-@router.post("/trivia/start")
-async def trivia_start(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+@router.get("/trivia/start")
+async def trivia_start(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), debug: str = "0"):
     logger.info("Trivia started")
-    await send_command_to_bot("trivia", ["start"])
-    return Response(status_code=204)
+    if debug.lower() == "true":
+        debug = "1"
+    return await send_command_to_bot("trivia", ["start", debug])
 
 
 @router.post("/trivia/end")
 async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     logger.info("Trivia ended")
-    await send_command_to_bot("trivia", ["end"])
-    return Response(status_code=204)
+    return await send_command_to_bot("trivia", ["end"])
 
 
 @router.get("/trivia/laptop-background-transparent.png")

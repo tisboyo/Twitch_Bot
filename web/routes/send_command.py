@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from fastapi.params import Body
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
+from uvicorn.main import logger
 from web_auth import AuthLevel
 from web_auth import check_valid_api_key
 
@@ -44,16 +45,16 @@ async def post_topic(
                 await s.send("\n".encode("utf8"))
                 # Check if the message was successful
                 resp = json.loads(await s.recv())
-                print(resp)
+                logger.info(resp)
                 if resp.get("type", "fail") != "success":
                     return JSONResponse({"success": False, "detail": "Error sending bot message."})
 
                 return JSONResponse({"success": True})
 
         except ConnectionRefusedError:
-            print("Unable to connect to bot.")
+            logger.warning("Unable to connect to bot.")
             return JSONResponse({"success": False, "detail": "Unable to connect to bot."})
 
         except Exception as e:
-            print(f"Unknown exception trying to send message to bot. {e}")
+            logger.error(f"Unknown exception trying to send message to bot. {e}")
             return JSONResponse({"success": False, "detail": str(e)})

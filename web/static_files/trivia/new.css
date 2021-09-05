@@ -38,7 +38,7 @@ body {
     --odd-color: rgba(0, 150, 0, 0.384);
     --even-color: rgba(0, 150, 0, 0.336);
     --border-color: red;
-    --fontsize: 26px;
+    --fontsize: 1em;
     /*Dont update items beyond this line*/
     --update-frequency: 1s; /* Change to match speed of updates if you want cosntant moving of the bars Else set to how long you want the animation to last */
     --fade: 0;
@@ -48,6 +48,7 @@ body {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    flex-shrink: 1;
 }
 
 .smolboi{
@@ -57,8 +58,10 @@ body {
 }
 .picturebox{
     display: flex;
-    max-width: 40%;
+
     justify-content: center;
+    flex-grow:0;
+    flex-shrink:1;
 }
 .picture{
     max-height:100%;
@@ -66,20 +69,22 @@ body {
     object-fit: scale-down;
 }
 .big-boi-container {
-    font-size: var(--fontsize);
+    font-size: 1em;
     position: relative;
     z-index: 1;
-    transition: opacity linear 2s;
-    animation: fadein 2s;
+    transition: opacity linear 1s;
+    animation: fadein 1s;
     display:flex;
     flex-direction:column;
     text-shadow: 0 0 5px #C8C8C8;
     width:100%;
     opacity: var(--fade);
-    margin: 5%;
+    margin: 2.5%;
   }
 .answer {
     display: inline-block;
+    font: var(--font);
+    font-size: 1.0em;
 }
 
 .votes {
@@ -88,7 +93,7 @@ body {
 }
 .triviaQuestion{
     font: var(--font);
-    font-size: 1.5em;
+    font-size: 1.75em;
     text-align: center;
 
 
@@ -122,7 +127,7 @@ body {
     display: flex;
     align-items: center;
     font: var(--font);
-    font-size: 1.3rem;
+    font-size: 1.25em;
     margin-bottom: 0em;
     height: 2em;
 
@@ -188,7 +193,7 @@ body {
     margin-right: 5%;
 }
 
-#explain {
+#footer-div {
     margin: auto;
     width: 80%;
     border-top: 3px solid green;
