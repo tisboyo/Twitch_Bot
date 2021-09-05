@@ -90,7 +90,8 @@ async def trivia_play_jpg(
         return FileResponse(default_file)
 
 
-@router.get("/trivia/new")
+# @router.get("/trivia/new")
+@router.get("/trivia")
 async def trivia_new(
     request: Request,
     key=Depends(check_valid_api_key(level=AuthLevel.admin)),
