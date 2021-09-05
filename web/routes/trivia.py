@@ -90,8 +90,28 @@ async def trivia_play_jpg(
         return FileResponse(default_file)
 
 
-@router.get("/trivia/new")
-async def trivia_new(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+@router.get("/trivia/leaders")
+async def trivia_new(
+    request: Request,
+    key=Depends(check_valid_api_key(level=AuthLevel.admin)),
+):
+    mqtt_user = getenv("MQTT_USER")
+    mqtt_pass = getenv("MQTT_KEY")
+
+    url = (
+        f"{request.base_url}trivia/new.html?"
+        f"url={request.base_url.hostname}&"
+        "port=9883&"
+        f"username={mqtt_user}&"
+        f"password={mqtt_pass}&"
+        f"key={key}"
+    )
+
+    return RedirectResponse(url)
+
+
+@router.get("/trivia/new.html")
+async def trivia_new_html(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     return templates.TemplateResponse("new.html", {"request": request, "key": key})
 
 
