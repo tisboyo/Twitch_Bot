@@ -7,6 +7,7 @@ from string import ascii_uppercase
 
 from main import bot
 from mods._database import session
+from sqlalchemy import desc
 from sqlalchemy import func
 from twitchbot import cfg
 from twitchbot import Mod
@@ -96,6 +97,7 @@ class TriviaMod(Mod):
 
             # Update the question last used
             self.active_question.last_used_date = datetime.date.today()
+            self.active_question.priority = False  # Reset priority to none if it was set
             session.commit()
 
             self.started_at = datetime.datetime.now()
@@ -274,6 +276,7 @@ class TriviaMod(Mod):
                     .filter(
                         TriviaQuestions.last_used_date < datetime.date.today(), TriviaQuestions.enabled == True  # noqa:E712
                     )
+                    .order_by(desc(TriviaQuestions.priority))
                     .order_by(func.random())
                     .limit(1)
                     .one_or_none()
@@ -282,6 +285,7 @@ class TriviaMod(Mod):
                 question = (
                     session.query(TriviaQuestions)
                     .filter(TriviaQuestions.enabled == True)  # noqa:E712
+                    .order_by(desc(TriviaQuestions.priority))
                     .order_by(func.random())
                     .limit(1)
                     .one_or_none()
