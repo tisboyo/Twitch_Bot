@@ -222,7 +222,15 @@ class TriviaMod(Mod):
             self.answered_active_question = dict()
             self.question_points = dict()
 
-            await sleep(5)
+            now = datetime.datetime.now()
+            while datetime.datetime.now() < (datetime.timedelta(seconds=5) + now):
+                seconds = (datetime.timedelta(seconds=5) + now) - datetime.datetime.now()
+                seconds_left = int(seconds.total_seconds())
+                await bot.MQTT.send(
+                    bot.MQTT.Topics.trivia_current_question_data, {"seconds_left": seconds_left, "done": False}
+                )
+                await sleep(0.25)
+
             await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, {"active": False}, retain=True)
 
     @SubCommand(trivia, "delay", permission="admin")
@@ -278,6 +286,8 @@ class TriviaMod(Mod):
                     .limit(1)
                     .one_or_none()
                 )
+            # Commit after the query, so the next query doesn't appear to be cached (even though it isn't)
+            session.commit()
 
             if not question:  # The query returned None
                 print("We have used all of the trivia questions today!")
@@ -295,30 +305,30 @@ class TriviaMod(Mod):
                     },
                     retain=True,
                 )
-                self.trivia_active = False
-                await sleep(5)
-                break
-
-            # Run the question
-            await run_command("trivia", msg, ["run_question", str(question.id)], blocking=True)
-            await sleep(1)
-            await bot.MQTT.send(
-                bot.MQTT.Topics.trivia_current_question_setup,
-                {
-                    "text": "New trivia preview!",
-                    "choices": [],
-                    "answers": {},
-                    "id": "default",
-                    "active": True,
-                    "image": 0,
-                    "sound": 0,
-                    "explain": "Send your trivia suggestions in discord!",
-                },
-                retain=True,
-            )
-            await sleep(2)
-            await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, {"active": False}, retain=True)
-            await sleep(2)
+                await sleep(10)
+                await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, {"active": False}, retain=True)
+                await sleep(2)
+            else:
+                # Run the question
+                await run_command("trivia", msg, ["run_question", str(question.id)], blocking=True)
+                await sleep(1)
+                await bot.MQTT.send(
+                    bot.MQTT.Topics.trivia_current_question_setup,
+                    {
+                        "text": "New trivia preview!",
+                        "choices": [],
+                        "answers": {},
+                        "id": "default",
+                        "active": True,
+                        "image": 0,
+                        "sound": 0,
+                        "explain": "Send your trivia suggestions in discord!",
+                    },
+                    retain=True,
+                )
+                await sleep(2)
+                await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, {"active": False}, retain=True)
+                await sleep(1.25)  # 1 second was good, but to prevent any potential issues, bumped to 1.25
 
         self.start_running = False
 
