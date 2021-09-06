@@ -117,6 +117,7 @@ class TriviaQuestions(Base):
     reference = Column(String(1024))
     sound = Column(String(32), default=None)
     image = Column(String(32), default=None)
+    priority = Column(Boolean(), default=False)
     enabled = Column(Boolean(), default=True)
 
 
