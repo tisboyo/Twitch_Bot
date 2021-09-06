@@ -296,7 +296,7 @@ class TriviaMod(Mod):
                     retain=True,
                 )
                 self.trivia_active = False
-                self.start_running = False
+                sleep(5)
                 break
 
             # Run the question
