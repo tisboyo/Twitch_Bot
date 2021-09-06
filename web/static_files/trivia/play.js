@@ -241,6 +241,7 @@
 
                                     let vote = document.getElementById('bar-div-' + data.answer_id)
                                     vote.style.setProperty('filter', 'saturate(1)');
+                                    vote.style.setProperty('width', '100%'); //oh yeah commas....coding is hard
                                 } catch (e) { }
 
                                 let footer = document.getElementById('footer-div');
