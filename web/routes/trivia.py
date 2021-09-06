@@ -2,11 +2,9 @@ import json
 from datetime import date
 from os import getenv
 from pathlib import Path
-from random import shuffle
 
 from fastapi import APIRouter
 from fastapi.datastructures import UploadFile
-from fastapi.exceptions import HTTPException
 from fastapi.params import Depends
 from fastapi.params import File
 from fastapi.requests import Request
@@ -18,7 +16,6 @@ from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
-from sqlalchemy import func
 from uvicorn.main import logger
 from web_auth import AuthLevel
 from web_auth import check_user
@@ -108,83 +105,6 @@ async def trivia_play_jpg(
     else:
         # return Response(None, status_code=204)
         return FileResponse(default_file)
-
-
-# @router.get("/trivia/get_question")
-# async def trivia_get_question(
-#     request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), debug: bool = False
-# ):
-#     if not debug:
-#         question = (
-#             db.session.query(TriviaQuestions)
-#             .filter(TriviaQuestions.last_used_date < date.today(), TriviaQuestions.enabled == True)  # noqa:E712
-#             .order_by(func.random())
-#             .limit(1)
-#             .one_or_none()
-#         )
-#     else:
-#         question = (
-#             db.session.query(TriviaQuestions)
-#             .filter(TriviaQuestions.enabled == True)  # noqa:E712
-#             .order_by(func.random())
-#             .limit(1)
-#             .one_or_none()
-#         )
-
-#     if not question:  # The query returned None
-#         logger.warning("We have used all of the trivia questions today!")
-#         return JSONResponse({"text": "We've used ALL of the trivia questions today.", "id": "error"})
-
-#     # Randomize answers, generate a new number order of indexes
-#     ans = json.loads(question.answers)
-#     ln = len(ans)
-#     new_order = [idx for idx in range(1, ln + 1)]
-#     shuffle(new_order)
-
-#     # Assign the new random indexes to the question text
-#     randomized_answers = dict()
-#     temp_counter = 0
-#     for k in ans:
-#         randomized_answers[str(new_order[temp_counter])] = ans[k]
-#         temp_counter += 1
-
-#     # Grab the correct answer from the new order
-#     answer_id = -1
-#     for a in randomized_answers:
-#         if bool(randomized_answers[a]["is_answer"]):
-#             answer_id = int(a)
-#             break
-
-#     # Build the json to return to the browser.
-#     jsonret = {
-#         "text": question.text,
-#         "answers": randomized_answers,
-#         "explain": question.explain,
-#         "sound": question.id if question.sound is None else question.sound,
-#     }
-
-#     try:
-#         # Send the question to TwitchBot
-#         await send_command_to_bot("trivia", ["run_question", question.id, answer_id])
-#     except HTTPException:
-#         return JSONResponse(
-#             {
-#                 "text": "Unable to connect to TwitchBot for Trivia",
-#                 "answers": {
-#                     "1": {"text": "Fire Tisboyo."},
-#                     "2": {"text": "Sacrifice some Ohms to the bot gods."},
-#                     "3": {"text": "Kick AWS for breaking the bot."},
-#                     "4": {"text": "Did the Twitch API key expire again?"},
-#                 },
-#                 "explain": "Lets try again and see if it wakes up this time.",
-#                 "sound": "error",
-#             }
-#         )
-
-#     # Update the last used date to today, so the question isn't repeated
-#     question.last_used_date = date.today()
-#     db.session.commit()
-#     return JSONResponse(jsonret)
 
 
 @router.get("/trivia/start")
