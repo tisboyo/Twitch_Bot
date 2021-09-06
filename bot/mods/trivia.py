@@ -258,7 +258,7 @@ class TriviaMod(Mod):
         while self.start_running:
             if self.active_question:
                 # There is already a question active, lets not start another one.
-                sleep(0.25)
+                await sleep(0.25)
 
             if not debug:
                 question = (
@@ -296,7 +296,7 @@ class TriviaMod(Mod):
                     retain=True,
                 )
                 self.trivia_active = False
-                sleep(5)
+                await sleep(5)
                 break
 
             # Run the question
