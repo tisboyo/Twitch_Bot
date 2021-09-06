@@ -1,114 +1,183 @@
-/* from: https://css-tricks.com/old-timey-terminal-styling/ */
-
 body {
     background-color: #272727;
     /*background-image: url("laptop-background-v1.jpg");
    background-size: 1440px; */
     background-repeat: no-repeat;
+    margin: 0px;
+    padding: 0px;
   }
 
-  img {
+.backgroundimage {
     max-width: 1920px;
     position: absolute;
     top: 0px;
+}
+@keyframes fadein {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
+@font-face {
+    font-family: "mononoki";
+    src: local("mononoki-Regular"), url(/mononoki-Regular.woff2) format("woff2");
+}
 
-  /* 1440px
-  #quiz_screen {
-    background-color: black;
-    background-image: radial-gradient( rgba(0, 150, 0, 0.75), black 120% );
-    color: white;
-    font: 1.3rem Inconsolata, monospace;
-    text-shadow: 0 0 5px #C8C8C8;
+@font-face {
+    font-family: "mononoki bold";
+    font-style: normal;
+    font-weight: bold;
+    src: local("mononoki-Bold"), url(/mononoki-Bold.woff2) format("woff2");
+}
+
+:root {
+    --poll-background: white;
+    --font-color: white;
+    --odd-color: rgba(0, 150, 0, 0.384);
+    --even-color: rgba(0, 150, 0, 0.336);
+    --border-color: red;
+    --fontsize: 1em;
+    /*Dont update items beyond this line*/
+    --update-frequency: 1s; /* Change to match speed of updates if you want cosntant moving of the bars Else set to how long you want the animation to last */
+    --fade: 0;
+    --font: Inconsolata, monospace;
+}
+.questions{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.smolboi{
+    display: flex;
+    flex-direction: row;
+    flex-grow:1;
+}
+.picturebox{
+    display: flex;
+
+    justify-content: center;
+    flex-grow:0;
+    flex-shrink:1;
+}
+.picture{
+    max-height:100%;
+    max-width:95%;
+    object-fit: scale-down;
+}
+.big-boi-container {
+    font-size: 1em;
     position: relative;
-    height: 545px;
-    width: 880px;
-    top: 45px;
-    left: 270px;
-    bottom: 0;
-    right: 0;
+    z-index: 1;
+    transition: opacity linear 1s;
+    animation: fadein 1s;
+    display:flex;
+    flex-direction:column;
+    text-shadow: 0 0 5px #C8C8C8;
+    width:100%;
+    opacity: var(--fade);
+    margin: 2.5%;
   }
-  */
+.answer {
+    display: inline-block;
+    font: var(--font);
+    font-size: 1.0em;
+}
 
-  #quiz_screen {
+.votes {
+    float: right;
+    text-align: right;
+}
+.triviaQuestion{
+    font: var(--font);
+    font-size: 1.75em;
+    text-align: center;
+
+
+}
+
+#display-div {
+    /* margin-left: 25%;
+    margin-right:25%;
+    margin-top: 8%;
+    color: white;
+    text-shadow: 0 0 5px #C8C8C8; */
     background-color: black;
     background-image: radial-gradient(rgba(0, 150, 0, 0.75), black 120%);
     /* height: 100vh; */
     /* max-width: 1920px; */
     color: white;
     font: 1.3rem Inconsolata, monospace;
-    text-shadow: 0 0 5px #C8C8C8;
+
     position: relative;
-    height: 750px;
-    width: 1250px;
-    top: 60px;
-    left: 320px;
+    height: 726px;
+    width: 1163px;
+    top: 71px;
+    left: 370px;
     bottom: 0;
     right: 0;
-  }
+    display:flex;
+}
 
-  #quiz_screen::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: repeating-linear-gradient(0deg,
-        rgba(black, 0.15),
-        rgba(black, 0.15) 1px,
-        transparent 1px,
-        transparent 2px);
-  }
+.outer-div {
+    position: relative;
+    display: flex;
+    align-items: center;
+    font: var(--font);
+    font-size: 1.25em;
+    margin-bottom: 0em;
+    height: 2em;
 
-  #question {
-    margin: auto;
-    width: 80%;
-    /*border: 3px solid green;*/
-    padding: 10px;
+    flex-grow:1;
+}
+
+.info-div {
+    font: var(--font);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    padding: 0.5em;
+}
+
+.footer-div {
+    font: var(--font);
+    font-size: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
     text-align: center;
-    font: 1.5rem Inconsolata, monospace;
-  }
+}
+.bar-div{
+    border-radius: 1.5em;
+}
+.outer-div:nth-child(even) .bar-div {
+    z-index: -1;
+    position: absolute;
+    width: 0%;
+    background-color: var(--even-color);
+    transition: linear var(--update-frequency);
+    height: 90%;
 
-  #answer {
-   box-sizing: border-box;
-    margin: auto;
-    width: 50%;
-    font: 1.5rem Inconsolata, monospace;
-    /*border: 3px solid green;*/
-    /*padding: 10px;*/
-   /* padding: 5px;*/
-  /*  content: 5px; */
-  }
 
-  #answers {
-    padding-bottom: 10px;
-  }
+}
 
-  h2.correct-answer {
-    /*box-sizing: border-box;
-    margin: auto;
-    width: 50%;
-    font: 1.5rem Inconsolata, monospace;
-    padding: 5px; */
-  /* border: 5px solid green;
-    border-radius: 30px;*/
+.outer-div:nth-child(odd) .bar-div {
+    z-index: -1;
+    position: absolute;
+    transition: linear var(--update-frequency);
+    background-color: var(--odd-color);
+    width: 0%;
+    height: 90%;
 
-    /*outline: 5px solid green;*/
-    box-shadow: 0 0 10pt 5pt green;
+}
 
-    /*padding: 10px;*/
-  }
-
-  #explain {
-    margin: auto;
-    width: 80%;
-    border-top: 3px solid green;
-    padding-top: 10px;
-    font: 2.25rem Inconsolata, monospace;
-  }
-
-  #timer {
+#timer {
     text-align: right;
     position: absolute;
     /* height: 750px; */
@@ -120,4 +189,14 @@ body {
     left: 0px;
     right: 75px;
     z-index: 1;
-  }
+    margin-top: 5%;
+    margin-right: 5%;
+}
+
+#footer-div {
+    margin: auto;
+    width: 80%;
+    border-top: 3px solid green;
+    padding-top: 10px;
+    font: 2.25rem Inconsolata, monospace;
+}
