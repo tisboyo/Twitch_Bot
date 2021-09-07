@@ -86,6 +86,11 @@ async def trivia_play_wav(
     return StreamingResponse(iterfile(), media_type="audio/wav")
 
 
+@router.get("/trivia/images/thumb-for-twitch")
+async def trivia_thumb_for_twitch(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    return RedirectResponse("https://www.baldengineer.com/thumbs/thumb-for-twitch.jpg", status_code=302)
+
+
 @router.get("/trivia/images/{image_id}")
 async def trivia_play_jpg(
     request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), image_id="default"

@@ -224,9 +224,15 @@ class TriviaMod(Mod):
             self.answered_active_question = dict()
             self.question_points = dict()
 
+            if self.trivia_active:
+                delay_at_end_of_question_displaying_answer = 10
+            else:
+                delay_at_end_of_question_displaying_answer = 1
             now = datetime.datetime.now()
-            while datetime.datetime.now() < (datetime.timedelta(seconds=5) + now):
-                seconds = (datetime.timedelta(seconds=5) + now) - datetime.datetime.now()
+            while datetime.datetime.now() < (datetime.timedelta(seconds=delay_at_end_of_question_displaying_answer) + now):
+                seconds = (
+                    datetime.timedelta(seconds=delay_at_end_of_question_displaying_answer) + now
+                ) - datetime.datetime.now()
                 seconds_left = int(seconds.total_seconds())
                 await bot.MQTT.send(
                     bot.MQTT.Topics.trivia_current_question_data, {"seconds_left": seconds_left, "done": False}
@@ -324,13 +330,13 @@ class TriviaMod(Mod):
                         "answers": {},
                         "id": "default",
                         "active": True,
-                        "image": 0,
+                        "image": "thumb-for-twitch",
                         "sound": 0,
                         "explain": "Send your trivia suggestions in discord!",
                     },
                     retain=True,
                 )
-                await sleep(2)
+                await sleep(10)
                 await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, {"active": False}, retain=True)
                 await sleep(1.25)  # 1 second was good, but to prevent any potential issues, bumped to 1.25
 
