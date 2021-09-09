@@ -325,14 +325,14 @@ class TriviaMod(Mod):
                 await bot.MQTT.send(
                     bot.MQTT.Topics.trivia_current_question_setup,
                     {
-                        "text": "New trivia preview!",
+                        "text": "",
                         "choices": [],
                         "answers": {},
                         "id": "default",
                         "active": True,
                         "image": "thumb-for-twitch",
                         "sound": 0,
-                        "explain": "Send your trivia suggestions in discord!",
+                        "explain": "Today's Topic",
                     },
                     retain=True,
                 )

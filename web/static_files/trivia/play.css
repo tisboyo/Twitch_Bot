@@ -58,7 +58,7 @@ body {
 }
 .picturebox{
     display: flex;
-
+    max-width: 50%;
     justify-content: center;
     flex-grow:0;
     flex-shrink:1;
@@ -68,6 +68,10 @@ body {
     max-width:95%;
     object-fit: scale-down;
 }
+#fullscreen{
+    max-width:100%;
+}
+
 .big-boi-container {
     font-size: 1em;
     position: relative;

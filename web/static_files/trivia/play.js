@@ -159,7 +159,8 @@
                             box.setAttribute('class', 'questions');
                             smolboi.appendChild(box)
                         } else {
-                            picturebox.setAttribute('style', 'flex-grow:1');
+                            picturebox.setAttribute('id', 'fullscreen');
+
                         }
 
                         picturebox.setAttribute('class', 'picturebox');
@@ -308,22 +309,22 @@
                 smolboi.appendChild(box)
 
                 let container = document.createElement('div');   //Full container holds everything for a question
-                container.setAttribute('class', 'info-div answer');
+                container.setAttribute('class', 'answer info-div');
                 container.setAttribute('id', 'pollElement-1');
                 container.innerHTML = "A) Fire Tisboyo."
                 box.appendChild(container);
                 container = document.createElement('div');   //Full container holds everything for a question
-                container.setAttribute('class', 'info-div answer');
+                container.setAttribute('class', 'answer info-div');
                 container.setAttribute('id', 'pollElement-1');
                 container.innerHTML = "B) Sacrifice some Ohms to the bot gods."
                 box.appendChild(container);
                 container = document.createElement('div');   //Full container holds everything for a question
-                container.setAttribute('class', 'info-div answer');
+                container.setAttribute('class', 'answer info-div');
                 container.setAttribute('id', 'pollElement-1');
                 container.innerHTML = "c) Kick AWS for breaking the bot."
                 box.appendChild(container);
                 container = document.createElement('div');   //Full container holds everything for a question
-                container.setAttribute('class', 'info-div answer');
+                container.setAttribute('class', 'answer info-div');
                 container.setAttribute('id', 'pollElement-1');
                 container.innerHTML = "D) Did the Twitch API key expire again?"
                 box.appendChild(container);
