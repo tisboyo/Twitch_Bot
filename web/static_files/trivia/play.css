@@ -79,12 +79,13 @@ body {
     text-shadow: 0 0 5px #C8C8C8;
     width:100%;
     opacity: var(--fade);
-    margin: 2.5%;
+    margin-left: 5%;
+    margin-right:2.5%
   }
 .answer {
     display: inline-block;
     font: var(--font);
-    font-size: 1.0em;
+    font-size: 1.3em;
 }
 
 .votes {
