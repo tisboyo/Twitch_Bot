@@ -136,6 +136,7 @@ class TriviaMod(Mod):
                 "image": self.active_question.id if self.active_question.image is None else self.active_question.image,
                 "sound": self.active_question.id if self.active_question.sound is None else self.active_question.sound,
                 "active": True,
+                "question_num": self.questions_into_trivia,
             }
             # Pad out the answers if there are less than 4 so the spacing is correct on the front end
             if len(mqtt_question_setup["answers"]) < min_number_of_questions_to_send:
@@ -328,7 +329,8 @@ class TriviaMod(Mod):
                         "text": "",
                         "choices": [],
                         "answers": {},
-                        "id": "default",
+                        "id": "",
+                        "question_num": "",
                         "active": True,
                         "image": "thumb-for-twitch",
                         "sound": 0,

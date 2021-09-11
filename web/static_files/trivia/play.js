@@ -153,6 +153,10 @@
                         let box = document.createElement('div');
                         let picturebox = document.createElement('div');
 
+                        let questioninfo = document.createElement('div');
+                        questioninfo.setAttribute('id', 'questioninfo');
+                        questioninfo.innerHTML = data.question_num + " " + data.id;
+                        big_boi.appendChild(questioninfo);
 
                         if (Object.keys(data.answers).length) {
 
@@ -276,7 +280,7 @@
 
         if (document.visibilityState === 'visible') {
             //navigator.sendBeacon('/trivia/start?key=' + params.key);
-            var Httpreq = new XMLHttpRequest(); // a new request
+            //var Httpreq = new XMLHttpRequest(); // a new request
             var url = "start?key=" + params.key;
             if (params.debug) {
                 url = url + "&debug=" + params.debug
