@@ -280,7 +280,7 @@
 
         if (document.visibilityState === 'visible') {
             //navigator.sendBeacon('/trivia/start?key=' + params.key);
-            //var Httpreq = new XMLHttpRequest(); // a new request
+            var Httpreq = new XMLHttpRequest(); // a new request
             var url = "start?key=" + params.key;
             if (params.debug) {
                 url = url + "&debug=" + params.debug
