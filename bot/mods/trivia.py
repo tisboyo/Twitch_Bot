@@ -467,6 +467,33 @@ class TriviaMod(Mod):
         await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, None)
         await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_data, None)
 
+    @SubCommand(trivia, "priority", permission="admin")
+    async def trivia_priority(self, msg: Message, question_id: int = None, priority: int = 1):
+        if not question_id:
+            return
+
+        question_id, priority = int(question_id), bool(priority)
+        query = (
+            session.query(TriviaQuestions)
+            .filter(TriviaQuestions.id == question_id)
+            .update({TriviaQuestions.priority: priority})
+        )
+
+        session.commit
+
+        if query:
+            await msg.reply(f"{bot.msg_prefix} Priority temporarily changed for #{question_id} to {priority}")
+        else:
+            await msg.reply(f"{bot.msg_prefix} Unknown {question_id=}")
+
+    async def on_channel_points_redemption(self, msg: Message, reward: str):
+        """Set a message as a priority from channel points"""
+        return
+        # todo Set filtering for channel points redemption
+        priority = msg.content
+        await run_command("trivia", args=["priority", priority])
+        return await super().on_channel_points_redemption(msg, reward)
+
     async def on_privmsg_received(self, msg: Message):
         if (
             self.active_question and self.ready_for_answers and msg.is_privmsg
