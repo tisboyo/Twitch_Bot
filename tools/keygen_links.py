@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-with open("bot/configs/config.json") as f:
+with open("../bot/configs/config.json") as f:
     data = json.load(f)
 
 
