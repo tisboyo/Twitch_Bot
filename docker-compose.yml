@@ -24,6 +24,7 @@ services:
       PUBSUB_OAUTH: ${TWITCH_PUBSUB_OAUTH}
       ADAFRUIT_IO_USER: ${ADAFRUIT_IO_USER}
       ADAFRUIT_IO_KEY: ${ADAFRUIT_IO_KEY}
+      ENABLE_AIO_BRIDGE: ${ENABLE_AIO_BRIDGE}
       WEB_HOSTNAME: ${WEB_HOSTNAME}
       TWITCH_CHANNEL: ${TWITCH_CHANNEL}
       MQTT_USER: ${MQTT_USER}
@@ -51,6 +52,8 @@ services:
     volumes:
       - ./web/web_user_db.json:/workspace/web/web_user_db.json
       - ./models.py:/workspace/web/models.py
+      - ./web/static_files/trivia/images:/workspace/web/static_files/trivia/images
+      - ./web/static_files/trivia/sounds:/workspace/web/static_files/trivia/sounds
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`${WEB_HOSTNAME}`)"

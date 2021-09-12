@@ -1,0 +1,109 @@
+@font-face {
+  font-family: "mononoki";
+  src: local("mononoki-Regular"), url(/mononoki-Regular.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "mononoki bold";
+  font-style: normal;
+  font-weight: bold;
+  src: local("mononoki-Bold"), url(/mononoki-Bold.woff2) format("woff2");
+}
+:root {
+  --poll-background: rgba(255, 255, 255, 0.25);
+  --odd-color: red;
+  --even-color: green;
+  --border-color: #aaaaaa;
+  --fontsize: 150%;
+  /*Dont update items beyond this line*/
+  --update-frequency: 1s;
+  --fade: 0;
+}
+.choice {
+  display: inline-block;
+}
+
+.votes {
+  float: right;
+  text-align: right;
+}
+.pollHeader{
+    font-family: "mononoki";
+    text-align: center;
+
+}
+.big-boi-container {
+  font-size: var(--fontsize);
+  position: relative;
+  margin-left: 0em;
+  margin-top: 0.05em;
+  width: 7em;
+  border-width: thick;
+  border-style: outset;
+  border-radius: 0.25em;
+  border-color: var(--border-color);
+  background: var(--poll-background);
+  z-index: -1;
+  display: block;
+  opacity: var(--fade);
+  transition: opacity linear 1s;
+  animation: fadein 2s;
+}
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.outer-div {
+  position: relative;
+  display: flex;
+  align-items: center;
+  font-family: "mononoki";
+  margin-bottom: 0em;
+  height: 2em;
+  border-style: solid;
+  border-width: 0.05em;
+  border-radius: 0.01em;
+}
+
+.info-div {
+  font-family: "mononoki";
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 0.5em;
+}
+
+.footer-div {
+  font-family: "mononoki";
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 0.5em;
+  font-size: 0.5em;
+}
+
+.outer-div:nth-child(even) .bar-div {
+  z-index: -1;
+  position: absolute;
+  width: 0%;
+  background-color: var(--even-color);
+  transition: linear var(--update-frequency);
+  height: 100%;
+}
+
+.outer-div:nth-child(odd) .bar-div {
+  z-index: -1;
+  position: absolute;
+  transition: linear var(--update-frequency);
+  background-color: var(--odd-color);
+  width: 0%;
+  height: 100%;
+}

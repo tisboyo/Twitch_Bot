@@ -1,5 +1,6 @@
 import asyncio
 import re
+from datetime import datetime
 from json import loads
 from os import _exit
 
@@ -17,10 +18,12 @@ from models import IgnoreList
 
 try:
     # Icecream debugger, this try/except will create a fake ic builtin if the icecream library is not installed
-    from icecream import install
+    from icecream import install  # type: ignore
 
     install()
-    ic.configureOutput(includeContext=True)  # noqa: F821
+    ic.configureOutput(
+        prefix="debug |", includeContext=True
+    )  # If you are getting a flake8 error F821, add `builtins=ic` to bottom of .flake8
 except ImportError:
     ic = lambda *a: None if not a else (a[0] if len(a) == 1 else a)  # noqa: E731
     builtins = __import__("builtins")
@@ -53,7 +56,7 @@ class AddOhmsBot(BaseBot):
         """This is NOT an Asynchronous Function. Do not use it once the bot is online."""
 
         # Check the stream status on startup
-        url = f"https://api.twitch.tv/helix/streams?user_login={cfg.channels[0]}"
+        url = f"https://api.twitch.tv/helix/streams?user_login={cfg.channels[0]}"  # type:ignore
 
         headers = {
             "client-id": get_client_id(),
@@ -85,6 +88,10 @@ class AddOhmsBot(BaseBot):
 
         # Nothing matched, so return False
         return False
+
+    async def on_connected(self):
+        # We need to send a mqtt message early to stabilize the mqtt connection. Lets hope this fixes it.
+        await self.MQTT.send(self.MQTT.Topics.connected, datetime.now().isoformat(), retain=True)
 
 
 bot = AddOhmsBot()  # Needs to be out here so it's able to be imported from other modules

@@ -40,7 +40,7 @@ class Ignore(Mod):
             session.add(insert)
             session.commit()
             session.refresh(insert)
-            await msg.reply(f"{bot.msg_prefix}I will now ignore links from {pattern}")
+            await msg.reply(f"{bot.msg_prefix}I will now ignore {pattern}")
             bot.ignore_list_patterns[insert.id] = pattern
 
         else:

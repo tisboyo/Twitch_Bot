@@ -1,21 +1,21 @@
 import json
 from datetime import date
-from random import shuffle
+from os import getenv
+from pathlib import Path
 
 from fastapi import APIRouter
 from fastapi.datastructures import UploadFile
-from fastapi.exceptions import HTTPException
 from fastapi.params import Depends
 from fastapi.params import File
 from fastapi.requests import Request
 from fastapi.responses import FileResponse
-from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
+from fastapi.responses import RedirectResponse
 from fastapi.responses import Response
+from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
-from sqlalchemy import func
 from uvicorn.main import logger
 from web_auth import AuthLevel
 from web_auth import check_user
@@ -28,117 +28,192 @@ router = APIRouter()
 
 templates = Jinja2Templates(directory="static_files/trivia")
 
+# /trivia/play Load this to play trivia in OBS
 
-@router.get("/trivia/q")
-async def trivia_q(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    question = (
-        db.session.query(TriviaQuestions)
-        .filter(TriviaQuestions.last_used_date < date.today(), TriviaQuestions.enabled == True)  # noqa:E712
-        .order_by(func.random())
-        .limit(1)
-        .one_or_none()
+
+@router.get("/trivia/play")
+async def trivia_new(
+    request: Request,
+    key=Depends(check_valid_api_key(level=AuthLevel.admin)),
+):
+    mqtt_user = getenv("MQTT_USER")
+    mqtt_pass = getenv("MQTT_KEY")
+
+    url = (
+        f"{request.base_url}trivia/play.html?"
+        f"url={request.base_url.hostname}&"
+        "port=9883&"
+        f"username={mqtt_user}&"
+        f"password={mqtt_pass}&"
+        f"key={key}"
     )
 
-    if not question:  # The query returned None
-        logger.warning("We have used all of the trivia questions today!")
-        return JSONResponse(
-            {
-                "text": "We've used ALL of the trivia questions today.",
-            }
-        )
+    return RedirectResponse(url)
 
-    # Randomize answers, generate a new number order of indexes
-    ans = json.loads(question.answers)
-    ln = len(ans)
-    new_order = [idx for idx in range(1, ln + 1)]
-    shuffle(new_order)
 
-    # Assign the new random indexes to the question text
-    randomized_answers = dict()
-    temp_counter = 0
-    for k in ans:
-        randomized_answers[str(new_order[temp_counter])] = ans[k]
-        temp_counter += 1
+@router.get("/trivia/play.html")
+async def trivia_play(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    return templates.TemplateResponse("play.html", {"request": request, "key": key})
 
-    # Grab the correct answer from the new order
-    answer_id = -1
-    for a in randomized_answers:
-        if bool(randomized_answers[a]["is_answer"]):
-            answer_id = int(a)
-            break
 
-    # Build the json to return to the browser.
-    jsonret = {
-        "text": question.text,
-        "answers": randomized_answers,
-        "explain": question.explain,
-    }
+@router.get("/trivia/play.js")
+async def trivia_play_js(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    return FileResponse("static_files/trivia/play.js")
 
-    try:
-        # Send the question to TwitchBot
-        await send_command_to_bot("trivia", ["q", question.id, answer_id])
-    except HTTPException:
-        return JSONResponse(
-            {
-                "text": "Unable to connect to TwitchBot for Trivia",
-                "answers": {
-                    "1": {"text": "Fire Tisboyo."},
-                    "2": {"text": "Sacrifice some Ohms to the bot gods."},
-                    "3": {"text": "Kick AWS for breaking the bot."},
-                    "4": {"text": "Did the Twitch API key expire again?"},
-                },
-                "explain": "Lets try again and see if it wakes up this time.",
-            }
-        )
 
-    # Update the last used date to today, so the question isn't repeated
-    question.last_used_date = date.today()
-    db.session.commit()
-    return JSONResponse(jsonret)
+@router.get("/trivia/play.css")
+async def trivia_play_css(request: Request):
+    return FileResponse("static_files/trivia/play.css")
+
+
+@router.get("/trivia/sounds/{sound_id}")
+async def trivia_play_wav(
+    request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), sound_id="default"
+):
+    def iterfile():
+
+        audio_file_path = Path(__file__).resolve().parent / ".." / "static_files" / "trivia" / "sounds"
+        question_file = audio_file_path / f"{sound_id}.wav"
+        default_file = audio_file_path / "default.wav"
+        if question_file.is_file():
+            audio_file = question_file
+        else:
+            audio_file = default_file
+
+        with open(audio_file, mode="rb") as file_like:
+            yield from file_like
+
+    return StreamingResponse(iterfile(), media_type="audio/wav")
+
+
+@router.get("/trivia/images/thumb-for-twitch")
+async def trivia_thumb_for_twitch(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    return RedirectResponse("https://www.baldengineer.com/thumbs/thumb-for-twitch.jpg", status_code=302)
+
+
+@router.get("/trivia/images/{image_id}")
+async def trivia_play_jpg(
+    request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), image_id="default"
+):
+    image_file_path = Path(__file__).resolve().parent / ".." / "static_files" / "trivia" / "images"
+    question_file_jpg = image_file_path / f"{image_id}.jpg"
+    question_file_png = image_file_path / f"{image_id}.png"
+    question_file_gif = image_file_path / f"{image_id}.gif"
+    default_file = image_file_path / "default.png"
+
+    if question_file_jpg.is_file():
+        return FileResponse(question_file_jpg)
+    elif question_file_png.is_file():
+        return FileResponse(question_file_png)
+    elif question_file_gif.is_file():
+        return FileResponse(question_file_gif)
+    else:
+        # return Response(None, status_code=204)
+        return FileResponse(default_file)
+
+
+@router.get("/trivia/start")
+async def trivia_start(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin)), debug: str = "0"):
+    logger.info("Trivia started")
+    if debug.lower() == "true":
+        debug = "1"
+    return await send_command_to_bot("trivia", ["start", debug])
 
 
 @router.post("/trivia/end")
 async def trivia_end(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
     logger.info("Trivia ended")
-    await send_command_to_bot("trivia", ["end"])
-    return Response(status_code=204)
-
-
-# Static file returns
-@router.get("/trivia")
-async def trivia_index(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    return templates.TemplateResponse("index.html", {"request": request, "key": key})
-
-
-@router.get("/trivia/trivia.js")
-async def trivia_js(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    return FileResponse("static_files/trivia/trivia.js")
-
-
-@router.get("/trivia/trivia.css")
-async def trivia_css(request: Request):
-    return FileResponse("static_files/trivia/trivia.css")
+    return await send_command_to_bot("trivia", ["end"])
 
 
 @router.get("/trivia/laptop-background-transparent.png")
 async def trivia_background(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    # return FileResponse("static_files/trivia/newlt.png")
     return FileResponse("static_files/trivia/laptop-background-transparent.png")
+
+
+# /trivia/leaders - Show the current leaderboard for all questions
+
+
+@router.get("/trivia/leaders")
+async def trivia_leaders(
+    request: Request,
+    key=Depends(check_valid_api_key(level=AuthLevel.admin)),
+):
+    mqtt_user = getenv("MQTT_USER")
+    mqtt_pass = getenv("MQTT_KEY")
+
+    url = (
+        f"{request.base_url}trivia/leaders.html?"
+        f"url={request.base_url.hostname}&"
+        "port=9883&"
+        f"username={mqtt_user}&"
+        f"password={mqtt_pass}&"
+        f"key={key}"
+    )
+
+    return RedirectResponse(url)
+
+
+@router.get("/trivia/leaders.html", response_class=FileResponse)
+async def trivia_leaders_html(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+    return templates.TemplateResponse("leaders.html", {"request": request, "key": key})
+
+
+@router.get("/trivia/leaders.css", response_class=FileResponse)
+async def trivia_leaders_css(request: Request):
+    return FileResponse("static_files/trivia/leaders.css")
+
+
+@router.get("/trivia/leaders.js", response_class=FileResponse)
+async def trivia_leaders_js(request: Request):
+    return FileResponse("static_files/trivia/leaders.js")
+
+
+# /trivia/question_answers - Shows the results of the question as it plays
+
+
+@router.get("/trivia/question_answers")
+async def trivia_question_answers(
+    request: Request,
+    key=Depends(check_valid_api_key(level=AuthLevel.admin)),
+):
+    mqtt_user = getenv("MQTT_USER")
+    mqtt_pass = getenv("MQTT_KEY")
+
+    url = (
+        f"{request.base_url}trivia/question_answers.html?"
+        f"url={request.base_url.hostname}&"
+        "port=9883&"
+        f"username={mqtt_user}&"
+        f"password={mqtt_pass}&"
+        f"key={key}"
+    )
+
+    return RedirectResponse(url)
+
+
+@router.get("/trivia/question_answers.html", response_class=FileResponse)
+async def trivia_question_results(request: Request):
+    return FileResponse("static_files/trivia/question_answers.html")
+
+
+@router.get("/trivia/question_answers.css", response_class=FileResponse)
+async def trivia_question_results_css(request: Request):
+    return FileResponse("static_files/trivia/question_answers.css")
+
+
+@router.get("/trivia/question_answers.js", response_class=FileResponse)
+async def trivia_question_results_js(request: Request):
+    return FileResponse("static_files/trivia/question_answers.js")
+
+
+# /trivia/manage - Trivia management
 
 
 @router.get("/trivia/manage/")
 async def trivia_manage(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
-    out = """
-    <html>
-        <body>
-            <form method="post" enctype="multipart/form-data" action="/trivia/manage/upload">
-                <input type="file" id="trivia" name="questions">
-                <input type="submit" value="Upload" name="submit">
-            </form>
-
-            Download current <a href="/trivia/manage/download">questions.txt</a>
-        </body>
-    </html>"""
-    return HTMLResponse(out)
+    return templates.TemplateResponse("manage.html", {"request": request})
 
 
 @router.post("/trivia/manage/upload")

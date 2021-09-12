@@ -5,6 +5,7 @@ import websockets
 from fastapi.exceptions import HTTPException
 from fastapi.responses import Response
 from starlette.status import HTTP_204_NO_CONTENT
+from uvicorn.main import logger
 
 uri = "ws://bot:13337"
 
@@ -40,11 +41,11 @@ async def send_command_to_bot(cmd, args: list):
             return Response(status_code=HTTP_204_NO_CONTENT)
 
     except ConnectionRefusedError:
-        print("Unable to connect to bot to run command.")
+        logger.warning("Unable to connect to bot to run command.")
         raise HTTPException(status_code=503)
 
     except Exception as e:
-        print(f"Unknown exception trying to send message to bot. {e}")
+        logger.error(f"Unknown exception trying to send message to bot. {e}")
         raise HTTPException(status_code=503)
 
 
@@ -72,9 +73,9 @@ async def send_message_to_bot(data, message):
             return Response(status_code=HTTP_204_NO_CONTENT)
 
     except ConnectionRefusedError:
-        print("Unable to connect to bot for new follow.")
+        logger.warning("Unable to connect to bot to send message")
         raise HTTPException(status_code=503)
 
     except Exception as e:
-        print(f"Unknown exception trying to send message to bot. {e}")
+        logger.error(f"Unknown exception trying to send message to bot. {e}")
         raise HTTPException(status_code=503)

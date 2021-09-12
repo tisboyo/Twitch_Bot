@@ -83,7 +83,12 @@ class Paho:
         self.client.loop_forever()
 
 
-aio = AIO()
-my_mqtt = Paho()
+# Only run if it's enabled, implemented so it's off in dev environments
+if int(getenv("ENABLE_AIO_BRIDGE")):
+    print("AIO Bridge starting...")
+    aio = AIO()
+    my_mqtt = Paho()
 
-my_mqtt.run()
+    my_mqtt.run()
+else:
+    print("AIO Bridge exiting due to environment variable...")

@@ -15,6 +15,8 @@ class FollowMod(Mod):
 
     @ModCommand(name, "follow", context=CommandContext.CONSOLE)
     async def follow(self, msg: Message, follower, *args):
+        if bot.user_ignored(str(follower)):
+            return
 
         await msg.reply(f"{bot.msg_prefix} Thanks for the follow {follower}")
         await bot.MQTT.send(MqttTopics.channel_follow, follower)
