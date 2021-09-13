@@ -2,6 +2,7 @@ import asyncio
 from os import getenv
 
 import uvicorn
+from eventsub_manage import update_eventsub
 from fastapi import FastAPI
 from fastapi.params import Depends
 from fastapi.responses import FileResponse
@@ -101,5 +102,5 @@ async def login_exception_handler(request: Request, exc: RequiresLoginException)
 app.add_middleware(SessionMiddleware, secret_key=getenv("SESSION_KEY"))
 
 if __name__ == "__main__":
-
+    update_eventsub()
     uvicorn.run("main:app", host="0.0.0.0", port=5000, ws="websockets", reload=True)
