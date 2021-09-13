@@ -59,8 +59,8 @@ services:
       - "traefik.http.routers.fastapi.rule=Host(`${WEB_HOSTNAME}`)"
       - "traefik.http.routers.fastapi.tls=true"
       - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
-      - "deck-chores.webhook-subscribe.command=sh -c /workspace/web/webhook_requests.py &> /proc/1/fd/1"
-      - "deck-chores.webhook-subscribe.cron=* * * * * */6 0 0"
+      - "deck-chores.webhook-subscribe.command=sh -c /workspace/web/eventsub_manage.py &> /proc/1/fd/1"
+      - "deck-chores.webhook-subscribe.interval=daily"
 
     environment:
       WEB_HOSTNAME: ${WEB_HOSTNAME}

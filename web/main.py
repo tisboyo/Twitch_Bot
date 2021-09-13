@@ -101,5 +101,4 @@ async def login_exception_handler(request: Request, exc: RequiresLoginException)
 app.add_middleware(SessionMiddleware, secret_key=getenv("SESSION_KEY"))
 
 if __name__ == "__main__":
-
     uvicorn.run("main:app", host="0.0.0.0", port=5000, ws="websockets", reload=True)
