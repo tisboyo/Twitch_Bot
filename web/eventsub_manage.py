@@ -161,69 +161,66 @@ def delete_url(url, counter: int = 0):
         _exit(0)
 
 
-def update_eventsub():
-    user_data = json.loads(get_url(f"https://api.twitch.tv/helix/users?login={channel}").content.decode("utf-8"))["data"][0]
-    channel_id = user_data["id"]
+user_data = json.loads(get_url(f"https://api.twitch.tv/helix/users?login={channel}").content.decode("utf-8"))["data"][0]
+channel_id = user_data["id"]
 
-    # Check current subscriptions
-    url = "https://api.twitch.tv/helix/eventsub/subscriptions"
-    r = get_url(url)
-    current_eventsub = json.loads(r.content.decode("utf-8"))
+# Check current subscriptions
+url = "https://api.twitch.tv/helix/eventsub/subscriptions"
+r = get_url(url)
+current_eventsub = json.loads(r.content.decode("utf-8"))
 
-    events = [
-        {
-            "type": "channel.follow",
-            "version": "1",
-            "condition": {"broadcaster_user_id": channel_id},
-            "transport": {"method": "webhook", "callback": f"{host}/channel.follow", "secret": signing_secret},
-        },
-        {
-            "type": "stream.online",
-            "version": "1",
-            "condition": {"broadcaster_user_id": channel_id},
-            "transport": {"method": "webhook", "callback": f"{host}/stream.online", "secret": signing_secret},
-        },
-        {
-            "type": "stream.offline",
-            "version": "1",
-            "condition": {"broadcaster_user_id": channel_id},
-            "transport": {"method": "webhook", "callback": f"{host}/stream.offline", "secret": signing_secret},
-        },
-    ]
+events = [
+    {
+        "type": "channel.follow",
+        "version": "1",
+        "condition": {"broadcaster_user_id": channel_id},
+        "transport": {"method": "webhook", "callback": f"{host}/channel.follow", "secret": signing_secret},
+    },
+    {
+        "type": "stream.online",
+        "version": "1",
+        "condition": {"broadcaster_user_id": channel_id},
+        "transport": {"method": "webhook", "callback": f"{host}/stream.online", "secret": signing_secret},
+    },
+    {
+        "type": "stream.offline",
+        "version": "1",
+        "condition": {"broadcaster_user_id": channel_id},
+        "transport": {"method": "webhook", "callback": f"{host}/stream.offline", "secret": signing_secret},
+    },
+]
 
-    # Make sure all of the events we are subscribed to, we actually want
-    for current in current_eventsub["data"]:
-        desired_eventsub = False
-        for event in events:
-            if (
-                event["transport"]["method"] == current["transport"]["method"]
-                and event["transport"]["callback"] == current["transport"]["callback"]
-                and current["status"] == "enabled"
-            ):
-                desired_eventsub = True
-                break
-
-        if not desired_eventsub:
-            r = delete_url(f"{url}?id={current['id']}")
-            print(f"Deleting {current['type']} for {current['condition']} at {current['transport']['callback']}")
-        else:
-            print(f"EventSub: {current['type']} for {current['condition']} at {current['transport']['callback']}")
-
+# Make sure all of the events we are subscribed to, we actually want
+for current in current_eventsub["data"]:
+    desired_eventsub = False
     for event in events:
-        send_subscribe = True
-        for current in current_eventsub["data"]:
-            if (
-                event["transport"]["method"] == current["transport"]["method"]
-                and event["transport"]["callback"] == current["transport"]["callback"]
-                and current["status"] == "enabled"
-            ):
-                send_subscribe = False
-                break
-        if send_subscribe:
-            r = post_url(url, event)
-            print(
-                f"Subscribed ({r.status_code}): {event['type']} for {event['condition']} at {event['transport']['callback']}"
-            )
+        if (
+            event["transport"]["method"] == current["transport"]["method"]
+            and event["transport"]["callback"] == current["transport"]["callback"]
+            and current["status"] == "enabled"
+        ):
+            desired_eventsub = True
+            break
 
-    # Close the database connection
-    engine.dispose()
+    if not desired_eventsub:
+        r = delete_url(f"{url}?id={current['id']}")
+        print(f"Deleting {current['type']} for {current['condition']} at {current['transport']['callback']}")
+    else:
+        print(f"EventSub: {current['type']} for {current['condition']} at {current['transport']['callback']}")
+
+for event in events:
+    send_subscribe = True
+    for current in current_eventsub["data"]:
+        if (
+            event["transport"]["method"] == current["transport"]["method"]
+            and event["transport"]["callback"] == current["transport"]["callback"]
+            and current["status"] == "enabled"
+        ):
+            send_subscribe = False
+            break
+    if send_subscribe:
+        r = post_url(url, event)
+        print(f"Subscribed ({r.status_code}): {event['type']} for {event['condition']} at {event['transport']['callback']}")
+
+# Close the database connection
+engine.dispose()
