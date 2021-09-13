@@ -1,3 +1,4 @@
+#!/usr/local/bin/python
 import datetime
 import json
 from os import _exit
