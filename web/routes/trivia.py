@@ -132,11 +132,11 @@ async def trivia_background(request: Request, key: str = Depends(check_valid_api
     return FileResponse("static_files/trivia/laptop-background-transparent.png")
 
 
-# /trivia/leaders - Show the current leaderboard for all questions
+# /trivia/winners - Show the winners
 
 
-@router.get("/trivia/leaders")
-async def trivia_leaders(
+@router.get("/trivia/winners")
+async def trivia_winners(
     request: Request,
     key=Depends(check_valid_api_key(level=AuthLevel.admin)),
 ):
@@ -144,7 +144,7 @@ async def trivia_leaders(
     mqtt_pass = getenv("MQTT_KEY")
 
     url = (
-        f"{request.base_url}trivia/leaders.html?"
+        f"{request.base_url}trivia/winners.html?"
         f"url={request.base_url.hostname}&"
         "port=9883&"
         f"username={mqtt_user}&"
@@ -155,57 +155,101 @@ async def trivia_leaders(
     return RedirectResponse(url)
 
 
-@router.get("/trivia/leaders.html", response_class=FileResponse)
-async def trivia_leaders_html(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
-    return templates.TemplateResponse("leaders.html", {"request": request, "key": key})
+@router.get("/trivia/winners.html", response_class=FileResponse)
+async def trivia_winners_html(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+
+    response = templates.TemplateResponse("winners.html", {"request": request, "key": key})
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"  # HTTP 1.1.
+    response.headers["Pragma"] = "no-cache"  # HTTP 1.0.
+    response.headers["Expires"] = "0"  # Proxies.
+
+    return response
 
 
-@router.get("/trivia/leaders.css", response_class=FileResponse)
-async def trivia_leaders_css(request: Request):
-    return FileResponse("static_files/trivia/leaders.css")
+@router.get("/trivia/winners.css", response_class=FileResponse)
+async def trivia_winners_css(request: Request):
+    return FileResponse("static_files/trivia/winners.css")
 
 
-@router.get("/trivia/leaders.js", response_class=FileResponse)
-async def trivia_leaders_js(request: Request):
-    return FileResponse("static_files/trivia/leaders.js")
+@router.get("/trivia/winners.js", response_class=FileResponse)
+async def trivia_winners_js(request: Request):
+    return FileResponse("static_files/trivia/winners.js")
+
+
+# /trivia/leaders - Show the current leaderboard for all questions
+
+
+# @router.get("/trivia/leaders")
+# async def trivia_leaders(
+#     request: Request,
+#     key=Depends(check_valid_api_key(level=AuthLevel.admin)),
+# ):
+#     mqtt_user = getenv("MQTT_USER")
+#     mqtt_pass = getenv("MQTT_KEY")
+
+#     url = (
+#         f"{request.base_url}trivia/leaders.html?"
+#         f"url={request.base_url.hostname}&"
+#         "port=9883&"
+#         f"username={mqtt_user}&"
+#         f"password={mqtt_pass}&"
+#         f"key={key}"
+#     )
+
+#     return RedirectResponse(url)
+
+
+# @router.get("/trivia/leaders.html", response_class=FileResponse)
+# async def trivia_leaders_html(request: Request, key: str = Depends(check_valid_api_key(level=AuthLevel.admin))):
+#     return templates.TemplateResponse("leaders.html", {"request": request, "key": key})
+
+
+# @router.get("/trivia/leaders.css", response_class=FileResponse)
+# async def trivia_leaders_css(request: Request):
+#     return FileResponse("static_files/trivia/leaders.css")
+
+
+# @router.get("/trivia/leaders.js", response_class=FileResponse)
+# async def trivia_leaders_js(request: Request):
+#     return FileResponse("static_files/trivia/leaders.js")
 
 
 # /trivia/question_answers - Shows the results of the question as it plays
 
 
-@router.get("/trivia/question_answers")
-async def trivia_question_answers(
-    request: Request,
-    key=Depends(check_valid_api_key(level=AuthLevel.admin)),
-):
-    mqtt_user = getenv("MQTT_USER")
-    mqtt_pass = getenv("MQTT_KEY")
+# @router.get("/trivia/question_answers")
+# async def trivia_question_answers(
+#     request: Request,
+#     key=Depends(check_valid_api_key(level=AuthLevel.admin)),
+# ):
+#     mqtt_user = getenv("MQTT_USER")
+#     mqtt_pass = getenv("MQTT_KEY")
 
-    url = (
-        f"{request.base_url}trivia/question_answers.html?"
-        f"url={request.base_url.hostname}&"
-        "port=9883&"
-        f"username={mqtt_user}&"
-        f"password={mqtt_pass}&"
-        f"key={key}"
-    )
+#     url = (
+#         f"{request.base_url}trivia/question_answers.html?"
+#         f"url={request.base_url.hostname}&"
+#         "port=9883&"
+#         f"username={mqtt_user}&"
+#         f"password={mqtt_pass}&"
+#         f"key={key}"
+#     )
 
-    return RedirectResponse(url)
-
-
-@router.get("/trivia/question_answers.html", response_class=FileResponse)
-async def trivia_question_results(request: Request):
-    return FileResponse("static_files/trivia/question_answers.html")
+#     return RedirectResponse(url)
 
 
-@router.get("/trivia/question_answers.css", response_class=FileResponse)
-async def trivia_question_results_css(request: Request):
-    return FileResponse("static_files/trivia/question_answers.css")
+# @router.get("/trivia/question_answers.html", response_class=FileResponse)
+# async def trivia_question_results(request: Request):
+#     return FileResponse("static_files/trivia/question_answers.html")
 
 
-@router.get("/trivia/question_answers.js", response_class=FileResponse)
-async def trivia_question_results_js(request: Request):
-    return FileResponse("static_files/trivia/question_answers.js")
+# @router.get("/trivia/question_answers.css", response_class=FileResponse)
+# async def trivia_question_results_css(request: Request):
+#     return FileResponse("static_files/trivia/question_answers.css")
+
+
+# @router.get("/trivia/question_answers.js", response_class=FileResponse)
+# async def trivia_question_results_js(request: Request):
+#     return FileResponse("static_files/trivia/question_answers.js")
 
 
 # /trivia/manage - Trivia management
