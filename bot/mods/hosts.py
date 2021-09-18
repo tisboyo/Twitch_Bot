@@ -10,9 +10,10 @@ from twitchbot.channel import channels
 from twitchbot.config import cfg
 from twitchbot.config import get_client_id
 from twitchbot.config import get_oauth
-from twitchbot.util.task_util import add_task
 from twitchbot.util.task_util import stop_task
 from twitchbot.util.task_util import task_exist
+
+# from twitchbot.util.task_util import add_task
 
 
 class HostsMod(Mod):
