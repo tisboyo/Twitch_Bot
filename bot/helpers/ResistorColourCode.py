@@ -105,7 +105,7 @@ class ValuesSeries(object):
 
     def tolerance_min(self):
 
-        """ Return the minimum tolerance. """
+        """Return the minimum tolerance."""
 
         return min(self.tolerances)
 
@@ -113,7 +113,7 @@ class ValuesSeries(object):
 
     def tolerance_max(self):
 
-        """ Return the maximum tolerance. """
+        """Return the maximum tolerance."""
 
         return max(self.tolerances)
 
