@@ -3,7 +3,12 @@ version: "3"
 services:
   bot:
     container_name: twitchbot_bot
-    build: ./bot/
+    build:
+      context: ./bot/
+      args: #Passing these in as Args allow it to be used during the build process
+        PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+        PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
+
     restart: unless-stopped
     depends_on:
       - mysql
@@ -33,8 +38,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TO_DO_WEBHOOK: ${TO_DO_WEBHOOK}
-      PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
-      PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
+
 
     labels:
       - "deck-chores.process-dropbox.command=sh -c /workspace/bot/dropbox_sync.py &> /proc/1/fd/1"
@@ -42,7 +46,12 @@ services:
 
   webserver:
     container_name: twitchbot_webserver
-    build: ./web/
+    build:
+      context: ./web/
+      args: #Passing these in as Args allow it to be used during the build process
+        PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+        PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
+
     restart: unless-stopped
     expose:
       - 5000
