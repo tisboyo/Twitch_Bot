@@ -8,7 +8,7 @@ minimum_pre_commit_version: "2.15.0"
 
 repos:
     -   repo: https://github.com/pre-commit/pre-commit-hooks
-        rev: v3.4.0
+        rev: v4.0.1
         hooks:
         -   id: trailing-whitespace
         -   id: end-of-file-fixer
@@ -20,23 +20,23 @@ repos:
         -   id: requirements-txt-fixer
 
     -   repo: https://github.com/asottile/reorder_python_imports
-        rev: v2.5.0
+        rev: v2.6.0
         hooks:
         -   id: reorder-python-imports
 
     -   repo: https://github.com/psf/black
-        rev: 21.5b0
+        rev: 21.9b0
         hooks:
         -   id: black
 
-    -   repo: https://gitlab.com/pycqa/flake8
+    -   repo: https://github.com/PyCQA/flake8
         rev: 3.9.2
         hooks:
         -   id: flake8
             additional_dependencies: [flake8-typing-imports==1.7.0]
 
     -   repo: https://github.com/Lucas-C/pre-commit-hooks-safety
-        rev: v1.2.1
+        rev: v1.2.2
         hooks:
         -   id: python-safety-dependencies-check
             files: requirements
