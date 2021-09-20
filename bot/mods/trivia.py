@@ -1,6 +1,7 @@
 import datetime
 import json
 import random
+from asyncio import create_task
 from asyncio import sleep
 from string import ascii_lowercase
 from string import ascii_uppercase
@@ -373,7 +374,6 @@ class TriviaMod(Mod):
         channel_id = await self.get_user_id_with_retry(msg.channel.name)
 
         winners = self.calculate_winner()
-        how_many_winners = len(winners)
 
         # Update winners in database
         await self.update_users_in_database(final=winners)
@@ -381,85 +381,131 @@ class TriviaMod(Mod):
         # places = ["first", "second", "third"]
         places = ["third", "second", "first"]
 
-        messages = list()  # Store for the messages to send
-        for pl in range(how_many_winners):
-            # Negative length of winners + current range number, used to count backwards in the places list
-            place = -how_many_winners + pl
-            winner = winners.pop()
-            ic(winner, places[place])
-            messages.append(f"{self.msg_prefix} In {places[place]} is {winner[0]} with {winner[1]} points.")
-
-        # Send leaderboard to MQTT
+        # Send full leaderboard to MQTT
         await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, self.scoreboard, retain=True)
 
-        how_many_messages = len(messages)
-        for idx in range(how_many_messages):
-            # Send the congratulatory messages with a delay between them
-            await msg.reply(messages[idx])
-            if idx < how_many_messages - 1:
-                await sleep(5)
+        # Set the delay between each winner sent, affects both mqtt and chat
+        time_between_winners = 5
 
-        # 203
-        # Special announcements for first place winners
-        if how_many_winners > 0:  # No participants with correct answers
-            calc_winners = self.calculate_winner()
-            high_score = calc_winners[0][1]
+        # The two following functions are used to create a task to perform both functions simultaneously
+        async def send_winners_to_mqtt(winners):
+            value = dict()  # Store for the messages to send
+            how_many_winners = len(winners)
+            for pl in range(how_many_winners):
+                # Negative length of winners + current range number, used to count backwards in the places list
+                place = -how_many_winners + pl
+                winner = winners.pop()
+                ic(winner, places[place])
+                value[places[place]] = (winner[0], winner[1])
+                await bot.MQTT.send(bot.MQTT.Topics.trivia_winners, value, retain=True)
+                if pl < how_many_winners - 1:
+                    await sleep(time_between_winners)
 
-            winners = list()
-            for participant, score in calc_winners:
-                if score == high_score:
-                    winners.append(participant)
+        async def send_winners_to_chat(winners):
+            # Right off the bat, wait the delay of trivia questions
+            await sleep(self.question_delay)
 
-            # Grab the ID numbers of all winners
-            winner_ids = list()
-            for winner in winners:
-                # Grab winners stats
-                winner_id = -1
-                while winner_id == -1:
-                    winner_id = await self.get_user_id_with_retry(winner)
+            how_many_winners = len(winners)
+            messages = list()  # Store for the messages to send
+            for pl in range(how_many_winners):
+                # Negative length of winners + current range number, used to count backwards in the places list
+                place = -how_many_winners + pl
+                winner = winners.pop()
+                ic(winner, places[place])
+                messages.append(f"{self.msg_prefix} In {places[place]} is {winner[0]} with {winner[1]} points.")
 
-                winner_ids.append(int(winner_id))
+            how_many_messages = len(messages)
+            for idx in range(how_many_messages):
+                # Send the congratulatory messages with a delay between them
+                await msg.reply(messages[idx])
+                if idx < how_many_messages - 1:
+                    await sleep(time_between_winners)
 
-            winner_db = (
-                session.query(TriviaResults, Users)
-                .filter(
-                    TriviaResults.user_id.in_(winner_ids),
-                    TriviaResults.channel == channel_id,
-                    Users.user_id == TriviaResults.user_id,
-                    Users.channel == TriviaResults.channel,
+            # 203
+            # Special announcements for first place winners
+            if how_many_winners > 0:  # No participants with correct answers
+                calc_winners = self.calculate_winner()
+                high_score = calc_winners[0][1]
+
+                winners = list()
+                for participant, score in calc_winners:
+                    if score == high_score:
+                        winners.append(participant)
+
+                # Grab the ID numbers of all winners
+                winner_ids = list()
+                for winner in winners:
+                    # Grab winners stats
+                    winner_id = -1
+                    while winner_id == -1:
+                        winner_id = await self.get_user_id_with_retry(winner)
+
+                    winner_ids.append(int(winner_id))
+
+                winner_db = (
+                    session.query(TriviaResults, Users)
+                    .filter(
+                        TriviaResults.user_id.in_(winner_ids),
+                        TriviaResults.channel == channel_id,
+                        Users.user_id == TriviaResults.user_id,
+                        Users.channel == TriviaResults.channel,
+                    )
+                    .all()
                 )
-                .all()
-            )
 
-            # First win
-            first_time_winner = list()
-            win_count = dict()
-            most_wins = 0
-            for trivia, user in winner_db:
-                # Used for first time winner
-                if trivia.total_wins == 1:
-                    first_time_winner.append(user.user)
+                # First win
+                first_time_winner = list()
+                win_count = dict()
+                most_wins = 0
+                for trivia, user in winner_db:
+                    # Used for first time winner
+                    if trivia.total_wins == 1:
+                        first_time_winner.append(user.user)
 
-                # Used for most wins and when multiple tie for most
-                if trivia.total_wins > most_wins:
-                    most_wins = trivia.total_wins
+                    # Used for most wins and when multiple tie for most
+                    if trivia.total_wins > most_wins:
+                        most_wins = trivia.total_wins
 
-                # Create the list if it doesn't exist in the dictionary yet
-                if not win_count.get(trivia.total_wins, False):
-                    win_count[trivia.total_wins] = list()
+                    # Create the list if it doesn't exist in the dictionary yet
+                    if not win_count.get(trivia.total_wins, False):
+                        win_count[trivia.total_wins] = list()
 
-                # Used for tracking how many wins each person has
-                win_count[trivia.total_wins].append(user.user)
+                    # Used for tracking how many wins each person has
+                    win_count[trivia.total_wins].append(user.user)
 
-            # Send a final congratulations message
-            if first_time_winner:  # First time winners
-                await msg.reply(f"{self.msg_prefix}CONGRATULATIONS {', '.join(first_time_winner)} on your first win!!")
-            elif len(win_count[most_wins]) > 1:  # Multiple top winners
-                await msg.reply(f"{self.msg_prefix}Congrats to {', '.join(win_count[most_wins])} for the most wins!")
-            elif len(win_count[most_wins]) == 1:  # Single top winner
-                await msg.reply(f"{self.msg_prefix}Congrats to {win_count[most_wins][0]}, you have won {most_wins} times!")
+                # Send a final congratulations message
+                if first_time_winner:  # First time winners
+                    await msg.reply(f"{self.msg_prefix}CONGRATULATIONS {', '.join(first_time_winner)} on your first win!!")
+                elif len(win_count[most_wins]) > 1:  # Multiple top winners
+                    await msg.reply(f"{self.msg_prefix}Congrats to {', '.join(win_count[most_wins])} for the most wins!")
+                elif len(win_count[most_wins]) == 1:  # Single top winner
+                    await msg.reply(
+                        f"{self.msg_prefix}Congrats to {win_count[most_wins][0]}, you have won {most_wins} times!"
+                    )
 
-        # Clear the scoreboard for the next session
+        # Start the asyncio tasks to send winner data to chat and mqtt on seperate timers
+        # Send a copy of the winners list so it can be modified inside the function
+        send_to_chat_task = create_task(send_winners_to_chat(winners.copy()))
+        send_to_mqtt_task = create_task(send_winners_to_mqtt(winners.copy()))
+
+        # Wait for all tasks to finish before proceeding
+        sleep_time = 0.25
+        # Sending messages to chat take the longest, and "should" only take 15 seconds, plus the question delay
+        # Giving a value of 20 gives time for the messages to actually be sent to chat
+        timeout = 20 + self.question_delay
+        counter = 0
+        while not (send_to_chat_task.done() and send_to_mqtt_task.done()):
+            counter += 1
+            print(f"pending {counter=}")
+            await sleep(sleep_time)
+            # Break out of the loop if we go over our timeout
+            if counter * sleep_time > timeout:
+                print("Send messages to chat and mqtt timeout exceeded, breaking out!")
+                break
+
+        # Cleanup to reset trivia for future sessions
+
+        # Clear the scoreboard
         self.scoreboard = dict()
 
         # Clear the trivia related MQTT topics
@@ -467,6 +513,8 @@ class TriviaMod(Mod):
         await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, None)
         await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, None)
         await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_data, None)
+        await sleep(30)  # Leave the trivia winners on the screen for a little bit longer
+        await bot.MQTT.send(bot.MQTT.Topics.trivia_winners, None)
 
     @SubCommand(trivia, "priority", permission="admin")
     async def trivia_priority(self, msg: Message, question_id: int = None, priority: int = 1):
