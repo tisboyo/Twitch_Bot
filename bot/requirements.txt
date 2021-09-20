@@ -1,7 +1,7 @@
 Adafruit_IO==2.5.0
 aiofile==3.6.0
 aiohttp==3.7.4.post0
-alembic==1.6.5
+alembic==1.7.3
 dropbox==11.19.0
 gmqtt==0.6.10
 mysql-connector-python==8.0.26
