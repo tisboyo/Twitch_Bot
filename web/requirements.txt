@@ -15,7 +15,7 @@ python-jose==3.3.0
 python-multipart==0.0.5
 pythontwitchbotframework==2.3.7
 requests==2.26.0
-SQLAlchemy==1.4.22
+SQLAlchemy==1.4.23
 sqlalchemy_json==0.4.0
 starlette-discord==0.1.1
 uvicorn==0.14.0
