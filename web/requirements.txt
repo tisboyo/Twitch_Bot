@@ -3,12 +3,12 @@ bcrypt==3.2.0
 cryptography==3.4.7
 fastapi==0.68.0
 fastapi-sqlalchemy==0.2.1
-itsdangerous
+itsdangerous==2.0.1
 Jinja2==3.0.1
 munch==2.5.0
 mysql-connector-python==8.0.26
 passlib==1.7.4
-pip>=21.2.3
+pip==21.2.4
 pydantic==1.8.2
 PyJWT==2.1.0
 python-jose==3.3.0

@@ -7,8 +7,7 @@ from string import ascii_uppercase
 
 from main import bot
 from mods._database import session
-from sqlalchemy import desc
-from sqlalchemy import func
+from sqlalchemy import asc
 from twitchbot import cfg
 from twitchbot import Mod
 from twitchbot import ModCommand
@@ -97,7 +96,7 @@ class TriviaMod(Mod):
 
             # Update the question last used
             self.active_question.last_used_date = datetime.date.today()
-            self.active_question.priority = False  # Reset priority to none if it was set
+            self.active_question.order = -1  # Reset question as having been used
             session.commit()
 
             self.started_at = datetime.datetime.now()
@@ -228,7 +227,10 @@ class TriviaMod(Mod):
             if self.trivia_active:
                 delay_at_end_of_question_displaying_answer = 10
             else:
+                # Happens when trivia has ended
                 delay_at_end_of_question_displaying_answer = 1
+
+            # Show correct answer for X seconds
             now = datetime.datetime.now()
             while datetime.datetime.now() < (datetime.timedelta(seconds=delay_at_end_of_question_displaying_answer) + now):
                 seconds = (
@@ -273,18 +275,15 @@ class TriviaMod(Mod):
         debug = bool(int(debug))
 
         while self.start_running:
-            if self.active_question:
+            while self.active_question:
                 # There is already a question active, lets not start another one.
                 await sleep(0.25)
 
             if not debug:
                 question = (
                     session.query(TriviaQuestions)
-                    .filter(
-                        TriviaQuestions.last_used_date < datetime.date.today(), TriviaQuestions.enabled == True  # noqa:E712
-                    )
-                    .order_by(desc(TriviaQuestions.priority))
-                    .order_by(func.random())
+                    .filter(TriviaQuestions.order > 0, TriviaQuestions.enabled == True)  # noqa:E712
+                    .order_by(asc(TriviaQuestions.order))
                     .limit(1)
                     .one_or_none()
                 )
@@ -292,8 +291,7 @@ class TriviaMod(Mod):
                 question = (
                     session.query(TriviaQuestions)
                     .filter(TriviaQuestions.enabled == True)  # noqa:E712
-                    .order_by(desc(TriviaQuestions.priority))
-                    .order_by(func.random())
+                    .order_by(asc(TriviaQuestions.order))
                     .limit(1)
                     .one_or_none()
                 )
@@ -301,11 +299,11 @@ class TriviaMod(Mod):
             session.commit()
 
             if not question:  # The query returned None
-                print("We have used all of the trivia questions today!")
+                print("We have used all of the trivia questions!")
                 await bot.MQTT.send(
                     bot.MQTT.Topics.trivia_current_question_setup,
                     {
-                        "text": "We've used ALL of the trivia questions today.",
+                        "text": "Shuffling questions...",
                         "choices": [],
                         "answers": {},
                         "id": "error",
@@ -316,13 +314,16 @@ class TriviaMod(Mod):
                     },
                     retain=True,
                 )
-                await sleep(10)
+                self.randomize_all_questions()
+                await sleep(2)  # Less than two seconds doesn't look right
                 await bot.MQTT.send(bot.MQTT.Topics.trivia_current_question_setup, {"active": False}, retain=True)
                 await sleep(2)
             else:
                 # Run the question
                 await run_command("trivia", msg, ["run_question", str(question.id)], blocking=True)
-                await sleep(1)
+                await sleep(1.25)  # 1 second was causing occasional non-display of interstital
+
+                # Send interstitial
                 await bot.MQTT.send(
                     bot.MQTT.Topics.trivia_current_question_setup,
                     {
@@ -473,11 +474,7 @@ class TriviaMod(Mod):
             return
 
         question_id, priority = int(question_id), bool(priority)
-        query = (
-            session.query(TriviaQuestions)
-            .filter(TriviaQuestions.id == question_id)
-            .update({TriviaQuestions.priority: priority})
-        )
+        query = session.query(TriviaQuestions).filter(TriviaQuestions.id == question_id).update({TriviaQuestions.order: 1})
 
         session.commit
 
@@ -485,6 +482,12 @@ class TriviaMod(Mod):
             await msg.reply(f"{bot.msg_prefix} Priority temporarily changed for #{question_id} to {priority}")
         else:
             await msg.reply(f"{bot.msg_prefix} Unknown {question_id=}")
+
+    @SubCommand(trivia, "reorder", permission="admin")
+    async def trivia_reorder(self, msg: Message):
+        """Resets the order of the trivia questions"""
+
+        self.randomize_all_questions()
 
     async def on_channel_points_redemption(self, msg: Message, reward: str):
         """Set a message as a priority from channel points"""
@@ -687,3 +690,10 @@ class TriviaMod(Mod):
                 return False
 
         return int(user_id)
+
+    def randomize_all_questions(self):
+        """Randomize all of the trivia questions order column"""
+        print("Randomizing trivia questions")
+        sql = f"UPDATE {TriviaQuestions.__tablename__} SET `{TriviaQuestions.order.name}` = FLOOR(RAND()*10000)"
+        session.execute(sql)
+        session.commit()

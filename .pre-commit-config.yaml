@@ -4,7 +4,7 @@
 default_language_version:
     python: python3.9
 
-minimum_pre_commit_version: "2.7.1"
+minimum_pre_commit_version: "2.15.0"
 
 repos:
     -   repo: https://github.com/pre-commit/pre-commit-hooks
@@ -39,3 +39,14 @@ repos:
         rev: v1.2.1
         hooks:
         -   id: python-safety-dependencies-check
+            files: requirements
+ci:
+    autofix_commit_msg: |
+        [pre-commit.ci] auto fixes from pre-commit.com hooks
+
+        for more information, see https://pre-commit.ci
+    autofix_prs: true
+    autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+    autoupdate_schedule: weekly
+    skip: [python-safety-dependencies-check]
+    submodules: false

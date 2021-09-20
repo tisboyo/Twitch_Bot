@@ -187,11 +187,11 @@ def run(host, port):
         elif command_part == "channel":
             if not channels:
                 write(
-                    "the bot is not currently in any channels, please have the bot join at least one than relaunch this console"
+                    "the bot is not currently in any channels, please have the bot join at least one than relaunch this console"  # noqa E501
                 )
             elif not args:
                 write(
-                    f'the bot is currently in these channels: {", ".join(channels)}\ndo `/channel <channel>` to bind this channel to one'
+                    f'the bot is currently in these channels: {", ".join(channels)}\ndo `/channel <channel>` to bind this channel to one'  # noqa E501
                 )
             elif args[0] not in channels:
                 write(f'the bot is not currently in "{args[0]}"')
