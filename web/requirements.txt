@@ -19,4 +19,4 @@ SQLAlchemy==1.4.22
 sqlalchemy_json==0.4.0
 starlette-discord==0.1.1
 uvicorn==0.14.0
-websockets==9.1
+websockets==10.0
