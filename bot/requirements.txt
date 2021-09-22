@@ -6,6 +6,7 @@ dropbox==11.19.0
 gmqtt==0.6.10
 mysql-connector-python==8.0.26
 pip==21.2.4
+python-dateutil==2.8.2
 PythonTwitchBotFramework==2.3.9
 pytz==2021.1
 SQLAlchemy==1.4.23

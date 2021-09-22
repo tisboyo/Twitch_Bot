@@ -189,6 +189,12 @@ events = [
         "condition": {"broadcaster_user_id": channel_id},
         "transport": {"method": "webhook", "callback": f"{host}/stream.offline", "secret": signing_secret},
     },
+    {
+        "type": "channel.raid",
+        "version": "1",
+        "condition": {"to_broadcaster_user_id": channel_id},
+        "transport": {"method": "webhook", "callback": f"{host}/channel.raid", "secret": signing_secret},
+    },
 ]
 
 # Make sure all of the events we are subscribed to, we actually want
