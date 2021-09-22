@@ -164,4 +164,5 @@ class RaidLog(Base):
     __tablename__ = "raidlog"
     id = Column(Integer(), primary_key=True)
     raider = Column(String(26), nullable=False)
+    viewers = Column(Integer())
     timestamp = Column(DateTime(), onupdate=datetime.now)
