@@ -6,11 +6,12 @@ from data import load_data
 from data import save_data
 from mods._database import session
 from twitchbot import cfg
-from twitchbot import Channel
 from twitchbot import Message
 from twitchbot import Mod
+from twitchbot import ModCommand
 from twitchbot import PubSubData
 
+from models import RaidLog
 from models import Subscriptions
 from models import Users
 
@@ -34,14 +35,22 @@ class TwitchLog(Mod):
         if not msg.author:
             return
 
-    async def on_channel_raided(self, channel: Channel, raider: str, viewer_count: int) -> None:
-        """Log channel raid"""
-
+    # TODO REMOVE THIS COMMAND
+    @ModCommand(name, "convert_raid_log", permission="admin")
+    async def convert_raid_log(self, msg: Message):
         raid_data = await load_data("raided")
+        for each in raid_data:
+            date = datetime.fromisoformat(each)
+            raider = raid_data[each][0]
+            viewers = raid_data[each][1]
 
-        raid_data[datetime.now().isoformat()] = (raider, viewer_count)
+            insert = RaidLog(raider=raider, viewers=viewers, timestamp=date)
+            session.add(insert)
+            session.commit()
 
-        await save_data("raided", raid_data)
+        await save_data("raided", {})
+
+        await msg.reply("Please, don't do that again. (It may duplicate the data) @tisboyo, remove this command")
 
     async def on_channel_points_redemption(self, msg: Message, reward: str):
         """Log channel points redemptions"""
