@@ -49,7 +49,7 @@ async def send_command_to_bot(cmd, args: list):
         raise HTTPException(status_code=503)
 
 
-async def send_message_to_bot(data, message):
+async def send_message_to_bot(message):
     try:
         async with websockets.connect(uri) as s:
             # We don't actually need this, but we have to read it before the bot will accept commands

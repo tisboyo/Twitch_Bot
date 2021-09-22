@@ -12,12 +12,15 @@ from fastapi.responses import PlainTextResponse
 from fastapi.responses import Response
 from fastapi_sqlalchemy import db
 from send_to_bot import send_command_to_bot
+from send_to_bot import send_message_to_bot
 from starlette import status as http_status
 
 from models import IgnoreList
 from models import RaidLog
 
 router = APIRouter()
+
+msg_prefix = "🤖 "
 
 
 def check_twitch_signature():
@@ -116,5 +119,6 @@ async def twitch_eventsub_channel_raid(data: dict, request: Request, signed=Depe
 
     print(f"Raid logged by {raider} with {viewers} viewers")
 
-    number_of_raids = db.session.query(RaidLog).filter(RaidLog.raider == raider).count()
-    print(number_of_raids)
+    raid_count = db.session.query(RaidLog).filter(RaidLog.raider == raider).count()
+
+    await send_message_to_bot(f"{msg_prefix}{raider} has raided {raid_count} times!")
