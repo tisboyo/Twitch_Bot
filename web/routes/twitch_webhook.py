@@ -124,4 +124,4 @@ async def twitch_eventsub_channel_raid(data: dict, request: Request, signed=Depe
     # https://stackoverflow.com/a/20007730 - Full credit the author
     ordinal = lambda n: "%d%s" % (n, "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4])  # noqa E731
 
-    await send_message_to_bot(f"{msg_prefix}Thank you {raider} {ordinal(raid_count)} raid!")
+    await send_message_to_bot(f"{msg_prefix}Thank you {raider} for your {ordinal(raid_count)} raid!")
