@@ -1,4 +1,5 @@
 import hmac
+from datetime import datetime
 from hashlib import sha256
 from os import getenv
 from re import match
@@ -14,6 +15,7 @@ from send_to_bot import send_command_to_bot
 from starlette import status as http_status
 
 from models import IgnoreList
+from models import RaidLog
 
 router = APIRouter()
 
@@ -98,3 +100,21 @@ async def twitch_eventsub_stream_offline_post(data: dict, request: Request, sign
         return ret
     else:
         return Response(status_code=http_status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/twitch/eventsub/channel.raid")
+async def twitch_eventsub_channel_raid(data: dict, request: Request, signed=Depends(check_twitch_signature())):
+    """Log channel raids"""
+
+    event = data["event"]
+    raider = event["from_broadcaster_user_name"]
+    viewers = event["viewers"]
+
+    new_raider = RaidLog(raider=raider, viewers=viewers, timestamp=datetime.now())
+    db.session.add(new_raider)
+    db.session.commit()
+
+    print(f"Raid logged by {raider} with {viewers} viewers")
+
+    number_of_raids = db.session.query(RaidLog).filter(RaidLog.raider == raider).count()
+    print(number_of_raids)
