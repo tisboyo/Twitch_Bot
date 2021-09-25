@@ -20,7 +20,7 @@ services:
       - ./models.py:/workspace/bot/models.py
       - ./mysql/db_backup:/db_backup
       - ./questions.txt:/workspace/bot/questions.txt
-      - ./mqtt_logger:/workspace/bot/mqtt_logs/
+      - ./mqtt_logger/logs:/workspace/bot/mqtt_logs/
       # - ./bot:/workspace/bot/
     environment:
       client_id: ${TWITCH_CLIENT_ID} #Lower cased because a framework issue

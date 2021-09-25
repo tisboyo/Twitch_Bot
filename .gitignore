@@ -188,3 +188,4 @@ web/static_files/trivia/sounds/
 web/static_files/trivia/images/
 
 mqtt_logger/logs/*.json
+bot/mqtt_logs/*
