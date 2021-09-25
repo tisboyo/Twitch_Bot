@@ -20,6 +20,7 @@ services:
       - ./models.py:/workspace/bot/models.py
       - ./mysql/db_backup:/db_backup
       - ./questions.txt:/workspace/bot/questions.txt
+      - ./mqtt_logger:/workspace/bot/mqtt_logs/
       # - ./bot:/workspace/bot/
     environment:
       client_id: ${TWITCH_CLIENT_ID} #Lower cased because a framework issue
@@ -191,6 +192,25 @@ services:
 
     expose:
       - 1883 # For inter-container communication, and is not over SSL. Do not open to host
+
+  mqtt_logger:
+    container_name: twitchbot_mqtt_logger
+    build:
+      context: ./mqtt_logger/
+      args: #Passing these in as Args allow it to be used during the build process
+        PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
+        PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
+
+    restart: unless-stopped
+    depends_on:
+      - mqtt
+    volumes:
+      - ./mqtt_logger/logs:/workspace/mqtt_logger/logs
+
+    environment:
+      MQTT_USER: ${MQTT_USER}
+      MQTT_KEY: ${MQTT_KEY}
+      WEB_HOSTNAME: ${WEB_HOSTNAME}
 
   traefik-certs-dumper:
     image: ldez/traefik-certs-dumper:v2.7.4
