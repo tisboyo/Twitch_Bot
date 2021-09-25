@@ -35,11 +35,6 @@ repos:
         -   id: flake8
             additional_dependencies: [flake8-typing-imports==1.7.0]
 
-    -   repo: https://github.com/Lucas-C/pre-commit-hooks-safety
-        rev: v1.2.2
-        hooks:
-        -   id: python-safety-dependencies-check
-            files: requirements
 ci:
     autofix_commit_msg: |
         [pre-commit.ci] auto fixes from pre-commit.com hooks
@@ -48,5 +43,4 @@ ci:
     autofix_prs: true
     autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
     autoupdate_schedule: weekly
-    skip: [python-safety-dependencies-check]
     submodules: false

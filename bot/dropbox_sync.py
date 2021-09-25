@@ -4,11 +4,11 @@ from datetime import datetime
 from os import _exit
 from os import getenv
 
-import dropbox
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 
+import dropbox
 from models import Settings
 
 mysql_database = getenv("MYSQL_DATABASE")
