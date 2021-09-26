@@ -175,5 +175,8 @@ class KnownBots(Base):
 
     id = Column(Integer(), primary_key=True)
     botname = Column(String(26), nullable=False)
-    autoblock = Column(Boolean(), default=True)
+    enableblock = Column(
+        Boolean(), default=True, doc="Setting to False will prevent the bot from banning this user automagically"
+    )
     added_timestamp = Column(DateTime(), onupdate=datetime.now)
+    banned = Column(Boolean(), default=False, doc="True when the bot has auto banned the user")

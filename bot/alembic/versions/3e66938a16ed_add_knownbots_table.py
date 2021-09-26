@@ -1,8 +1,8 @@
 """Add KnownBots table
 
-Revision ID: 4376e3882934
+Revision ID: 3e66938a16ed
 Revises: 159d7c011daa
-Create Date: 2021-09-26 18:28:56.781887
+Create Date: 2021-09-26 21:54:39.942452
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = "4376e3882934"
+revision = "3e66938a16ed"
 down_revision = "159d7c011daa"
 branch_labels = None
 depends_on = None
@@ -22,8 +22,9 @@ def upgrade():
         "knownbots",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("botname", sa.String(length=26), nullable=False),
-        sa.Column("autoblock", sa.Boolean(), nullable=True),
+        sa.Column("enableblock", sa.Boolean(), nullable=True),
         sa.Column("added_timestamp", sa.DateTime(), nullable=True),
+        sa.Column("banned", sa.Boolean(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     # ### end Alembic commands ###
