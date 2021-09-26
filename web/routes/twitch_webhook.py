@@ -108,6 +108,9 @@ async def twitch_eventsub_stream_offline_post(data: dict, request: Request, sign
 @router.post("/twitch/eventsub/channel.raid")
 async def twitch_eventsub_channel_raid(data: dict, request: Request, signed=Depends(check_twitch_signature())):
     """Log channel raids"""
+    # Challenge is sent when the event is first setup only
+    if data.get("challenge", False):
+        return PlainTextResponse(data["challenge"])
 
     event = data["event"]
     raider = event["from_broadcaster_user_name"]
