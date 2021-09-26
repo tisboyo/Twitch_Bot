@@ -1,4 +1,5 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
+import argparse
 import datetime
 import json
 from os import _exit
@@ -23,6 +24,16 @@ mysql_pass = getenv("MYSQL_PASSWORD")
 engine = create_engine(f"mysql+mysqlconnector://{mysql_user}:{mysql_pass}@mysql:3306/{mysql_database}")
 
 session = scoped_session(sessionmaker(bind=engine))
+
+# Used for checking current subscriptions instead of redoing the subscribes
+parser = argparse.ArgumentParser()
+parser.add_argument("--check", action="store_true")
+parser.add_argument("--disable", action="store_true")
+args = parser.parse_args()
+
+if args.check and args.disable:
+    print("Can't run both check and disable at the same time.")
+    raise SystemExit
 
 
 def get_app_key(force_update: bool = False):
@@ -200,34 +211,46 @@ events = [
 # Make sure all of the events we are subscribed to, we actually want
 for current in current_eventsub["data"]:
     desired_eventsub = False
-    for event in events:
-        if (
-            event["transport"]["method"] == current["transport"]["method"]
-            and event["transport"]["callback"] == current["transport"]["callback"]
-            and current["status"] == "enabled"
-        ):
-            desired_eventsub = True
-            break
 
-    if not desired_eventsub:
+    if not args.disable:
+        for event in events:
+            a = event["transport"]["method"] == current["transport"]["method"]
+            b = event["transport"]["callback"] == current["transport"]["callback"]
+            c = current["status"] == "enabled"
+            if (
+                event["transport"]["method"] == current["transport"]["method"]
+                and event["transport"]["callback"] == current["transport"]["callback"]
+                and current["status"] == "enabled"
+            ):
+                desired_eventsub = True
+                break
+
+    if args.check:  # Running python eventsub_manage.py --check
+        print(
+            f"EventSub: {current['type']} for {current['condition']} at {current['transport']['callback']}, {desired_eventsub=}"  # noqa E501
+        )
+    elif not desired_eventsub:
         r = delete_url(f"{url}?id={current['id']}")
         print(f"Deleting {current['type']} for {current['condition']} at {current['transport']['callback']}")
     else:
         print(f"EventSub: {current['type']} for {current['condition']} at {current['transport']['callback']}")
 
-for event in events:
-    send_subscribe = True
-    for current in current_eventsub["data"]:
-        if (
-            event["transport"]["method"] == current["transport"]["method"]
-            and event["transport"]["callback"] == current["transport"]["callback"]
-            and current["status"] == "enabled"
-        ):
-            send_subscribe = False
-            break
-    if send_subscribe:
-        r = post_url(url, event)
-        print(f"Subscribed ({r.status_code}): {event['type']} for {event['condition']} at {event['transport']['callback']}")
+if not args.check:  # Don't do new subscriptions if we're just checking current
+    for event in events:
+        send_subscribe = True
+        for current in current_eventsub["data"]:
+            if (
+                event["transport"]["method"] == current["transport"]["method"]
+                and event["transport"]["callback"] == current["transport"]["callback"]
+                and current["status"] == "enabled"
+            ):
+                send_subscribe = False
+                break
+        if send_subscribe:
+            r = post_url(url, event)
+            print(
+                f"Subscribed ({r.status_code}): {event['type']} for {event['condition']} at {event['transport']['callback']}"
+            )
 
 # Close the database connection
 engine.dispose()
