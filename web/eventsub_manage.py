@@ -227,7 +227,7 @@ for current in current_eventsub["data"]:
 
     if args.check:  # Running python eventsub_manage.py --check
         print(
-            f"EventSub: {current['type']} for {current['condition']} at {current['transport']['callback']}, {desired_eventsub=}"  # noqa E501
+            f"EventSub: {current['type']} for {current['condition']} at {current['transport']['callback']}, Status: {current['status']}"  # noqa E501
         )
     elif not desired_eventsub:
         r = delete_url(f"{url}?id={current['id']}")
