@@ -32,7 +32,8 @@
 		"codezombiech.gitignore",
 		"ms-vsliveshare.vsliveshare",
 		"gruntfuggly.todo-tree",
-		"coenraads.bracket-pair-colorizer-2"
+		"coenraads.bracket-pair-colorizer-2",
+		"samuelcolvin.jinjahtml",
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
