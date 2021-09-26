@@ -166,3 +166,14 @@ class RaidLog(Base):
     raider = Column(String(26), nullable=False)
     viewers = Column(Integer())
     timestamp = Column(DateTime(), onupdate=datetime.now)
+
+
+class KnownBots(Base):
+    """Table to store known bots for auto banning"""
+
+    __tablename__ = "knownbots"
+
+    id = Column(Integer(), primary_key=True)
+    botname = Column(String(26), nullable=False)
+    autoblock = Column(Boolean(), default=True)
+    added_timestamp = Column(DateTime(), onupdate=datetime.now)
