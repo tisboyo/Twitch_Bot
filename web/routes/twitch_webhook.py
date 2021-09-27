@@ -127,4 +127,22 @@ async def twitch_eventsub_channel_raid(data: dict, request: Request, signed=Depe
     # https://stackoverflow.com/a/20007730 - Full credit the author
     ordinal = lambda n: "%d%s" % (n, "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4])  # noqa E731
 
-    await send_message_to_bot(f"{msg_prefix}Thank you {raider} for your {ordinal(raid_count)} raid!")
+    return await send_message_to_bot(f"{msg_prefix}Thank you {raider} for your {ordinal(raid_count)} raid!")
+
+
+@router.post("/twitch/eventsub/channel.unban")
+async def twitch_eventsub_channel_unban(data: dict, request: Request, signed=Depends(check_twitch_signature())):
+    # Challenge is sent when the event is first setup only
+    if data.get("challenge", False):
+        return PlainTextResponse(data["challenge"])
+
+    return Response(status_code=204)
+
+
+@router.post("/twitch/eventsub/channel.ban")
+async def twitch_eventsub_channel_ban(data: dict, request: Request, signed=Depends(check_twitch_signature())):
+    # Challenge is sent when the event is first setup only
+    if data.get("challenge", False):
+        return PlainTextResponse(data["challenge"])
+
+    return Response(status_code=204)
