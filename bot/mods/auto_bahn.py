@@ -1,15 +1,19 @@
 import datetime
+import re
 from asyncio import create_task
 from asyncio import sleep
 
 import aiohttp
+from main import bot
 from mods._database import session as db
 from twitchbot import cfg
 from twitchbot import Channel
 from twitchbot import Mod
 from twitchbot import ModCommand
+from twitchbot import SubCommand
 from twitchbot.message import Message
 
+from models import BotRegex
 from models import KnownBots
 
 
@@ -20,6 +24,11 @@ class AutoBan(Mod):
         super().__init__()
         print("AutoBan loaded")
         self.checked_for_autoban = set()
+
+        self.autoban_list_patterns = dict()
+        query = db.query(BotRegex).filter(BotRegex.enabled == True).all()  # noqa E712
+        for each in query:
+            self.autoban_list_patterns[each.id] = each.pattern
 
         create_task(self.update_json_list())
 
@@ -128,6 +137,11 @@ class AutoBan(Mod):
         if user is None or user in self.checked_for_autoban:
             return False
 
+        async def do_ban(user):
+            await channel.send_command(
+                f"ban {user} Banned for suspected bot activity. Please use twitch unban request if you think this is a mistake."  # noqa E501
+            )
+
         ic(f"Checking for auto ban for {user}")
         query = db.query(KnownBots).filter(KnownBots.botname == user).one_or_none()
         if query and query.enableblock:  # Bot is in the table, enabled to be blocked
@@ -135,10 +149,14 @@ class AutoBan(Mod):
             db.commit()
 
             print(f"Bot banning {user} from {channel.name}")
-            await channel.send_command(
-                f"ban {user} Banned for suspected bot activity. Please use twitch unban request if you think this is a mistake."  # noqa E501
-            )
+            await do_ban(user)
             return True
+
+        for pattern in self.autoban_list_patterns.values():
+            if re.match(pattern, user):
+                print(f"Banning {user} for matching pattern {pattern}")
+                await do_ban(user)
+                return True
 
         # Keep our own cache of checked users
         self.checked_for_autoban.add(user)
@@ -148,6 +166,29 @@ class AutoBan(Mod):
     async def ban_user(self, msg: Message, user: str):
         """Manually ban a user as a bot"""
         await self.check_to_ban_user(user, msg.channel)
+
+    @SubCommand(ban_user, "add", permission="admin")
+    async def banbot_add(self, msg: Message, pattern: str):
+        # Check if the regex is valid, return error if not.
+        try:
+            re.compile(pattern)
+        except re.error:
+            await msg.reply(f"{bot.msg_prefix}Invalid regex pattern.")
+            return
+
+        # Will not support a space in the pattern, but that doesn't matter because usernames can't have spaces
+        query = db.query(BotRegex).filter(BotRegex.pattern == pattern).one_or_none()
+        if query is None:
+            # Pattern didn't exist, so add it.
+            insert = BotRegex(pattern=pattern)
+            db.add(insert)
+            db.commit()
+            db.refresh(insert)
+            await msg.reply(f"{bot.msg_prefix}Adding {pattern} to auto ban list")
+            bot.ignore_list_patterns[insert.id] = pattern
+
+        else:
+            await msg.reply(f"{bot.msg_prefix}That pattern is already in the database.")
 
     async def on_raw_message(self, msg: Message):
         # Check on new messages if the user should be banned
