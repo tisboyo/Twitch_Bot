@@ -174,9 +174,19 @@ class KnownBots(Base):
     __tablename__ = "knownbots"
 
     id = Column(Integer(), primary_key=True)
-    botname = Column(String(26), nullable=False)
+    botname = Column(String(26), nullable=False, unique=True)
     enableblock = Column(
         Boolean(), default=True, doc="Setting to False will prevent the bot from banning this user automagically"
     )
     added_timestamp = Column(DateTime(), onupdate=datetime.now)
     banned = Column(Boolean(), default=False, doc="True when the bot has auto banned the user")
+
+
+class BotRegex(Base):
+    """Table to store regex patterns for auto banning bots"""
+
+    __tablename__ = "botsregex"
+
+    id = Column(Integer(), primary_key=True)
+    pattern = Column(String(128), nullable=False, unique=True)
+    enabled = Column(Boolean(), default=True)
