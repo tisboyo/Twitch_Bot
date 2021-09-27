@@ -19,6 +19,7 @@ class AutoBan(Mod):
     def __init__(self):
         super().__init__()
         print("AutoBan loaded")
+        self.checked_for_autoban = set()
 
         create_task(self.update_json_list())
 
@@ -122,14 +123,36 @@ class AutoBan(Mod):
             print(f"Finshed updating bot list, took {run_time}")
             await sleep(run_in.total_seconds())
 
-    @ModCommand(name, "ban", permission="admin")
-    async def ban_user(self, msg: Message, *args):
-        pass
+    async def check_to_ban_user(self, user: str, channel: Channel):
+        """Ban the user if all requirements are met"""
+        if user is None or user in self.checked_for_autoban:
+            return False
 
-    async def on_channel_joined(self, channel: Channel):
-        # Need to sleep just to make sure the the command isn't missed.
-        await sleep(1)
+        ic(f"Checking for auto ban for {user}")
+        query = db.query(KnownBots).filter(KnownBots.botname == user).one_or_none()
+        if query and query.enableblock:  # Bot is in the table, enabled to be blocked
+            query.banned = True
+            db.commit()
+
+            print(f"Bot banning {user} from {channel.name}")
+            await channel.send_command(
+                f"ban {user} Banned for suspected bot activity. Please use twitch unban request if you think this is a mistake."  # noqa E501
+            )
+            return True
+
+        # Keep our own cache of checked users
+        self.checked_for_autoban.add(user)
+        return False
+
+    @ModCommand(name, "banbot", permission="admin")
+    async def ban_user(self, msg: Message, user: str):
+        """Manually ban a user as a bot"""
+        await self.check_to_ban_user(user, msg.channel)
 
     async def on_raw_message(self, msg: Message):
+        # Check on new messages if the user should be banned
+        await self.check_to_ban_user(msg.author, msg.channel)
 
-        pass
+    async def on_user_join(self, user: str, channel: Channel):
+        # Check when a user join event triggers if the user should be banned
+        await self.check_to_ban_user(user, channel)
