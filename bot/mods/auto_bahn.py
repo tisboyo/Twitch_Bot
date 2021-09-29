@@ -12,6 +12,7 @@ from twitchbot import Mod
 from twitchbot import ModCommand
 from twitchbot import SubCommand
 from twitchbot.message import Message
+from twitchbot.util.command_util import run_command
 
 from models import BotRegex
 from models import KnownBots
@@ -189,6 +190,13 @@ class AutoBan(Mod):
 
         else:
             await msg.reply(f"{bot.msg_prefix}That pattern is already in the database.")
+
+        await run_command("banbot", msg, ["reset"])
+
+    @SubCommand(ban_user, "reset", permission="admin")
+    async def banbot_reset(self, msg: Message):
+        self.checked_for_autoban = set()
+        print("Auto ban checks reset")
 
     async def on_raw_message(self, msg: Message):
         # Check on new messages if the user should be banned
