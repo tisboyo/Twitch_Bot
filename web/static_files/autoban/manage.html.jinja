@@ -2,6 +2,20 @@
     <head>
     </head>
     <body>
+        <table border=1>
+            <tr>
+                <td>ID</td>
+                <td>Enabled</td>
+                <td>Pattern</td>
+            </tr>
+        {% for pattern in result %}
+            <tr>
+                <td>{{  pattern.id }}</td>
+                <td>{{ pattern.enabled }}</td>
+                <td>{{ pattern.pattern }}</td>
+            </tr>
+        {% endfor %}
 
+        </table>
     </body>
 </html>

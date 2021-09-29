@@ -2,12 +2,14 @@ from fastapi import APIRouter
 from fastapi import Request
 from fastapi.params import Depends
 from fastapi.templating import Jinja2Templates
+from fastapi_sqlalchemy import db
 from starlette.responses import RedirectResponse
 from web_auth import AuthLevel
 from web_auth import check_user
 
+from models import BotRegex
+
 # from fastapi.responses import HTMLResponse
-# from fastapi_sqlalchemy import db
 # from uvicorn.main import logger
 
 
@@ -22,4 +24,7 @@ async def autoban(request: Request, user=Depends(check_user(level=AuthLevel.admi
 
 @router.get("/autoban/manage")
 async def autoban_manage(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
-    return templates.TemplateResponse("manage.html.jinja")
+
+    result = db.session.query(BotRegex).order_by(BotRegex.id).all()
+
+    return templates.TemplateResponse("manage.html.jinja", {"request": request, "result": result})
