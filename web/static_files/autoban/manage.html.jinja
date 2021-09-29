@@ -1,18 +1,36 @@
+<!DOCTYPE html>
 <html>
     <head>
+        <script src='/autoban/manage.js'></script>
     </head>
     <body>
-        <table border=1>
+        <table border=1 id='regex_table'>
+            <tr style="opacity: 1; transition: opacity 1000ms linear;">
+                <td colspan=4 align=center>
+                <div id="status">
+                    Manage Clips.
+                </div>
+                </td>
+            </tr>
             <tr>
                 <td>ID</td>
                 <td>Enabled</td>
-                <td>Pattern</td>
+                <td align=center>Pattern</td>
+                <td align=center>🗑️</td>
             </tr>
         {% for pattern in result %}
             <tr>
                 <td>{{  pattern.id }}</td>
-                <td>{{ pattern.enabled }}</td>
+                <td>
+                    <form action="">
+    <input type="checkbox" name="enabled" onchange="updateRegExEnable({{ pattern.id }}, this.checked)" {% if pattern.enabled %}checked{% endif %} >
+                    </form>
+                </td>
                 <td>{{ pattern.pattern }}</td>
+                <td><form action="">
+    <button type="button" name="regex_id" value= {{ pattern.id }} onclick="deleteRegEx({{ pattern.id }} ,{{ loop.index+1 }})">🗑️</button>
+                </form>
+                </td>
             </tr>
         {% endfor %}
 
