@@ -34,7 +34,7 @@ class TodoMod(Mod):
 
         async with aiohttp.ClientSession() as session:
             response = await session.post(
-                self.webhook, json={"content": msg.content, "username": f"TwitchBot: Link by {msg.author}"}
+                self.webhook, json={"content": msg.content, "username": f"TwitchBot: Todo by {msg.author}"}
             )
             if response.status == 204:
                 message = "Thanks for the todo, I posted it to discord for review later."
