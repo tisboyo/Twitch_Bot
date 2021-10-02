@@ -11,6 +11,7 @@ from twitchbot import ModCommand
 from twitchbot.enums import CommandContext
 
 from models import LinksToDiscordIgnoreList
+from models import Settings
 
 
 class LinksToDiscord(Mod):
@@ -19,7 +20,9 @@ class LinksToDiscord(Mod):
     def __init__(self):
         super().__init__()
         print("LinksToDiscord loaded")
-        self.webhook = cfg.webhookurl
+
+        query = session.query(Settings).filter(Settings.key == "link_webhook").one_or_none()
+        self.webhook = query.value if query else None
         self.session = session
 
     def find_url(self, string):

@@ -1,13 +1,14 @@
-from os import getenv
-
 import aiohttp
 from main import bot
+from mods._database import session
 from twitchbot import cfg
 from twitchbot import channels
 from twitchbot import CommandContext
 from twitchbot import Mod
 from twitchbot import ModCommand
 from twitchbot.message import Message
+
+from models import Settings
 
 
 class TodoMod(Mod):
@@ -16,7 +17,9 @@ class TodoMod(Mod):
     def __init__(self):
         super().__init__()
         print("TodoMod loaded")
-        self.webhook = getenv("TO_DO_WEBHOOK")
+
+        query = session.query(Settings).filter(Settings.key == "to_do_webhook").one_or_none()
+        self.webhook = query.value if query else None
 
     @ModCommand(name, "todo", context=CommandContext.CHANNEL, permission="todo")
     async def todo(self, msg: Message, *args):
@@ -31,7 +34,7 @@ class TodoMod(Mod):
 
         async with aiohttp.ClientSession() as session:
             response = await session.post(
-                self.webhook, json={"content": msg.content, "username": f"TwitchBot: Link by {msg.author}"}
+                self.webhook, json={"content": msg.content, "username": f"TwitchBot: Todo by {msg.author}"}
             )
             if response.status == 204:
                 message = "Thanks for the todo, I posted it to discord for review later."
