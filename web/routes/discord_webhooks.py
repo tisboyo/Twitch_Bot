@@ -45,8 +45,6 @@ async def discord_webhook_manage_save(
     webhook_url: str = Form(...),
     user=Depends(check_user(level=AuthLevel.admin)),
 ):
-    print(webhook_name, webhook_url)
-
     async with aiohttp.ClientSession() as session:
         response = await session.post(
             webhook_url,
