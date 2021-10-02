@@ -198,9 +198,9 @@ async def callback(request: Request, code: str):
             user=True,
         )
         logger.info(new_user)
-        # Temporarily disabled intentionally to prevent new users from being added to the database
-        # db.session.add(new_user)
-        # db.session.commit()
+
+        db.session.add(new_user)
+        db.session.commit()
 
     # redirect_path = request.cookies.get("redirect", "/")
     redirect_path = "/cake"
