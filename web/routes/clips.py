@@ -157,7 +157,7 @@ async def post_clips_add(
     user=Depends(check_user(level=AuthLevel.admin)),
 ):
 
-    regex = r"(https?:\/\/(www\.|clips\.)?twitch\.tv\/(baldengineer\/clip\/)?(?P<clip_id>[A-Za-z0-9]*)?)"
+    regex = r"(https?:\/\/(www\.|clips\.)?twitch\.tv\/(baldengineer\/clip\/)?(?P<clip_id>[A-Za-z0-9_\-]*)?)"
     match = re.search(regex, url)
 
     # Define this up here so we can set the clipmsg cookie throughout
