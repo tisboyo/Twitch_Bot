@@ -8,7 +8,7 @@
     <table border=1>
     <tr><td colspan=10 align=center>
         <div id="status">
-            Manage Clips.
+            {{ message }}
         </div>
         </td>
     </tr>
@@ -29,7 +29,7 @@
                 <form action="" >
                 <input type="checkbox" name="enabled" onchange="updateClipEnable({{clip.id}}, this.checked)"
                     {% if not user.admin %} disabled{% endif %}
-                    {% if clip.enabled %}checked{% endif %}>
+                    {% if clip.enabled %} checked{% endif %}>
                 </form>
             </td>
             <td>{{clip.name}}</td>
@@ -58,7 +58,7 @@
             <td><input type="checkbox" name="enabled"></td>
             <td><input type="text" name="name"></td>
             <td><input type="text" name="title"></td>
-            <td><input type="text" name="url"></td>
+            <td><input type="url" name="url"></td>
             <td><input type="submit" value="Save"></td>
         </tr>
     </table>

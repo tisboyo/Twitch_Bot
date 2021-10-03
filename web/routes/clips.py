@@ -29,8 +29,10 @@ async def clips(request: Request, user=Depends(check_user(level=AuthLevel.admin)
 async def clips_manage_html(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
 
     result = db.session.query(Clips).order_by(Clips.id).all()
-
-    response = templates.TemplateResponse("manage.html.jinja", {"request": request, "result": result, "user": user})
+    message = request.cookies.get("clipmsg", "") or "Manage Clips"
+    response = templates.TemplateResponse(
+        "manage.html.jinja", {"request": request, "result": result, "user": user, "message": message}
+    )
 
     response.set_cookie("clipmsg", "")
     return response
@@ -86,7 +88,7 @@ async def post_clips_add(
     match = re.search(regex, url)
 
     # Define this up here so we can set the clipmsg cookie throughout
-    response = RedirectResponse("/clips", status_code=303)
+    response = RedirectResponse("/clips/manage.html", status_code=303)
 
     if match and match.group("clip_id"):  # Only query if the url was valid and has a clip id
         clip_id = match.group("clip_id")
