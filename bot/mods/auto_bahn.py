@@ -44,7 +44,24 @@ class AutoBan(Mod):
             print("Bot auto ban lists not configured.")
             return
 
+        # Make sure the last checked key exists in the database, if not insert it
+        if not db.query(Settings.value).filter(Settings.key == "next_bot_check").one_or_none():
+            ins = Settings(key="next_bot_check", value=datetime.datetime.min.isoformat())
+            db.add(ins)
+            db.commit()
+
         while True:
+            query = db.query(Settings.value).filter(Settings.key == "next_bot_check").one_or_none()
+            if not query:
+                print("Problem getting next bot check time")
+                return
+
+            next_run_time = datetime.datetime.fromisoformat(query[0])
+            if next_run_time > datetime.datetime.now():  # Not time to run yet, lets sleep until it is
+                seconds_until_run = next_run_time - datetime.datetime.now()
+                print(f"Known bot update sleeping until {query[0]}")
+                await sleep(seconds_until_run.total_seconds())
+
             print("Updating known bot list")
             start_time = datetime.datetime.now()
             try:
@@ -131,10 +148,10 @@ class AutoBan(Mod):
             next_run_time = datetime.datetime.combine(
                 (datetime.date.today() + datetime.timedelta(days=1)), datetime.time(hour=4)
             )
-            run_in = next_run_time - datetime.datetime.now()
+            db.query(Settings).filter(Settings.key == "next_bot_check").update({Settings.value: next_run_time.isoformat()})
+            db.commit()
             run_time = str(datetime.datetime.now() - start_time).split(".", 2)[0]
             print(f"Finshed updating bot list, took {run_time}")
-            await sleep(run_in.total_seconds())
 
     async def check_to_ban_user(self, user: str, channel: Channel):
         """Ban the user if all requirements are met"""
