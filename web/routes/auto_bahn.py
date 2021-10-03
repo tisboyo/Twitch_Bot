@@ -23,10 +23,10 @@ templates = Jinja2Templates(directory="static_files/autoban")
 
 @router.get("/autoban")
 async def autoban(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
-    return RedirectResponse("/autoban/manage")
+    return RedirectResponse("/autoban/manage.html")
 
 
-@router.get("/autoban/manage/")
+@router.get("/autoban/manage")
 async def autoban_manage(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
     return RedirectResponse("/autoban/manage.html")
 
