@@ -12,6 +12,7 @@ from starlette.responses import FileResponse
 from starlette.responses import RedirectResponse
 from web_auth import AuthLevel
 from web_auth import check_user
+from web_auth import check_valid_api_key
 
 from models import Clips
 
@@ -41,7 +42,7 @@ async def clips_manage_js(request: Request, user=Depends(check_user(level=AuthLe
 
 
 @router.get("/clips/json")
-async def get_clips_json(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
+async def get_clips_json(request: Request, user=Depends(check_valid_api_key(level=AuthLevel.admin))):
     result = db.session.query(Clips).filter(Clips.enabled == True).order_by(Clips.id).all()  # noqa E712
     return result
 
