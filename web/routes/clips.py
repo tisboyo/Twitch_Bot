@@ -5,115 +5,39 @@ from fastapi import Depends
 from fastapi import Request
 from fastapi.params import Form
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
 from starlette.exceptions import HTTPException
+from starlette.responses import FileResponse
 from starlette.responses import RedirectResponse
-from uvicorn.main import logger
 from web_auth import AuthLevel
 from web_auth import check_user
 
 from models import Clips
 
 router = APIRouter()
+templates = Jinja2Templates(directory="static_files/clips")
 
 
 @router.get("/clips", response_class=HTMLResponse)
-async def get_clips(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
+async def clips(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
+    return RedirectResponse("/clips/manage.html")
 
-    try:
-        result = db.session.query(Clips).order_by(Clips.id).all()
 
-    except Exception as e:
-        out = "I'm thinking as hard as I can, can you try refreshing? Thanks."
-        logger.warning(e)
+@router.get("/clips/manage.html", response_class=HTMLResponse)
+async def clips_manage_html(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
 
-        return out
+    result = db.session.query(Clips).order_by(Clips.id).all()
 
-    out = """
-    <html>
-    <head>
-        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    </head>
-    <body>
-        <script>
-            function updateClipEnable(clip_id, enable) {
-                var xhttp;
-                xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-                    document.getElementById("status").innerHTML = this.responseText;
-                    }
-                };
-                xhttp.open("POST", "/clips/enable", true);
-                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                xhttp.send("clip_id="+clip_id+"&enable="+enable);
-            }
-        </script>"""
-    out += f"""
-        <table border=1>
-        <tr><td colspan=10 align=center>
-            <div id="status">
-        {request.cookies.get('clipmsg') if request.cookies.get('clipmsg') else 'Manage Clips.'}
-            </div>
-            </td>
-        </tr>
-            <tr>
-                <td>ID</td>
-                <td>Enabled</td>
-                <td>Name</td>
-                <td>Title</td>
-                <td>URL</td>
-                <td>Added By</td>
-                <td>Delete</td>
-            </tr>"""
-    for clip in result:
-        out += f"""
-            <tr>
-                <td>{clip.id}</td>
-                <td>
-                    <form action="" >
-                    <input type="checkbox" name="enabled" onchange="updateClipEnable({clip.id}, this.checked)"
-                        {"disabled" if not user.admin else ""}
-                        {"checked" if clip.enabled else ""}>
-                    </form>
-                </td>
-                <td>{clip.name}</td>
-                <td>{clip.title}</td>
-                <td><a href=https://clips.twitch.tv/{clip.url} target=_blank>{clip.url}</a></td>
-                <td>{clip.added_by}</td>
-                <td><form action="/clips/delete" method=POST>
-                    <button name="clip_id" value={clip.id} onclick="return confirm('Do you really want to delete this clip?');">🗑️</button>
-                    </form>
-                </td>
-            </tr>
-        """  # noqa: E501
+    response = templates.TemplateResponse("manage.html.jinja", {"request": request, "result": result, "user": user})
 
-    out += """
-        </table>
-        <p>
-        <form method=POST action="/clips/add">
-        <table border=1>
-            <tr><td colspan=10 align=center>Insert new Clip</td></tr>
-            <tr>
-                <td>Enabled</td>
-                <td>Name</td>
-                <td>Title</td>
-                <td>URL</td>
-            </tr>
-            <tr>
-                <td><input type="checkbox" name="enabled"></td>
-                <td><input type="text" name="name"></td>
-                <td><input type="text" name="title"></td>
-                <td><input type="text" name="url"></td>
-                <td><input type="submit" value="Save"></td>
-            </tr>
-        </table>
-    </body>
-    </html>"""
-
-    response = HTMLResponse(out)
     response.set_cookie("clipmsg", "")
     return response
+
+
+@router.get("/clips/manage.js", response_class=HTMLResponse)
+async def clips_manage_js(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
+    return FileResponse("static_files/clips/manage.js")
 
 
 @router.get("/clips/json")
