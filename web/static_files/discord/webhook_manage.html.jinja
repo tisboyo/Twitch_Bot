@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src='/discord/webhook_manage.js'></script>
+    </head>
+    <body>
+        <table border=1 id='regex_table'>
+            <tr>
+                <td colspan=3 align=center>
+                <div id="status">
+                    Manage Webhooks.
+                </div>
+                </td>
+            </tr>
+            <tr>
+                <td align=center>Setting</td>
+                <td align=center>Webhook</td>
+            </tr>
+        {% for setting in result %}
+            <tr>
+                <td>{{  setting.key }}</td>
+                <td>
+                    <div id="url_{{setting.key}}" onclick="editUrl('{{ setting.key }}', '{{ setting.value }}')" style="cursor: pointer;">{{ setting.value }}</div>
+                </td>
+            </tr>
+        {% endfor %}
+
+        </table>
+    </body>
+</html>
