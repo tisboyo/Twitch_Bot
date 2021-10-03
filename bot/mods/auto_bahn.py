@@ -16,6 +16,7 @@ from twitchbot.util.command_util import run_command
 
 from models import BotRegex
 from models import KnownBots
+from models import Settings
 
 
 class AutoBan(Mod):
@@ -25,6 +26,7 @@ class AutoBan(Mod):
         super().__init__()
         print("AutoBan loaded")
         self.checked_for_autoban = set()
+        self.autoban_enable = False  # Set to true for bans to actually happen
 
         self.autoban_list_patterns = dict()
         query = db.query(BotRegex).filter(BotRegex.enabled == True).all()  # noqa E712
@@ -138,10 +140,25 @@ class AutoBan(Mod):
         if user is None or user in self.checked_for_autoban:
             return False
 
-        async def do_ban(user):
-            await channel.send_command(
-                f"ban {user} Banned for suspected bot activity. Please use twitch unban request if you think this is a mistake."  # noqa E501
-            )
+        async def do_ban(user: str):
+
+            discord_message = f"{user} banned for being a bot."
+
+            if self.autoban_enable:
+                await channel.send_command(
+                    f"ban {user} Banned for suspected bot activity. Please use twitch unban request if you think this is a mistake."  # noqa E501
+                )
+            else:
+                discord_message += " (Test run)"
+
+            query = db.query(Settings).filter(Settings.key == "ban_webhook").one_or_none()
+            if query:
+                async with aiohttp.ClientSession() as session:
+                    response = await session.post(
+                        query.value, json={"content": discord_message, "username": "TwitchBot: Autoban"}
+                    )
+                    if response.status == 204:
+                        ic(f"{discord_message}")
 
         ic(f"Checking for auto ban for {user}")
         query = db.query(KnownBots).filter(KnownBots.botname == user).one_or_none()
@@ -186,7 +203,6 @@ class AutoBan(Mod):
             db.commit()
             db.refresh(insert)
             await msg.reply(f"{bot.msg_prefix}Adding {pattern} to auto ban list")
-            bot.ignore_list_patterns[insert.id] = pattern
 
         else:
             await msg.reply(f"{bot.msg_prefix}That pattern is already in the database.")
