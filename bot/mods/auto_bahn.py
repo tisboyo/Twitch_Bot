@@ -120,7 +120,7 @@ class AutoBan(Mod):
                         ic(f"Finished bot list 2 offset at {offset}")
                         offset += 100
                         if offset < count:
-                            print(f"Bot list 2 update: Next offset-{offset} ")
+                            print(f"Bot list 2 update: Next offset-{offset}, of Total {count} ")
                             await sleep(3)
 
                     print(f"Done updating bot list 2 - {count} known bots.")
