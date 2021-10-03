@@ -16,6 +16,7 @@ from send_to_bot import send_message_to_bot
 from starlette import status as http_status
 
 from models import IgnoreList
+from models import KnownBots
 from models import RaidLog
 
 router = APIRouter()
@@ -67,6 +68,16 @@ async def twitch_eventsub_follow_post(data: dict, request: Request, signed=Depen
         if match(pattern, event_data["user_name"]):
             # Ignore the user, still return 204 so twitch doesn't keep resending.
             return Response(status_code=http_status.HTTP_204_NO_CONTENT)
+
+    # Auto ban bots that follow
+    query = (
+        db.session.query(KnownBots)
+        .filter(KnownBots.botname == event_data["user_name"], KnownBots.enableblock == True)  # noqa: E712
+        .one_or_none()
+    )
+    if query:
+        ret = await send_command_to_bot("banbot", [event_data["user_name"]])
+        return ret
 
     # Send data to the twitchbot
     ret = await send_command_to_bot("follow", [event_data["user_name"]])
@@ -127,4 +138,31 @@ async def twitch_eventsub_channel_raid(data: dict, request: Request, signed=Depe
     # https://stackoverflow.com/a/20007730 - Full credit the author
     ordinal = lambda n: "%d%s" % (n, "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4])  # noqa E731
 
-    await send_message_to_bot(f"{msg_prefix}Thank you {raider} for your {ordinal(raid_count)} raid!")
+    return await send_message_to_bot(f"{msg_prefix}Thank you {raider} for your {ordinal(raid_count)} raid!")
+
+
+@router.post("/twitch/eventsub/channel.unban")
+async def twitch_eventsub_channel_unban(data: dict, request: Request, signed=Depends(check_twitch_signature())):
+    # Challenge is sent when the event is first setup only
+    if data.get("challenge", False):
+        return PlainTextResponse(data["challenge"])
+
+    # Flag the user that was unbanned as excluded from auto ban
+    query = db.session.query(KnownBots).filter(KnownBots.botname == data["event"]["user_login"]).one_or_none()
+
+    if query and query.enableblock:
+        query.enableblock = False
+        query.banned = False
+        db.session.commit()
+        print(f"{data['event']['user_login']} excluded from auto ban")
+
+    return Response(status_code=204)
+
+
+@router.post("/twitch/eventsub/channel.ban")
+async def twitch_eventsub_channel_ban(data: dict, request: Request, signed=Depends(check_twitch_signature())):
+    # Challenge is sent when the event is first setup only
+    if data.get("challenge", False):
+        return PlainTextResponse(data["challenge"])
+
+    return Response(status_code=204)

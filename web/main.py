@@ -34,6 +34,7 @@ from routes.trivia import router as trivia_router
 from web_auth import router as webauth_router
 from routes.user_manage import router as user_manage_router
 from routes.clips import router as clips_manage_router
+from routes.auto_bahn import router as autoban_router
 from routes.discord_webhooks import router as discord_webhooks_router
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -61,6 +62,7 @@ app.include_router(trivia_router)
 app.include_router(webauth_router)
 app.include_router(user_manage_router)
 app.include_router(clips_manage_router)
+app.include_router(autoban_router)
 app.include_router(discord_webhooks_router)
 
 

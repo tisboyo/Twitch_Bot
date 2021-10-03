@@ -2,7 +2,6 @@
 import argparse
 import datetime
 import json
-from os import _exit
 from os import getenv
 from time import sleep
 
@@ -107,7 +106,7 @@ def get_url(url, counter: int = 0):
         if e.response.status_code == 401:
             if counter > 3:
                 print(f"Unable to successfully query {url} - {e}. Exiting...")
-                _exit(0)
+                raise SystemExit
             else:
                 print(f"Sleeping {counter} seconds")
                 sleep(counter)
@@ -116,7 +115,7 @@ def get_url(url, counter: int = 0):
         raise (e)
     except requests.exceptions.ConnectionError as e:
         print(f"Connection error for {url} - {e}. Exiting...")
-        _exit(0)
+        raise SystemExit
 
 
 def post_url(url, event: dict, counter: int = 0):
@@ -136,16 +135,19 @@ def post_url(url, event: dict, counter: int = 0):
         if e.response.status_code == 401:
             if counter > 3:
                 print(f"Unable to successfully query {url} - {e}. Exiting...")
-                _exit(0)
+                raise SystemExit
             else:
                 print(f"Sleeping {counter} seconds")
                 sleep(counter)
                 return post_url(url, event, counter=counter + 1)
+        elif e.response.status_code == 400:
+            print(f"Invalid values sent to the server for {event}")
+            raise SystemExit
 
         raise (e)
     except requests.exceptions.ConnectionError as e:
         print(f"Connection error for {url} - {e}. Exiting...")
-        _exit(0)
+        raise SystemExit
 
 
 def delete_url(url, counter: int = 0):
@@ -161,7 +163,7 @@ def delete_url(url, counter: int = 0):
         if e.response.status_code == 401:
             if counter > 3:
                 print(f"Unable to successfully query {url} - {e}. Exiting...")
-                _exit(0)
+                raise SystemExit
             else:
                 print(f"Sleeping {counter} seconds")
                 sleep(counter)
@@ -170,7 +172,7 @@ def delete_url(url, counter: int = 0):
         raise (e)
     except requests.exceptions.ConnectionError as e:
         print(f"Connection error for {url} - {e}. Exiting...")
-        _exit(0)
+        raise SystemExit
 
 
 user_data = json.loads(get_url(f"https://api.twitch.tv/helix/users?login={channel}").content.decode("utf-8"))["data"][0]
@@ -205,6 +207,18 @@ events = [
         "version": "1",
         "condition": {"to_broadcaster_user_id": channel_id},
         "transport": {"method": "webhook", "callback": f"{host}/channel.raid", "secret": signing_secret},
+    },
+    {
+        "type": "channel.unban",
+        "version": "1",
+        "condition": {"broadcaster_user_id": channel_id},
+        "transport": {"method": "webhook", "callback": f"{host}/channel.unban", "secret": signing_secret},
+    },
+    {
+        "type": "channel.ban",
+        "version": "1",
+        "condition": {"broadcaster_user_id": channel_id},
+        "transport": {"method": "webhook", "callback": f"{host}/channel.ban", "secret": signing_secret},
     },
 ]
 
