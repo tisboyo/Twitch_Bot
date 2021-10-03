@@ -1,3 +1,5 @@
+import re
+
 import aiohttp
 from fastapi import APIRouter
 from fastapi import Request
@@ -45,6 +47,13 @@ async def discord_webhook_manage_save(
     webhook_url: str = Form(...),
     user=Depends(check_user(level=AuthLevel.admin)),
 ):
+
+    pattern = r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"
+    match = re.search(pattern, webhook_url)
+
+    if not match:
+        return "URL is not valid."
+
     async with aiohttp.ClientSession() as session:
         response = await session.post(
             webhook_url,
