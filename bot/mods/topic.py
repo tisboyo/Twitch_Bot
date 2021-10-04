@@ -131,9 +131,9 @@ def get_topic(raw=False):
         if topic.get("topic", False):
             # Build the topic
             topic_text = topic["topic"]
-            topic_text = f"{topic_text}Goal: {topic['goal']} " if topic.get("goal", False) else topic_text
-            topic_text = f"{topic_text}Currently: {topic['step']} " if topic.get("step", False) else topic_text
-            topic_text = f"{topic_text}Notes/Info: {topic['link']}" if topic.get("link", False) else topic_text
+            topic_text = f"{topic_text}[Goal]: {topic['goal']} " if topic.get("goal", False) else topic_text
+            topic_text = f"{topic_text}[Currently]: {topic['step']} " if topic.get("step", False) else topic_text
+            topic_text = f"{topic_text}[Notes/Info]: {topic['link']}" if topic.get("link", False) else topic_text
             # Return the topic in string format.
             return topic_text
         else:
