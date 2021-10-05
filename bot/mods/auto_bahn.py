@@ -164,6 +164,9 @@ class AutoBan(Mod):
 
         async def do_ban(user: str):
 
+            # Keep our own cache of checked users
+            self.checked_for_autoban.add(user)
+
             discord_message = f"{user} banned for being a bot."
 
             if self.autoban_enable:
@@ -198,8 +201,6 @@ class AutoBan(Mod):
                 await do_ban(user)
                 return True
 
-        # Keep our own cache of checked users
-        self.checked_for_autoban.add(user)
         return False
 
     @ModCommand(name, "banbot", permission="admin")
