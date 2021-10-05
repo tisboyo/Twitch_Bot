@@ -62,6 +62,10 @@ class AutoBan(Mod):
                 print(f"Known bot update sleeping until {query[0]}")
                 await sleep(seconds_until_run.total_seconds())
 
+            while bot.live:
+                # If the stream is still live for some reason, postpone the update.
+                await sleep(60)
+
             print("Updating known bot list")
             start_time = datetime.datetime.now()
             try:
@@ -146,7 +150,7 @@ class AutoBan(Mod):
 
             # Sleep the routine until 4am
             next_run_time = datetime.datetime.combine(
-                (datetime.date.today() + datetime.timedelta(days=1)), datetime.time(hour=4)
+                (datetime.date.today() + datetime.timedelta(days=1)), datetime.time(hour=6)
             )
             db.query(Settings).filter(Settings.key == "next_bot_check").update({Settings.value: next_run_time.isoformat()})
             db.commit()
