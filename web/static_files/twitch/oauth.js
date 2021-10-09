@@ -1,10 +1,10 @@
 function updateElements() {
     document.getElementById('irc_button').onclick = function () {
-        location.href = "/twitch/oauth/start_irc"
+        location.href = "/twitch/oauth/start/irc"
     }
 
     document.getElementById('pubsub_button').onclick = function () {
-        location.href = "/twitch/oauth/start_pubsub"
+        location.href = "/twitch/oauth/start/pubsub"
     }
 
     var cookie = getCookie('oauth_message');

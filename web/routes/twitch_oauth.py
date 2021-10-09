@@ -50,7 +50,7 @@ async def get_twitch_oauth_js(request: Request, user=Depends(check_user(level=Au
     return response
 
 
-@router.get("/twitch/oauth/start_irc")
+@router.get("/twitch/oauth/start/irc")
 async def get_twitch_oauth_start_irc(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
     client_id = getenv("CLIENT_ID") or getenv("client_id")
     web_hostname = getenv("WEB_HOSTNAME")
@@ -64,13 +64,13 @@ async def get_twitch_oauth_start_irc(request: Request, user=Depends(check_user(l
         "channel_editor",
         "channel:manage:polls",
     ]
-    return_url = f"https://{web_hostname}/twitch/oauth/process_irc.html"
-    redirect = f"https://id.twitch.tv/oauth2/authorize?response_type=token&client_id={client_id}&redirect_uri={return_url}&force_verify=true&scope={'+'.join(irc_scope)}"  # noqa:E501
+    return_url = f"https://{web_hostname}/twitch/oauth/process.html"
+    redirect = f"https://id.twitch.tv/oauth2/authorize?response_type=token&client_id={client_id}&redirect_uri={return_url}&force_verify=true&state=irc&scope={'+'.join(irc_scope)}"  # noqa:E501
 
     return RedirectResponse(redirect)
 
 
-@router.get("/twitch/oauth/start_pubsub")
+@router.get("/twitch/oauth/start/pubsub")
 async def get_twitch_oauth_start_pubsub(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
     client_id = getenv("CLIENT_ID") or getenv("client_id")
     web_hostname = getenv("WEB_HOSTNAME")
@@ -80,31 +80,20 @@ async def get_twitch_oauth_start_pubsub(request: Request, user=Depends(check_use
         "channel_subscriptions",
         "channel:manage:polls",
     ]
-    return_url = f"https://{web_hostname}/twitch/oauth/process_pubsub.html"
-    redirect = f"https://id.twitch.tv/oauth2/authorize?response_type=token&client_id={client_id}&redirect_uri={return_url}&force_verify=true&scope={'+'.join(pubsub_scope)}"  # noqa:E501
+    return_url = f"https://{web_hostname}/twitch/oauth/process.html"
+    redirect = f"https://id.twitch.tv/oauth2/authorize?response_type=token&client_id={client_id}&redirect_uri={return_url}&force_verify=true&state=pubsub&scope={'+'.join(pubsub_scope)}"  # noqa:E501
     return RedirectResponse(redirect)
 
 
-@router.get("/twitch/oauth/process_irc.html")
-async def get_twitch_oauth_process_irc(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
-    response = templates.TemplateResponse("oauth_process_irc.html.jinja", {"request": request})
+@router.get("/twitch/oauth/process.html")
+async def get_twitch_oauth_process(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
+    response = templates.TemplateResponse("oauth_process.html.jinja", {"request": request})
     return response
 
 
-@router.get("/twitch/oauth/process_irc.js")
-async def get_twitch_oauth_process_irc_js(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
-    return FileResponse("static_files/twitch/oauth_process_irc.js")
-
-
-@router.get("/twitch/oauth/process_pubsub.html")
-async def get_twitch_oauth_process_pubsub(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
-    response = templates.TemplateResponse("oauth_process_pubsub.html.jinja", {"request": request})
-    return response
-
-
-@router.get("/twitch/oauth/process_pubsub.js")
-async def get_twitch_oauth_process_pubsub_js(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
-    return FileResponse("static_files/twitch/oauth_process_pubsub.js")
+@router.get("/twitch/oauth/process.js")
+async def get_twitch_oauth_process_js(request: Request, user=Depends(check_user(level=AuthLevel.admin))):
+    return FileResponse("static_files/twitch/oauth_process.js")
 
 
 @router.post("/twitch/oauth/save")
