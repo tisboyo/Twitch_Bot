@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <script src="/twitch/oauth.js"></script>
+    <body>
+        <table border=1>
+            <tr><td colspan=2 align="center"><div id="title">Update OAuth Keys</div></td></tr>
+            <tr>
+                <td>Use BOT Account</td>
+                <td>Use STREAMER Account</td>
+            </tr>
+            <tr>
+                <td align="center"><button id="irc_button">BOT</button></td>
+                <td align="center"><button id="pubsub_button">PUBSUB</button></td>
+            </tr>
+            <tr>
+                <td>Last Update:<div id="irc_updated">{{updated.irc}}</div></td>
+                <td>Last Update:<div id="pubsub_updated">{{updated.pubsub}}</div></td>
+            </tr>
+            <tr><td align="center" colspan=2><div id="message">{{message}}</div></td></tr>
+        </table>
+    </body>
+</html>
