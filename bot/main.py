@@ -2,7 +2,6 @@ import asyncio
 import re
 from datetime import datetime
 from json import loads
-from os import _exit
 
 import requests
 import version_check  # noqa: F401
@@ -67,7 +66,7 @@ class AddOhmsBot(BaseBot):
         data = loads(r.text)
         if data.get("error", False):
             print(f"{data['status']} {data['message']}")
-            _exit(0)
+            raise SystemExit
 
         data = data["data"]
         if len(data) > 0:
