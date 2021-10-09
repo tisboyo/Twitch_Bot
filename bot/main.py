@@ -62,13 +62,11 @@ class AddOhmsBot(BaseBot):
                 blocking_sleep(60)
 
         # Load Pubsub Oauth Token
-        while not environ.get("PUBSUB_OAUTH", False):
+        query = None
+        while not query:
             query = session.query(Settings.value).filter(Settings.key == "twitch_pubsub_token").one_or_none()
             session.commit()  # Needed to clear the "cache" that doesn't exist for the next query of the same value
-            if query:
-                values = loads(query[0])
-                environ["PUBSUB_OAUTH"] = values["access_token"]
-            else:
+            if not query:
                 print("PubSub OAuth (Streamer) token not found. Visit web interface to set.")
                 blocking_sleep(60)
 
