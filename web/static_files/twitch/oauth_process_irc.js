@@ -9,7 +9,7 @@ function sendKeyBackToServer() {
 
             var obj = JSON.parse(this.responseText);
             document.getElementById("message").innerHTML = obj.message;
-            document.cookie = 'oauth_message=' + obj.message;
+            document.cookie = 'oauth_message=' + obj.message + ";path=/";
             location.href = obj.redirect;
         }
     };
