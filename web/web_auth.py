@@ -148,6 +148,9 @@ def check_jwt_valid(request: Request) -> dict:
     except KeyError:
         raise HTTPException(401)
 
+    except RequiresLoginException:
+        raise HTTPException(401)
+
     except Exception as e:
         logger.warning(f"{type(e)} {e}")
         raise HTTPException(500)

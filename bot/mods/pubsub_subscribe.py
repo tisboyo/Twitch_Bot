@@ -1,9 +1,12 @@
-from os import getenv
+from json import loads
 
+from mods._database import session
 from twitchbot import cfg
 from twitchbot import get_pubsub
 from twitchbot import Mod
 from twitchbot import PubSubTopics
+
+from models import Settings
 
 
 class PubSub(Mod):
@@ -18,16 +21,21 @@ class PubSub(Mod):
         super().__init__()
 
     async def loaded(self):
-        for channel in cfg.channels:
-            await get_pubsub().listen_to_channel(
-                channel,
-                [
-                    PubSubTopics.channel_points,
-                    PubSubTopics.moderation_actions,
-                    PubSubTopics.bits,
-                    PubSubTopics.channel_subscriptions,
-                    PubSubTopics.bits_badge_notification,
-                ],
-                access_token=getenv("PUBSUB_OAUTH"),
-            )
-            print(f"PubSub active for {channel}")
+        query = session.query(Settings.value).filter(Settings.key == "twitch_pubsub_token").one_or_none()
+
+        if query:
+            access_token = loads(query[0])["access_token"]
+
+            for channel in cfg.channels:
+                await get_pubsub().listen_to_channel(
+                    channel,
+                    [
+                        PubSubTopics.channel_points,
+                        PubSubTopics.moderation_actions,
+                        PubSubTopics.bits,
+                        PubSubTopics.channel_subscriptions,
+                        PubSubTopics.bits_badge_notification,
+                    ],
+                    access_token=access_token,
+                )
+                print(f"PubSub active for {channel}")

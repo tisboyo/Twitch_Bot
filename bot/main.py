@@ -2,7 +2,8 @@ import asyncio
 import re
 from datetime import datetime
 from json import loads
-from os import _exit
+from os import environ
+from time import sleep as blocking_sleep
 
 import requests
 import version_check  # noqa: F401
@@ -14,6 +15,7 @@ from twitchbot.config import get_client_id
 from twitchbot.config import get_oauth
 
 from models import IgnoreList
+from models import Settings
 
 
 try:
@@ -48,6 +50,26 @@ class AddOhmsBot(BaseBot):
         for each in query:
             self.ignore_list_patterns[each.id] = each.pattern
 
+        # Load IRC Oauth Token
+        while not environ.get("oauth", False):
+            query = session.query(Settings.value).filter(Settings.key == "twitch_irc_token").one_or_none()
+            session.commit()  # Needed to clear the "cache" that doesn't exist for the next query of the same value
+            if query:
+                values = loads(query[0])
+                environ["oauth"] = values["access_token"]
+            else:
+                print("IRC OAuth (Bot) token not found. Visit web interface to set.")
+                blocking_sleep(60)
+
+        # Load Pubsub Oauth Token
+        query = None
+        while not query:
+            query = session.query(Settings.value).filter(Settings.key == "twitch_pubsub_token").one_or_none()
+            session.commit()  # Needed to clear the "cache" that doesn't exist for the next query of the same value
+            if not query:
+                print("PubSub OAuth (Streamer) token not found. Visit web interface to set.")
+                blocking_sleep(60)
+
         # Check and set the status of the bot on startup.
         AddOhmsBot.live = self.check_live_status()
         print(f"Stream online: {AddOhmsBot.live}")
@@ -67,7 +89,7 @@ class AddOhmsBot(BaseBot):
         data = loads(r.text)
         if data.get("error", False):
             print(f"{data['status']} {data['message']}")
-            _exit(0)
+            raise SystemExit
 
         data = data["data"]
         if len(data) > 0:
