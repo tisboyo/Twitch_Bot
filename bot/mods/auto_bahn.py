@@ -26,7 +26,7 @@ class AutoBan(Mod):
         super().__init__()
         print("AutoBan loaded")
         self.checked_for_autoban = set()
-        self.autoban_enable = False  # Set to true for bans to actually happen
+        self.autoban_enable = True  # Set to true for bans to actually happen
 
         self.autoban_list_patterns = dict()
         query = db.query(BotRegex).filter(BotRegex.enabled == True).all()  # noqa E712
