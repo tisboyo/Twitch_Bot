@@ -18,23 +18,23 @@ class TodoMod(Mod):
         super().__init__()
         print("TodoMod loaded")
 
-        query = session.query(Settings).filter(Settings.key == "to_do_webhook").one_or_none()
-        self.webhook = query.value if query else None
-
     @ModCommand(name, "todo", context=CommandContext.CHANNEL, permission="todo")
     async def todo(self, msg: Message, *args):
         # Check if user is on ignore list
         if bot.user_ignored(str(msg.author)):
             return
 
-        if self.webhook is None:
+        query = session.query(Settings).filter(Settings.key == "to_do_webhook").one_or_none()
+        webhook = query.value if query else None
+
+        if webhook is None:
             await channels[cfg.channels[0]].send_message(
                 bot.msg_prefix + "I'm missing a webhook address. @tisboyo broke me."
             )
 
-        async with aiohttp.ClientSession() as session:
-            response = await session.post(
-                self.webhook, json={"content": msg.content, "username": f"TwitchBot: Todo by {msg.author}"}
+        async with aiohttp.ClientSession() as http_session:
+            response = await http_session.post(
+                webhook, json={"content": msg.content, "username": f"TwitchBot: Todo by {msg.author}"}
             )
             if response.status == 204:
                 message = "Thanks for the todo, I posted it to discord for review later."
