@@ -164,9 +164,6 @@ class AutoBan(Mod):
 
         async def do_ban(user: str):
 
-            # Keep our own cache of checked users
-            self.checked_for_autoban.add(user)
-
             discord_message = f"{user} banned for being a bot."
 
             if self.autoban_enable:
@@ -184,6 +181,9 @@ class AutoBan(Mod):
                     )
                     if response.status == 204:
                         ic(f"{discord_message}")
+
+        # Keep our own cache of checked users
+        self.checked_for_autoban.add(user)
 
         ic(f"Checking for auto ban for {user}")
         query = db.query(KnownBots).filter(KnownBots.botname == user).one_or_none()
@@ -207,6 +207,7 @@ class AutoBan(Mod):
     async def ban_user(self, msg: Message, user: str):
         """Manually ban a user as a bot"""
         await self.check_to_ban_user(user, msg.channel)
+        print(f"Checking if {user} should be banned.")
 
     @SubCommand(ban_user, "add", permission="admin")
     async def banbot_add(self, msg: Message, pattern: str):
