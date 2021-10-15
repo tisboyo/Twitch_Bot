@@ -227,6 +227,7 @@ class AutoBan(Mod):
             db.commit()
             db.refresh(insert)
             await msg.reply(f"{bot.msg_prefix}Adding {pattern} to auto ban list")
+            self.autoban_list_patterns[insert.id] = insert.pattern
 
         else:
             await msg.reply(f"{bot.msg_prefix}That pattern is already in the database.")
