@@ -2,6 +2,7 @@ import datetime
 import json
 import random
 from asyncio import sleep
+from collections import namedtuple
 from string import ascii_lowercase
 from string import ascii_uppercase
 
@@ -381,21 +382,28 @@ class TriviaMod(Mod):
         # places = ["first", "second", "third"]
         places = ["third", "second", "first"]
 
+        winner_nt = namedtuple("Winners", ["place", "name", "score"])
         messages = list()  # Store for the messages to send
+        winners_mqtt = dict()  # Store mqtt data to be sent at same time as message
         for pl in range(how_many_winners):
             # Negative length of winners + current range number, used to count backwards in the places list
             place = -how_many_winners + pl
             winner = winners.pop()
+            w = winner_nt(place=places[place], name=winner[0], score=winner[1])
             ic(winner, places[place])
-            messages.append(f"{self.msg_prefix} In {places[place]} is {winner[0]} with {winner[1]} points.")
+            messages.append(f"{self.msg_prefix} In {w.place} is {w.name} with {w.score} points.")
+            winners_mqtt[w.place] = {"name": w.name, "score": w.score}
 
-        # Send leaderboard to MQTT
+        # Send full leaderboard to MQTT
         await bot.MQTT.send(bot.MQTT.Topics.trivia_leaderboard, self.scoreboard, retain=True)
+        # Send the winners to MQTT
+        await bot.MQTT.send(bot.MQTT.Topics.trivia_winners, json.dumps(winners_mqtt))
 
         how_many_messages = len(messages)
         for idx in range(how_many_messages):
             # Send the congratulatory messages with a delay between them
             await msg.reply(messages[idx])
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_show_winner_position, places[-how_many_winners + idx])
             if idx < how_many_messages - 1:
                 await sleep(5)
 
@@ -452,12 +460,17 @@ class TriviaMod(Mod):
                 win_count[trivia.total_wins].append(user.user)
 
             # Send a final congratulations message
+            winner_msg = ""
             if first_time_winner:  # First time winners
-                await msg.reply(f"{self.msg_prefix}CONGRATULATIONS {', '.join(first_time_winner)} on your first win!!")
+                winner_msg = f"{self.msg_prefix} CONGRATULATIONS {', '.join(first_time_winner)} on your first win!!"
             elif len(win_count[most_wins]) > 1:  # Multiple top winners
-                await msg.reply(f"{self.msg_prefix}Congrats to {', '.join(win_count[most_wins])} for the most wins!")
+                winner_msg = f"{self.msg_prefix} Congrats to {', '.join(win_count[most_wins])} for the most wins!"
             elif len(win_count[most_wins]) == 1:  # Single top winner
-                await msg.reply(f"{self.msg_prefix}Congrats to {win_count[most_wins][0]}, you have won {most_wins} times!")
+                winner_msg = f"{self.msg_prefix} Congrats to {win_count[most_wins][0]}, you have won {most_wins} times!"
+
+            if winner_msg:
+                await msg.reply(winner_msg)
+                await bot.MQTT.send(bot.MQTT.Topics.trivia_winner_message, winner_msg)
 
         # Clear the scoreboard for the next session
         self.scoreboard = dict()
