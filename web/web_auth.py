@@ -88,7 +88,7 @@ def check_valid_api_key(level: AuthLevel) -> bool:
 
         key = api_key_header or api_key_query
         if key is None:
-            raise HTTPException(401)
+            raise HTTPException(401, "API Key required.")
 
         query = db.session.query(WebAuth).filter(WebAuth.api_key == key, WebAuth.enabled == True).one_or_none()  # noqa E712
 
