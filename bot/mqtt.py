@@ -37,6 +37,9 @@ class MqttTopics:
     trivia_current_question_setup = trivia_prefix + "current_question_setup"
     trivia_current_question_data = trivia_prefix + "current_question_data"
     trivia_leaderboard = trivia_prefix + "leaderboard"
+    trivia_winners = trivia_prefix + "winners"
+    trivia_show_winner_position = trivia_prefix + "show_winner_position"
+    trivia_winner_message = trivia_prefix + "trivia_winner_message"
     trivia_question = trivia_prefix + "question_text"
     trivia_answers = trivia_prefix + "answers"
 
