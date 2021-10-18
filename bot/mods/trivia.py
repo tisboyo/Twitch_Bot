@@ -403,7 +403,8 @@ class TriviaMod(Mod):
         for idx in range(how_many_messages):
             # Send the congratulatory messages with a delay between them
             await msg.reply(messages[idx])
-            await bot.MQTT.send(bot.MQTT.Topics.trivia_show_winner_position, places[-how_many_winners + idx])
+            show = {"show": places[-how_many_winners + idx]}
+            await bot.MQTT.send(bot.MQTT.Topics.trivia_show_winner_position, show)
             if idx < how_many_messages - 1:
                 await sleep(5)
 
@@ -462,15 +463,15 @@ class TriviaMod(Mod):
             # Send a final congratulations message
             winner_msg = ""
             if first_time_winner:  # First time winners
-                winner_msg = f"{self.msg_prefix} CONGRATULATIONS {', '.join(first_time_winner)} on your first win!!"
+                winner_msg = f"CONGRATULATIONS {', '.join(first_time_winner)} on your first win!!"
             elif len(win_count[most_wins]) > 1:  # Multiple top winners
-                winner_msg = f"{self.msg_prefix} Congrats to {', '.join(win_count[most_wins])} for the most wins!"
+                winner_msg = f"Congrats to {', '.join(win_count[most_wins])} for the most wins!"
             elif len(win_count[most_wins]) == 1:  # Single top winner
-                winner_msg = f"{self.msg_prefix} Congrats to {win_count[most_wins][0]}, you have won {most_wins} times!"
+                winner_msg = f"Congrats to {win_count[most_wins][0]}, you have won {most_wins} times!"
 
             if winner_msg:
-                await msg.reply(winner_msg)
-                await bot.MQTT.send(bot.MQTT.Topics.trivia_winner_message, winner_msg)
+                await msg.reply(f"{self.msg_prefix} {winner_msg}")
+                await bot.MQTT.send(bot.MQTT.Topics.trivia_winner_message, json.dumps({"message": winner_msg}))
 
         # Clear the scoreboard for the next session
         self.scoreboard = dict()
