@@ -11,9 +11,13 @@ ENV PIP_NO_CACHE_DIR=false \
     PIP_INDEX_URL=$PIP_INDEX_URL\
     PIP_TRUSTED_HOST=$PIP_TRUSTED_HOST
 
+#Create non-root user
+RUN useradd --uid 1000 -U -m twitch_bot
+USER twitch_bot
+ENV PATH="/home/twitch_bot/.local/bin:${PATH}"
 
 #Copy the dependencies first so they are built as their own layer
-COPY ./requirements.txt /workspace/web/
+COPY --chown=twitch_bot:twitch_bot ./requirements.txt /workspace/web/
 
 # Install python dependencies
 RUN pip install --upgrade -r /workspace/web/requirements.txt
@@ -26,7 +30,7 @@ RUN pip install --upgrade -r /workspace/web/requirements.txt
 WORKDIR /workspace/web
 
 # Install files
-COPY ./ /workspace/web
+COPY --chown=twitch_bot:twitch_bot ./ /workspace/web
 
 # Expose port for debugging
 #EXPOSE 5678:5678
