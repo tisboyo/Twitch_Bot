@@ -8,6 +8,7 @@ services:
       args: #Passing these in as Args allow it to be used during the build process
         PIP_INDEX_URL: ${PIP_INDEX_URL} #Redirects pip to use a local pip cache instead of downloading
         PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST}
+        ENVIRONMENT: ${ENVIRONMENT}
 
     restart: unless-stopped
     depends_on:

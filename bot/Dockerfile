@@ -2,6 +2,7 @@ FROM python:3.9@sha256:5caa9a0f034e56693e096ac4562097d9167a2509d22fb970cb4a2b546
 
 ARG PIP_INDEX_URL
 ARG PIP_TRUSTED_HOST
+ARG ENVIRONMENT
 
 # Any environment variables that are stored in
 # the .env file must be loaded in docker-compose.yml
@@ -10,6 +11,13 @@ ENV PIP_NO_CACHE_DIR=false \
     PYTHONUNBUFFERED=1 \
     PIP_INDEX_URL=$PIP_INDEX_URL\
     PIP_TRUSTED_HOST=$PIP_TRUSTED_HOST
+
+
+#Setup sudo if debug is true
+RUN if [ "$ENVIRONMENT" = "dev" ] ; then apt-get update -y && apt-get install -y sudo; fi
+RUN if [ "$ENVIRONMENT" = "dev" ] ; then echo 'twitch_bot   ALL=(ALL:ALL) NOPASSWD: ALL' >>  /etc/sudoers.d/twitch_bot; fi
+
+
 
 #Create non-root user
 RUN useradd --uid 1000 -U -m twitch_bot
