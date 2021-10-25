@@ -197,6 +197,7 @@ class ThisOrThat(Base):
 
     __tablename__ = "thisorthat"
     id = Column(Integer(), primary_key=True)
-    answers = Column(String(256), nullable=False)
-    last_shown = Column(DateTime(), onupdate=datetime.now)
+    answer_1 = Column(String(256), nullable=False)
+    answer_2 = Column(String(256), nullable=False)
+    last_shown = Column(DateTime())
     enabled = Column(Boolean(), default=True)

@@ -1,8 +1,8 @@
-"""Add ThisOrThat table
+"""Add thisorthat table
 
-Revision ID: 21372c459cdf
+Revision ID: b75770a253a2
 Revises: a149fe1ee31d
-Create Date: 2021-10-22 00:30:03.135190
+Create Date: 2021-10-25 01:10:59.461038
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = "21372c459cdf"
+revision = "b75770a253a2"
 down_revision = "a149fe1ee31d"
 branch_labels = None
 depends_on = None
@@ -22,6 +22,8 @@ def upgrade():
         "thisorthat",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("answers", sa.String(length=256), nullable=False),
+        sa.Column("last_shown", sa.DateTime(), nullable=True),
+        sa.Column("enabled", sa.Boolean(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     # ### end Alembic commands ###
