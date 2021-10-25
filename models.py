@@ -190,3 +190,13 @@ class BotRegex(Base):
     id = Column(Integer(), primary_key=True)
     pattern = Column(String(128), nullable=False, unique=True)
     enabled = Column(Boolean(), default=True)
+
+
+class ThisOrThat(Base):
+    """Table containing This or That questions"""
+
+    __tablename__ = "thisorthat"
+    id = Column(Integer(), primary_key=True)
+    answers = Column(String(256), nullable=False)
+    last_shown = Column(DateTime(), onupdate=datetime.now)
+    enabled = Column(Boolean(), default=True)
