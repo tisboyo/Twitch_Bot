@@ -26,9 +26,9 @@ class Treats(Mod):
 
     def __init__(self):
         self.points = Points(
-            emojis=6, unique_users=3, mod_commands=1, require_all=True, emoji_cap=2, timeout_seconds=60 * 10
+            emojis=4, unique_users=2, mod_commands=1, require_all=True, emoji_cap=2, timeout_seconds=60 * 10
         )
-        self.reminder_enable = True
+        self.reminder_enable = False
         self.ready_for_trigger = True
         self.treat_disabled_check = datetime.datetime.min
         self.treat_in_queue = False
@@ -88,7 +88,8 @@ class Treats(Mod):
                     self.reminder_enable = False
                 elif status.emojis >= status.emojis_required:
                     await self.send_treat_status(status)
-                    await self.send_treat_in_queue(msg)
+                    #await self.send_treat_in_queue(msg)
+                    await self.send_treat(msg)
 
         else:
             # If it doesn't include a Treat, we don't care about it at all
@@ -119,7 +120,7 @@ class Treats(Mod):
                 return
 
             await msg.reply(
-                f"{bot.msg_prefix} NEW! Send balden3TreatMe to trigger the Treat Bot!"
+                f"{bot.msg_prefix} Send balden3TreatMe to help trigger the Treat Bot!"
             )  # TODO #136 Change phrasing eventually
 
     @SubCommand(push_treat, "enable", permission="admin")
