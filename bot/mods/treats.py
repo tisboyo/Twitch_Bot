@@ -26,7 +26,7 @@ class Treats(Mod):
 
     def __init__(self):
         self.points = Points(
-            emojis=4, unique_users=2, mod_commands=1, require_all=True, emoji_cap=2, timeout_seconds=60 * 10
+            emojis=4, unique_users=2, mod_commands=0, require_all=True, emoji_cap=2, timeout_seconds=60 * 10
         )
         self.reminder_enable = False
         self.ready_for_trigger = True
@@ -88,9 +88,7 @@ class Treats(Mod):
                     self.reminder_enable = False
                 elif status.emojis >= status.emojis_required:
                     await self.send_treat_status(status)
-                    #await self.send_treat_in_queue(msg)
-                    await self.send_treat(msg)
-
+                    await self.send_treat_in_queue(msg)
         else:
             # If it doesn't include a Treat, we don't care about it at all
             self.reminder_enable = True  # Allow the reminder to be sent again
@@ -104,7 +102,7 @@ class Treats(Mod):
     @ModCommand(name, "treatme")
     async def push_treat(self, msg: Message, *args):
         if perms.has_permission(msg.channel.name, str(msg.author), "admin"):
-            if self.points.check(msg, mod_commands=1):
+            if self.points.check(msg, mod_commands=0):
                 await self.send_treat(msg)
             elif msg.args[0] == "test":
                 # Use for testing the bots
