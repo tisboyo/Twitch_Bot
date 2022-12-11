@@ -26,7 +26,7 @@ class Treats(Mod):
 
     def __init__(self):
         self.points = Points(
-            emojis=4, unique_users=2, mod_commands=0, require_all=True, emoji_cap=2, timeout_seconds=60 * 10
+            emojis=4, unique_users=3, mod_commands=0, require_all=True, emoji_cap=2, timeout_seconds=60 * 10
         )
         self.reminder_enable = False
         self.ready_for_trigger = True
