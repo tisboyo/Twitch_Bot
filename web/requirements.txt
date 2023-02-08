@@ -1,6 +1,6 @@
 aiofiles==0.7.0
 bcrypt==3.2.0
-cryptography==3.4.8
+cryptography==39.0.1
 fastapi==0.68.1
 fastapi-sqlalchemy==0.2.1
 itsdangerous==2.0.1
