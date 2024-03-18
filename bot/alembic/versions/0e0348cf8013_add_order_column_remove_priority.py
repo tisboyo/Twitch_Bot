@@ -5,6 +5,7 @@ Revises: 8527dda7e7d7
 Create Date: 2021-09-18 03:56:47.857223
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import mysql

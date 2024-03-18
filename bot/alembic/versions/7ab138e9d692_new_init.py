@@ -5,6 +5,7 @@ Revises: dd61368809f5
 Create Date: 2020-12-07 00:49:55.397509
 
 """
+
 import sqlalchemy as sa  # noqa F401
 from alembic import op  # noqa F401
 

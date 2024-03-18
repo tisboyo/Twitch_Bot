@@ -7,6 +7,7 @@
 
 Passwords demo code
 """
+
 import json
 import random
 import time
