@@ -31,7 +31,6 @@ an instance of the class :class:`ValuesSeries` named :attr:`E6` and so on.
 
 
 class ValuesSeries(object):
-
     """This class defines the properties of resistor value series like the standardised E6, E12, E24,
     E48, E96 and E192 resistor series values.
 
@@ -40,7 +39,6 @@ class ValuesSeries(object):
     ##############################################
 
     def __init__(self, name, number_of_digits, tolerances, values):
-
         """The parameter *name* gives the name of the series, the parameter *number_of_digits* defines the
         number of digits of the values, the parameter *tolerances* gives the list of tolerances and
         *values* gives the series of values.
@@ -104,7 +102,6 @@ class ValuesSeries(object):
     ##############################################
 
     def tolerance_min(self):
-
         """Return the minimum tolerance."""
 
         return min(self.tolerances)
@@ -112,7 +109,6 @@ class ValuesSeries(object):
     ##############################################
 
     def tolerance_max(self):
-
         """Return the maximum tolerance."""
 
         return max(self.tolerances)
@@ -501,7 +497,6 @@ E192 = ValuesSeries(
 
 
 def series_iterator(number_of_digits_min=2, number_of_digits_max=3, tolerance_min=1, tolerance_max=5):
-
     """Return an iterator over the series that match the given constraints on the number of digits
     range and the tolerance ranges.
     """
@@ -578,7 +573,6 @@ TEMPERATURE_COEFFICIENTS = {
 
 
 def format_value(x):
-
     """Return a string representation of a number *x* using the multiplier m, k, M and G, for example
     the number 1230 will be formated as 1.23 k.
 
@@ -600,7 +594,6 @@ def format_value(x):
 
 
 class ColourCode(object):
-
     """This class defines the meaning of a colour for the digit, the multiplier, the tolerance and
     the temperature coefficient.
 
@@ -665,7 +658,7 @@ class ColourCode(object):
 COLOUR_CODES = {}
 for i, colour_name in enumerate(COLOUR_NAMES):
     digit = i - 2
-    multiplier = 10 ** digit
+    multiplier = 10**digit
     # digit is defined positive
     if digit < 0:
         digit = None
@@ -677,7 +670,6 @@ for i, colour_name in enumerate(COLOUR_NAMES):
 
 
 class Resistor(object):
-
     """This class represents a resitor.
 
     Public attributes:
@@ -750,7 +742,6 @@ class Resistor(object):
     ##############################################
 
     def _init_tolerance(self, tolerance):
-
         """Set the tolerance from a colour or a real number."""
 
         if tolerance is None:
@@ -766,7 +757,6 @@ class Resistor(object):
     ##############################################
 
     def _init_temperature_coefficient(self, temperature_coefficient):
-
         """Set the temperature coefficient from a colour or a real number."""
 
         if temperature_coefficient is None:
@@ -782,7 +772,6 @@ class Resistor(object):
     ##############################################
 
     def _compute_value_from_colours(self):
-
         """compute the resistance value from the colour code."""
 
         try:
@@ -803,7 +792,6 @@ class Resistor(object):
     ##############################################
 
     def _guess_series(self):
-
         """Guess the series of the resistor.
 
 
@@ -836,7 +824,6 @@ class Resistor(object):
     ##############################################
 
     def value_range(self):
-
         """Return the resistance range according to the resistance tolerance."""
 
         if self.tolerance is not None:
@@ -874,7 +861,6 @@ class Resistor(object):
     ##############################################
 
     def digit_colour_iterator(self):
-
         """Return a iterator over the colours of the resistance value."""
 
         return iter(
@@ -890,7 +876,6 @@ class Resistor(object):
 
 
 class ResistorDecoder(object):
-
     """This class implements a resistor decoder using an inference algorithm:
 
     * The given list of colours doesn't require to be oriented (code polarity), both orientation
@@ -909,7 +894,6 @@ class ResistorDecoder(object):
     ##############################################
 
     def _append_hypothesis(self, resistor_configuration, hypotheses):
-
         """Append an hypothesis if it is acceptable."""
 
         # print 'Try:', keys
@@ -933,7 +917,6 @@ class ResistorDecoder(object):
     ##############################################
 
     def _decode(self, colour_names, hypotheses):
-
         """Decode a resistor in one direction from the given list of colour *colour_names*."""
 
         two_digits_bands = ["digit1", "digit2", "multiplier"]
@@ -959,7 +942,6 @@ class ResistorDecoder(object):
     ##############################################
 
     def decode(self, colour_names):
-
         """Decode a resistor from the given list of colour *colour_names*."""
 
         number_of_colours = len(colour_names)
