@@ -20,9 +20,9 @@ for id_num, values in questions.items():
             text=values["text"],
             answers=json.dumps(values["answers"]),
             explain=values["explain"],
-            last_used_date=datetime.fromisoformat(values["last_used_date"])
-            if values["last_used_date"] != ""
-            else datetime.min,
+            last_used_date=(
+                datetime.fromisoformat(values["last_used_date"]) if values["last_used_date"] != "" else datetime.min
+            ),
             last_update_date=datetime.today(),
             created_date=datetime.fromisoformat(values["created_date"]) if values["created_date"] != "" else datetime.min,
             created_by=values["created_by"],
